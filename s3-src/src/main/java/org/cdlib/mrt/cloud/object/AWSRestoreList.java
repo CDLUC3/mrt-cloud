@@ -93,7 +93,7 @@ public class AWSRestoreList
     protected long missCnt = 0;
     protected long doneCnt = 0;
     protected long skipCnt = 0;
-    protected long stopCnt = 0;
+    protected long stopAfterCnt = 0;
             
                     
     public AWSRestoreList(
@@ -103,7 +103,7 @@ public class AWSRestoreList
             long outNode,
             LoggerInf logger,
             long skipCnt,
-            long stopCnt)
+            long stopAfterCnt)
         throws TException
     {
          try {
@@ -111,7 +111,7 @@ public class AWSRestoreList
             this.nodeName = nodeName;
             this.logger = logger;
             this.skipCnt = skipCnt;
-            this.stopCnt = stopCnt;
+            this.stopAfterCnt = stopAfterCnt;
             
             FileInputStream fis = new FileInputStream(this.listFile);
             br = new BufferedReader(new InputStreamReader(fis,
@@ -124,7 +124,7 @@ public class AWSRestoreList
                     + " - nodeName:" + nodeName + "\n"
                     + " - inContainer:" + inContainer + "\n"
                     + " - skipCnt:" + skipCnt + "\n"
-                    + " - stopCnt:" + stopCnt + "\n"
+                    + " - stopAfterCnt:" + stopAfterCnt + "\n"
             );
             
         } catch (Exception ex) {
@@ -146,7 +146,7 @@ public class AWSRestoreList
                 if (inCnt <= skipCnt) {
                     continue;
                 } 
-                if (inCnt >= stopCnt) break;
+                if (inCnt > stopAfterCnt) break;
                 if (done(line)) {
                     doneCnt++;
                     continue;
@@ -159,7 +159,7 @@ public class AWSRestoreList
                     + " - nodeName:" + nodeName + "\n"
                     + " - inContainer:" + inContainer + "\n"
                     + " - skipCnt:" + skipCnt + "\n"
-                    + " - stopCnt:" + stopCnt + "\n"
+                    + " - stopAfterCnt:" + stopAfterCnt + "\n"
                     + " - inCnt:" + inCnt + "\n"
                     + " - restoreCnt:" + restoreCnt + "\n"
                     + " - copyCnt:" + copyCnt + "\n"
