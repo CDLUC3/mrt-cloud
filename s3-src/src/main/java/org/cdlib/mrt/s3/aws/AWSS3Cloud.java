@@ -562,6 +562,71 @@ public class AWSS3Cloud
         }
     }
     
+    public boolean awsRestore(
+            String container,
+            String key,
+            CloudResponse response)
+        throws TException
+    {
+        
+        try {
+            response.set(container, key);
+            System.out.println("awsRestore"
+                    + " - container:" + container
+                    + " - key:" + key
+            );
+            Properties objectProp = getObjectMeta(container, key);
+            // object found
+            if (objectProp.size() > 0 ) {
+                System.out.println(PropertiesUtil.dumpProperties("awsRestore", objectProp));
+                String msg = "";
+                response.setFromProp(objectProp);
+                String storageClass = objectProp.getProperty("storageClass");
+                String ongoingRestore = objectProp.getProperty("ongoingRestore");
+                String expirationS = objectProp.getProperty("expiration");
+                // current content in GLACIER
+                if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
+                    //no previous restore
+                    if (ongoingRestore == null) {
+                        System.out.println("values:\n"
+                            + " - bucket=" + container + "\n"
+                            + " - key=" + key + "\n"
+                        );
+                        s3Client.restoreObject(container, key, 2);
+                        msg = "Requested item in Glacier - restore issued" ;
+                        
+                    // restore processing
+                    } else {
+                        msg = "Requested item in Glacier - restore in process" ;
+                    }
+                    System.out.println("***awsRestore:" + msg);
+                    return false;
+                    
+                                // content found
+                } else {
+                    msg = "no restore needed";
+                    System.out.println("***awsRestore:" + msg);
+                    return true;
+                }
+                
+            // no content found
+            } else {
+                throw new TException.REQUESTED_ITEM_NOT_FOUND("Item not found:"
+                            + " - bucket=" + container
+                            + " - key=" + key
+                );
+            }
+            
+        } catch (TException tex) {
+            tex.printStackTrace();
+            throw tex;
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex) ;
+        }
+    }
+    
     /**
      * Convert from one AWS storage class to another
      * @param bucket AWS bucket
