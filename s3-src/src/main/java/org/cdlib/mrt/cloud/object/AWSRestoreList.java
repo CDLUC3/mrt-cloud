@@ -76,8 +76,9 @@ import org.cdlib.mrt.utility.TFileLogger;
  */
 public class AWSRestoreList 
 {
-    protected static final String NAME = "TestAWSService";
+    protected static final String NAME = "AWSRestoreList";
     protected static final String MESSAGE = NAME + ": ";
+    private static final boolean DEBUG = false;
     protected static final String tempFileS = "/apps/replic/test/aws/timing/ark1.txt";
     
     protected BufferedReader br = null;
@@ -92,10 +93,12 @@ public class AWSRestoreList
     protected long copyCnt = 0;
     protected long missCnt = 0;
     protected long doneCnt = 0;
+    protected long exCnt = 0;
     protected long skipCnt = 0;
     protected long stopAfterCnt = 0;
             
-                    
+    public enum RestoreAction {copied, restore, missing, complete, error, end};
+    
     public AWSRestoreList(
             String nodeName,
             File listFile,
@@ -119,13 +122,14 @@ public class AWSRestoreList
             cmc = CloudManifestCopy.getCloudManifestCopy(nodeName, inNode, outNode, logger);
             inContainer = cmc.getInContainer();
             restoreObject = new AWSRestoreObject(inContainer, logger);
-            System.out.println(MESSAGE + "START\n"
+            String msg =  MESSAGE + "START\n"
                     + " - listFile:" + listFile.getAbsolutePath() + "\n"
                     + " - nodeName:" + nodeName + "\n"
                     + " - inContainer:" + inContainer + "\n"
                     + " - skipCnt:" + skipCnt + "\n"
-                    + " - stopAfterCnt:" + stopAfterCnt + "\n"
-            );
+                    + " - stopAfterCnt:" + stopAfterCnt + "\n";
+            System.out.println(msg);
+            logger.logMessage(msg, 1, true);
             
         } catch (Exception ex) {
             throw new TException(ex);
@@ -137,6 +141,7 @@ public class AWSRestoreList
         throws TException
     {
         String line = null;
+        RestoreAction restoreAction = null;
         try {
             while ((line = br.readLine()) != null) {
                 if (StringUtil.isAllBlank(line)) continue;
@@ -147,25 +152,32 @@ public class AWSRestoreList
                     continue;
                 } 
                 if (inCnt > stopAfterCnt) break;
-                if (done(line)) {
-                    doneCnt++;
-                    continue;
+                restoreAction = copy(line);
+                switch (restoreAction) {
+                    case copied:
+                        copyCnt++;
+                        break;
+                    case restore:
+                        restoreCnt++;
+                        break;
+                    case missing:
+                        missCnt++;
+                        break;
+                    case complete:
+                        doneCnt++;
+                        break;
+                    case error:
+                        exCnt++;
+                        break;
+                } 
+                String msg = "Action(" + line + "):" + restoreAction;
+                logger.logMessage(msg, 2, true);
+                if ((inCnt % 200) == 0) {
+                    dump("PARTIAL:" + line);
                 }
-                copy(line);
             }
+            dump("***FINAL");
             
-            System.out.println(MESSAGE + "***FINAL\n"
-                    + " - listFile:" + listFile.getAbsolutePath() + "\n"
-                    + " - nodeName:" + nodeName + "\n"
-                    + " - inContainer:" + inContainer + "\n"
-                    + " - skipCnt:" + skipCnt + "\n"
-                    + " - stopAfterCnt:" + stopAfterCnt + "\n"
-                    + " - inCnt:" + inCnt + "\n"
-                    + " - restoreCnt:" + restoreCnt + "\n"
-                    + " - copyCnt:" + copyCnt + "\n"
-                    + " - missCnt:" + missCnt + "\n"
-                    + " - doneCnt:" + doneCnt + "\n"
-            );
         } catch (TException tex) {
             throw tex;
             
@@ -185,7 +197,7 @@ public class AWSRestoreList
     {    
         long timeStart = DateUtil.getEpochUTCDate();
         arkS = arkS.trim();
-        System.out.println("***Process:" + arkS + "<<");
+        if (DEBUG) System.out.println("***Process:" + arkS + "<<");
         try {
             CloudStoreInf outService = cmc.getOutService();
             String outContainer = cmc.getOutContainer();
@@ -209,37 +221,58 @@ public class AWSRestoreList
         }
     }
     
-    protected void copy(String arkS)
+    protected RestoreAction copy(String arkS)
             throws TException
     {    
         long timeStart = DateUtil.getEpochUTCDate();
         arkS = arkS.trim();
-        System.out.println("***Process:" + arkS + "<<");
+        if (done(arkS)) {
+            return RestoreAction.complete;
+        }
+        if (DEBUG) System.out.println("***Process:" + arkS + "<<");
         try {
             Identifier ark = new Identifier(arkS);
             Integer restored = restoreObject.restore(ark);
             if (restored == null) {
-                System.out.println(MESSAGE + "ark not found:" + ark);
-                missCnt++;
-                return;
+                if (DEBUG) System.out.println(MESSAGE + "ark not found:" + ark);
+                return RestoreAction.missing;
             }
             if (restored != 0) {
-                System.out.println(MESSAGE + "restore in progress:" + ark);
-                restoreCnt++;
-                return;
+                if (DEBUG) System.out.println(MESSAGE + "restore in progress:" + ark);
+                return RestoreAction.restore;
             }
             cmc.copyObject(arkS);
-            copyCnt++;
-            
+            return RestoreAction.copied;
+                
         } catch (TException tex) {
             System.out.println("TException:" + tex);
             tex.printStackTrace();
+            return RestoreAction.error;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
             ex.printStackTrace();
-            
+            return RestoreAction.error;
         }
+    }
+    
+    public void dump(String header) 
+    {
+            
+            String msg =  MESSAGE + header + "\n"
+                    + " - listFile:" + listFile.getAbsolutePath() + "\n"
+                    + " - nodeName:" + nodeName + "\n"
+                    + " - inContainer:" + inContainer + "\n"
+                    + " - skipCnt:" + skipCnt + "\n"
+                    + " - stopAfterCnt:" + stopAfterCnt + "\n"
+                    + " - inCnt:" + inCnt + "\n"
+                    + " - restoreCnt:" + restoreCnt + "\n"
+                    + " - copyCnt:" + copyCnt + "\n"
+                    + " - missCnt:" + missCnt + "\n"
+                    + " - doneCnt:" + doneCnt + "\n";
+            
+            System.out.println(msg);
+            logger.logMessage(msg, 1, true);
     }
     
 }

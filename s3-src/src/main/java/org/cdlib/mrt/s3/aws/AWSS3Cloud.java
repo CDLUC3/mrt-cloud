@@ -571,14 +571,14 @@ public class AWSS3Cloud
         
         try {
             response.set(container, key);
-            System.out.println("awsRestore"
+            if (DEBUG) System.out.println("awsRestore"
                     + " - container:" + container
                     + " - key:" + key
             );
             Properties objectProp = getObjectMeta(container, key);
             // object found
             if (objectProp.size() > 0 ) {
-                System.out.println(PropertiesUtil.dumpProperties("awsRestore", objectProp));
+                logger.logMessage(PropertiesUtil.dumpProperties("awsRestore", objectProp), 10,true);
                 String msg = "";
                 response.setFromProp(objectProp);
                 String storageClass = objectProp.getProperty("storageClass");
@@ -588,7 +588,7 @@ public class AWSS3Cloud
                 if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
                     //no previous restore
                     if (ongoingRestore == null) {
-                        System.out.println("values:\n"
+                        if (DEBUG) System.out.println("values:\n"
                             + " - bucket=" + container + "\n"
                             + " - key=" + key + "\n"
                         );
@@ -599,13 +599,13 @@ public class AWSS3Cloud
                     } else {
                         msg = "Requested item in Glacier - restore in process" ;
                     }
-                    System.out.println("***awsRestore:" + msg);
+                    logger.logMessage("awsRestore:(" + key + "):"+ msg, 5,true);
                     return false;
                     
                                 // content found
                 } else {
                     msg = "no restore needed";
-                    System.out.println("***awsRestore:" + msg);
+                    logger.logMessage("awsRestore:(" + key + "):"+ msg, 5,true);
                     return true;
                 }
                 

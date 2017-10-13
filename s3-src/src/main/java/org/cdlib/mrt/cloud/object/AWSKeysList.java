@@ -72,6 +72,7 @@ public class AWSKeysList
 {
     protected static final String NAME = "AWSKeysList";
     protected static final String MESSAGE = NAME + ": ";
+    private static final boolean DEBUG = false;
     //protected static final String testFileS = "/apps/replic/tomcat-28080/webapps/test/big/producer/AS020-VTQ0173-M.mp4";
     protected String bucket = null;
     protected LoggerInf logger = null; 
@@ -110,7 +111,7 @@ public class AWSKeysList
     {
         
         try {
-            System.out.println(MESSAGE  + "awsKeyList"
+            if (DEBUG) System.out.println(MESSAGE  + "awsKeyList"
                     + " - bucket:" + bucket
                     + " - listPrefix:" + listPrefix
             );
