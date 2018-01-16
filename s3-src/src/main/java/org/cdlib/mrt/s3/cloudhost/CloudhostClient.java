@@ -46,6 +46,7 @@ import org.cdlib.mrt.utility.TException;
 
 import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.HTTPUtil;
+import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.URLEncoder;
 
 /**
@@ -316,6 +317,11 @@ public class CloudhostClient
         throws TException
     {
         File tmp = null;
+        if(DEBUG) System.out.println("***CloudhostClient add:"
+                + " - base:" + base
+                + " - node:" + node
+                + " - key:" + key
+        );
         try {
             String urlS = base + "/content/" + node +  "?t=anvl";
             tmp = FileUtil.getTempFile("anvl", ".properties");
@@ -323,6 +329,7 @@ public class CloudhostClient
             prop.setProperty("key", key);
             HashMap<String, File> fileParts = new HashMap();
             fileParts.put("data", data);
+            if(DEBUG) System.out.print(PropertiesUtil.dumpProperties("***add dump", prop));
             InputStream inStream = HTTPUtil.postMultipartObject2(urlS, prop, fileParts, 360000);
             FileUtil.stream2File(inStream, tmp);
             CloudhostAddState state = new CloudhostAddState(tmp);

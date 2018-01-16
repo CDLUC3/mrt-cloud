@@ -104,10 +104,10 @@ public class CloudhostAPI
             }
             String bucketName = response.getBucketName();
             String key = response.getStorageKey();
-            if (DEBUG)System.out.println("FILE " 
-                    + " - size:" + inputFile.length()
-                    + " - bucket:" + bucketName
-                    + " - key:" + key
+            if (DEBUG)System.out.println("***putObject: FILE " 
+                    + " - size:" + inputFile.length() + "\n"
+                    + " - bucket:" + bucketName + "\n"
+                    + " - key:" + key + "\n"
             );
             Properties objectMeta = getObjectMeta(bucketName, key);
             String fileSha256 = CloudUtil.getDigestValue("sha256", inputFile, logger);
@@ -487,7 +487,10 @@ public class CloudhostAPI
         Properties prop = new Properties();
         try {
             
-            
+            if (DEBUG) System.out.println("***getObjectMeta"
+                    + " - bucketName:" + bucketName + "\n"
+                    + " - key:" + key + "\n"
+            );
             CloudhostMetaState state = CloudhostClient.getMeta(base, getNode(bucketName), key, logger);
             prop = state.getProp();
             if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("getObjectMeta", prop));
