@@ -64,7 +64,7 @@ public class ExtractUnique {
     protected long numContainers = 0;
     protected long fileCnt = 0;
     protected LoggerInf logger = null;
-    protected ArrayList<ContainerInfo> containers = new  ArrayList();
+    protected ArrayList<ContainerInfo> containers = new  ArrayList<>();
     protected long maxout = 5000000;
     
     

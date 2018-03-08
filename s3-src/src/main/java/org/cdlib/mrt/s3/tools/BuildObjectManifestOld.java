@@ -106,7 +106,7 @@ public class BuildObjectManifestOld {
             //String objectIDS = objectID.getValue();
             CloudList cloudList = getObjectList(objectIDS);
             ArrayList<CloudList.CloudEntry> entries = cloudList.getList();
-            ArrayList<FileComponent> components = new ArrayList(entries.size());
+            ArrayList<FileComponent> components = new ArrayList<>(entries.size());
             for (CloudList.CloudEntry entry : entries) {
                 FileComponent component = buildComponent(objectIDS, entry);
                 if (component == null) continue;

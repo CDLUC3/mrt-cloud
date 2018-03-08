@@ -85,10 +85,10 @@ public class AWSKeysList
         s3Client = new AmazonS3Client(new InstanceProfileCredentialsProvider());
     }
     
-    public List process(Identifier ark)
+    public List<String> process(Identifier ark)
         throws TException
     {
-        ArrayList keys = new ArrayList();
+        ArrayList<String> keys = new ArrayList<>();
         if (ark == null) {
             throw new TException.INVALID_OR_MISSING_PARM("ARK missing");
         }
@@ -101,7 +101,7 @@ public class AWSKeysList
         }
     }
     
-    public static List awsKeyList (
+    public static List<String> awsKeyList (
             AmazonS3 s3Client,
             String bucket,
             String listPrefix,

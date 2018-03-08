@@ -136,7 +136,7 @@ public class BuildObjectManifest {
         throws TException
     {
         try {
-            HashMap <String, FileComponent> hashComponents = new HashMap();
+            HashMap <String, FileComponent> hashComponents = new HashMap<String, FileComponent>();
             Identifier objectID = new Identifier(objectIDS);
             VersionMap map = new VersionMap(objectID, logger);
             for (int version=1; true; version++) {
@@ -164,7 +164,7 @@ public class BuildObjectManifest {
             List<FileComponent> components)
         throws TException
     {
-        ArrayList<FileComponent> merge = new ArrayList(components.size());
+        ArrayList<FileComponent> merge = new ArrayList<>(components.size());
         for (FileComponent component : components) {
             String id = component.getIdentifier();
             hashComponents.put(id, component);
@@ -176,7 +176,7 @@ public class BuildObjectManifest {
         return merge;
     }
     
-    protected ArrayList buildVersion(VersionMap map, String objectIDS, int version)
+    protected ArrayList<FileComponent> buildVersion(VersionMap map, String objectIDS, int version)
         throws TException
     {
         try {
@@ -184,7 +184,7 @@ public class BuildObjectManifest {
             String prefix = objectIDS + "|" + version;
             CloudList cloudList = getObjectList(prefix);
             ArrayList<CloudList.CloudEntry> entries = cloudList.getList();
-            ArrayList<FileComponent> components = new ArrayList(entries.size());
+            ArrayList<FileComponent> components = new ArrayList<>(entries.size());
             for (CloudList.CloudEntry entry : entries) {
                 FileComponent component = buildComponent(objectIDS, entry);
                 if (component == null) continue;

@@ -61,7 +61,7 @@ public class NodeIO
     protected static final String MESSAGE = NAME + ": ";
     private static boolean DEBUG = false;
     
-    protected HashMap<Long,AccessNode> map = new HashMap();
+    protected HashMap<Long,AccessNode> map = new HashMap<>();
     protected String nodeName = null;
     protected LoggerInf logger = null;
     

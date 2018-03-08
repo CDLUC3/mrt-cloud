@@ -327,7 +327,7 @@ public class CloudhostClient
             tmp = FileUtil.getTempFile("anvl", ".properties");
             Properties prop = new Properties();
             prop.setProperty("key", key);
-            HashMap<String, File> fileParts = new HashMap();
+            HashMap<String, File> fileParts = new HashMap<>();
             fileParts.put("data", data);
             if(DEBUG) System.out.print(PropertiesUtil.dumpProperties("***add dump", prop));
             InputStream inStream = HTTPUtil.postMultipartObject2(urlS, prop, fileParts, 360000);

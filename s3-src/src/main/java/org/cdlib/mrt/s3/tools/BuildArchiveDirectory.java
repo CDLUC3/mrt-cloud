@@ -77,7 +77,7 @@ public class BuildArchiveDirectory
     
     protected String storageClass = null;
     protected CloudList versionCloudList = null;
-    protected HashMap<String, String> filter = new HashMap();
+    protected HashMap<String, String> filter = new HashMap<>();
     public BuildArchiveDirectory(
             String storageClass,
             CloudStoreInf inService,

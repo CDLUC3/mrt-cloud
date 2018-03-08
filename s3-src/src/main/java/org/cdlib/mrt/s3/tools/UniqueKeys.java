@@ -77,7 +77,7 @@ public class UniqueKeys {
     public List<String> getKeys(String startKey, int outCnt)
         throws TException
     {
-        ArrayList<String> keyList = new ArrayList(outCnt);
+        ArrayList<String> keyList = new ArrayList<>(outCnt);
         CloudResponse response = cloud.getObjectList(container, startKey, outCnt);
         CloudList list = response.getCloudList();
         List<CloudList.CloudEntry> entryList = list.getList();
@@ -95,7 +95,7 @@ public class UniqueKeys {
                 + " - returnCnt=" + returnCnt
                 + " - delimCnt=" + delimCnt
                 );
-        ArrayList<String> returnList = new ArrayList(returnCnt);
+        ArrayList<String> returnList = new ArrayList<String>(returnCnt);
         String lastStartKey = startKey;
         String lastUnique = "";
         while (true) {
@@ -127,7 +127,7 @@ public class UniqueKeys {
             String lastUnique)
         throws TException
     {
-        ArrayList<String> uniqueList = new ArrayList();
+        ArrayList<String> uniqueList = new ArrayList<String>();
         for (String key : keys) {
             String unique = getSegmentKey(key, delimCnt);
             if (DEBUG) System.out.println("getUniqueSegments:"

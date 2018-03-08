@@ -64,7 +64,7 @@ public class ValidateList
     protected final File listFile;
     protected final String nodeName;
     protected final long [] nodes;
-    protected HashMap<Long, Node> map = new HashMap();
+    protected HashMap<Long, Node> map = new HashMap<>();
                     
     public ValidateList(
             String nodeName,

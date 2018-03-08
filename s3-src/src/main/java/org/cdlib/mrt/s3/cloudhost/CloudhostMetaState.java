@@ -103,7 +103,7 @@ public class CloudhostMetaState
 
     public Map<String, String> getMeta() {
         if (prop == null) return null;
-        HashMap<String, String> list = new HashMap();
+        HashMap<String, String> list = new HashMap<>();
         Set set = prop.keySet();
         for (Object keyO : set) {
             String key = (String)keyO;
