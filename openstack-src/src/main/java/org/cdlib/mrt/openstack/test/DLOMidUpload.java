@@ -35,52 +35,12 @@ package org.cdlib.mrt.openstack.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-
-
-import org.cdlib.mrt.cloud.CloudProperties;
-import org.cdlib.mrt.utility.URLEncoder;
 import org.cdlib.mrt.openstack.utility.OpenStackCmdAbs;
 import org.cdlib.mrt.openstack.utility.OpenStackCmdDLO;
-import org.cdlib.mrt.openstack.utility.ResponseValues;
-import org.cdlib.mrt.openstack.utility.XValues;
 import org.cdlib.mrt.openstack.utility.SegmentValues;
 
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.Header;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.protocol.HTTP;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.StatusLine;
-import org.apache.http.Header;
 import org.cdlib.mrt.openstack.utility.CloudConst;
-import org.cdlib.mrt.utility.HTTPUtil;
-import org.cdlib.mrt.utility.PropertiesMapper;
-import org.cdlib.mrt.utility.PropertiesUtil;
-import org.cdlib.mrt.utility.StringUtil;
-import org.cdlib.mrt.utility.TException;
 
 public class DLOMidUpload {
     protected static final String NAME = "DLOMidUpload";

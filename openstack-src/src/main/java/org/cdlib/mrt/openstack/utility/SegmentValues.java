@@ -47,7 +47,7 @@ import org.cdlib.mrt.utility.TException;
     
 public class SegmentValues
 {
-    private ArrayList<SegmentValue> list = new ArrayList();
+    private ArrayList<SegmentValue> list = new ArrayList<>();
     private String container = null;
     
     public SegmentValues(String container)
