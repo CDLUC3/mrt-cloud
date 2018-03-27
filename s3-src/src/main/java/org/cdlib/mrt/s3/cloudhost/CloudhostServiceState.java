@@ -50,6 +50,8 @@ public class CloudhostServiceState
 
     protected long node = 0;
     protected String bucket = null;
+    protected String error = null;
+    protected Boolean ok = null;
 
     public CloudhostServiceState() { }
     
@@ -65,6 +67,9 @@ public class CloudhostServiceState
     {
         setBucket(getPropEx("bucket", prop));
         setNode(getLongEx("node", prop));
+        if (getProp("error", prop) == null) {
+            setError(getProp("error", prop));
+        }
     }
     
 
@@ -86,7 +91,24 @@ public class CloudhostServiceState
         this.node = node;
         return this;
     }
-    
+
+    public String getError() {
+        return error;
+    }
+
+    public CloudhostServiceState setError(String error) {
+        this.error = error;
+        return this;
+    }
+
+    public Boolean getOk() {
+        return ok;
+    }
+
+    public CloudhostServiceState setOk(Boolean ok) {
+        this.ok = ok;
+        return this;
+    }
     
     public String dump(String header)
     {
