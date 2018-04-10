@@ -32,8 +32,8 @@ package org.cdlib.mrt.s3.pairtree;
 
 
 
-import org.cdlib.mrt.s3.service.*;
-
+import org.cdlib.mrt.s3.service.CloudResponse;
+import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.core.Identifier;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +53,6 @@ import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.s3.service.CloudStoreAbs;
 import org.cdlib.mrt.s3.service.CloudUtil;
 import org.cdlib.mrt.utility.FileUtil;
-import org.cdlib.mrt.utility.PairtreeUtil;
 import org.cdlib.mrt.utility.PropertiesUtil;
 
 /**
@@ -122,7 +121,7 @@ public class PairtreeCloud
                     File outFile = buildPairDirectoryRetry(baseDir, parts[0], 5);
                     for (int p=1; p<parts.length ; p++) {
                         String part = parts[p];
-                        //String name = PairtreeUtil.getPairName(part);
+                        //String name = PairtreeUtilLocal.getPairName(part);
                         String name = part;
                         outFile = new File(outFile, name);
                     }
@@ -132,7 +131,7 @@ public class PairtreeCloud
                 }
                 return buildPairDirectoryRetry(baseDir, pairKey, 5);
             } else {
-                String keyName = PairtreeUtil.getPairName(key);
+                String keyName = PairtreeUtilLocal.getPairName(key);
                 File retFile = new File(baseDir, keyName);
                 retFile.mkdir();
                 return retFile;
@@ -154,10 +153,10 @@ public class PairtreeCloud
                 int endArk = key.indexOf('|');
                 if (endArk >= 0) {
                     String [] parts = key.split("\\|");
-                    File outFile = PairtreeUtil.buildPairDirectory(baseDir, parts[0]);
+                    File outFile = PairtreeUtilLocal.buildPairDirectory(baseDir, parts[0]);
                     for (int p=1; p<parts.length ; p++) {
                         String part = parts[p];
-                        //String name = PairtreeUtil.getPairName(part);
+                        //String name = PairtreeUtilLocal.getPairName(part);
                         String name = part;
                         outFile = new File(outFile, name);
                     }
@@ -167,9 +166,9 @@ public class PairtreeCloud
                     //outFile.mkdirs();
                     return outFile;
                 }
-                return PairtreeUtil.getPairDirectory(baseDir, pairKey);
+                return PairtreeUtilLocal.getPairDirectory(baseDir, pairKey);
             } else {
-                String keyName = PairtreeUtil.getPairName(key);
+                String keyName = PairtreeUtilLocal.getPairName(key);
                 File retFile = new File(baseDir, keyName);
                 retFile.mkdir();
                 return retFile;
@@ -194,7 +193,7 @@ public class PairtreeCloud
         String msg = " - baseDir:" + baseDir.getAbsolutePath()
                     + " - pairKey:" + pairKey;
         for (int i=1; i<=retryCnt; i++) {
-            dir = PairtreeUtil.buildPairDirectory(baseDir, pairKey);
+            dir = PairtreeUtilLocal.buildPairDirectory(baseDir, pairKey);
             if (dir != null) {
                 if (i > 1) {
                     System.out.println("***RECOVER(" + i + ") - buildPairDirectoryRetry:"
@@ -468,7 +467,7 @@ public class PairtreeCloud
                 throw new TException.REQUESTED_ITEM_NOT_FOUND("Unable to delete object - object not found:" 
                         + pairDir.getCanonicalPath());
             }
-            PairtreeUtil.removePairDirectory(pairDir);
+            PairtreeUtilLocal.removePairDirectory(pairDir);
             return response;
             
         } catch (Exception ex) {

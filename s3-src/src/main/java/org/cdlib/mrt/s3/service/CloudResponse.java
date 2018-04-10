@@ -476,7 +476,7 @@ public class CloudResponse
     public void setStorageClassConverted(boolean storageClassConverted) {
         this.storageClassConverted = storageClassConverted;
     }
-    
+
     
 }
 

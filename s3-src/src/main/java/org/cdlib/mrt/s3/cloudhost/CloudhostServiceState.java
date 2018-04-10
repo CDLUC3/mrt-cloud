@@ -33,6 +33,7 @@ import java.io.File;
 import java.util.Properties;
 import java.io.Serializable;
 import static org.cdlib.mrt.s3.cloudhost.CloudhostStateAbs.getProperties;
+import org.cdlib.mrt.utility.GetProp;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.StateInf;
 import org.cdlib.mrt.utility.StringUtil;
@@ -65,8 +66,13 @@ public class CloudhostServiceState
     public void anvlSet(Properties prop)
        throws TException
     {
+        //System.out.println(PropertiesUtil.dumpProperties(NAME, prop));
         setBucket(getPropEx("bucket", prop));
         setNode(getLongEx("node", prop));
+        if (getProp("ok", prop) != null) {
+            Boolean okB = GetProp.getBool(prop, "ok");
+            setOk(okB);
+        }
         if (getProp("error", prop) == null) {
             setError(getProp("error", prop));
         }
@@ -112,10 +118,17 @@ public class CloudhostServiceState
     
     public String dump(String header)
     {
-        return header + ":"
+        header = header + ":"
                 + " - bucket=" + getBucket()
                 + " - node=" + getNode()
             ;
+        if (ok != null) {
+            header = header 
+                + " - ok=" + getOk()
+                + " - error=" + getError()
+            ;
+        }
+        return header;
     }
 
 }
