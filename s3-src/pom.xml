@@ -27,7 +27,7 @@
     <!-- force UTF-8 -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.compiler>1.7</java.compiler>
+        <java.compiler>1.8</java.compiler>
     </properties>
     <build>
         <plugins>
