@@ -187,6 +187,7 @@ public class CloudhostFixityState
         return header + ":"
                 + " - bucket=" + getBucket()
                 + " - key=" + getKey()
+                + " - ok=" + isOk()
                 + " - error=" + getError()
                 + " - checksumType=" + getChecksumType()
                 + " - dataChecksum=" + getDataChecksum()
