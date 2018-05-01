@@ -43,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import org.cdlib.mrt.cloud.object.StateHandler;
 
 import org.cdlib.mrt.utility.Checksums;
 
@@ -747,6 +748,21 @@ public class PairtreeCloud
         } catch (Exception ex) {
             handleException(response, ex);
             return null;
+        }
+    }
+        
+    @Override
+    public StateHandler.RetState getState (
+            String bucketName)
+        throws TException
+    {
+        StateHandler stateHandler = null;
+        try {
+            stateHandler = StateHandler.getStateHandler(this, bucketName, logger);
+            return stateHandler.process();
+            
+        } catch (Exception ex) {
+            return StateHandler.getError(bucketName, NAME, "Error getState:" + ex);
         }
     }
     

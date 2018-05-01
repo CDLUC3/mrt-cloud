@@ -85,7 +85,9 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
+import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import java.util.List;
+import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.MessageDigestValue;
@@ -1155,6 +1157,21 @@ public class AWSS3Cloud
         } catch (Exception ex) {
             handleException(response, ex);
             return null;
+        }
+    }
+        
+    @Override
+    public StateHandler.RetState getState (
+            String bucketName)
+        throws TException
+    {
+        StateHandler stateHandler = null;
+        try {
+            stateHandler = StateHandler.getStateHandler(this, bucketName, logger);
+            return stateHandler.process();
+            
+        } catch (Exception ex) {
+            return StateHandler.getError(bucketName, NAME, "Error getState:" + ex);
         }
     }
 

@@ -218,7 +218,7 @@ public abstract class CloudStoreAbs
         CloudResponse responseDigest = null;
         InputStream inStream = null;
         try {
-            responseDigest = new CloudResponse();
+            responseDigest = new CloudResponse(bucketName, key);
             
             inStream = getObject(bucketName, key, responseDigest);
             String checksumType = digest.getJavaAlgorithm();
@@ -227,6 +227,9 @@ public abstract class CloudStoreAbs
             FixityTests.FixityResult result = test.validateSizeChecksum(checksum, checksumType, length);
             boolean match = result.checksumMatch && result.fileSizeMatch;
             responseDigest.setMatch(match);
+            if (!match) {
+                responseDigest.setErrMsg(result.dump("validateDigest"));
+            }
             return responseDigest;
             
         } catch (Exception ex) {

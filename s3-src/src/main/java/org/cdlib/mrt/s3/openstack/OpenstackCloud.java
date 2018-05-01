@@ -43,6 +43,7 @@ import java.util.Properties;
 
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.CloudProperties;
+import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.openstack.utility.CloudConst;
 import org.cdlib.mrt.openstack.utility.HttpGetOpenStack;
 import org.cdlib.mrt.openstack.utility.OpenStackAuth;
@@ -50,6 +51,7 @@ import org.cdlib.mrt.openstack.utility.OpenStackCmdAbs;
 import org.cdlib.mrt.openstack.utility.OpenStackCmdDLO;
 import org.cdlib.mrt.openstack.utility.ResponseValues;
 import org.cdlib.mrt.openstack.utility.SegmentValues;
+import org.cdlib.mrt.openstack.utility.XValues;
 import org.cdlib.mrt.utility.FixityTests;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.LoggerInf;
@@ -624,6 +626,23 @@ public class OpenstackCloud
         throws TException
     {
         return getObjectList(container, null);
+    }
+        
+    
+        
+    @Override
+    public StateHandler.RetState getState (
+            String bucketName)
+        throws TException
+    {
+        StateHandler stateHandler = null;
+        try {
+            stateHandler = StateHandler.getStateHandler(this, bucketName, logger);
+            return stateHandler.process();
+            
+        } catch (Exception ex) {
+            return StateHandler.getError(bucketName, NAME, "Error getState:" + ex);
+        }
     }
     
     public CloudResponse validateMd5(String container, String key, String inMd5)

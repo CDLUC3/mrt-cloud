@@ -63,6 +63,7 @@ import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 
 
 import java.util.List;
+import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.DateState;
 import static org.cdlib.mrt.s3.store.StoreClient.MESSAGE;
 import org.cdlib.mrt.utility.DateUtil;
@@ -397,6 +398,21 @@ public class StoreCloud
         throws TException
     {
         throw new TException.UNIMPLEMENTED_CODE(MESSAGE + "getObjectList - not supported");
+    }
+        
+    @Override
+    public StateHandler.RetState getState (
+            String bucketName)
+        throws TException
+    {
+        StateHandler stateHandler = null;
+        try {
+            stateHandler = StateHandler.getStateHandler(this, bucketName, logger);
+            return stateHandler.process();
+            
+        } catch (Exception ex) {
+            return StateHandler.getError(bucketName, NAME, "Error getState:" + ex);
+        }
     }
     
     @Override

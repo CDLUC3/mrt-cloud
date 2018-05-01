@@ -33,6 +33,7 @@ import org.cdlib.mrt.core.MessageDigest;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
+import org.cdlib.mrt.cloud.object.StateHandler;
 
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.core.Identifier;
@@ -277,6 +278,16 @@ public interface CloudStoreInf
      * @throws TException 
      */
     public CloudResponse getObjectList (
+            String bucketName)
+        throws TException;
+    
+    /**
+     * Return state of cloud store manager
+     * @param bucketName bucket container
+     * @return
+     * @throws TException 
+     */
+    public StateHandler.RetState getState (
             String bucketName)
         throws TException;
 

@@ -54,6 +54,7 @@ import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 
 
 import java.util.List;
+import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.PropertiesUtil;
@@ -110,6 +111,12 @@ public class CloudhostAPI
                     + " - key:" + key + "\n"
             );
             Properties objectMeta = getObjectMeta(bucketName, key);
+            if (objectMeta == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "putObject objectMeta null:"
+                            + " - bucket:" + bucketName
+                            + " - key:" + key
+                );
+            }
             String fileSha256 = CloudUtil.getDigestValue("sha256", inputFile, logger);
             if (objectMeta.size() > 0) {
                 String storeSha256= objectMeta.getProperty("sha256");
@@ -601,6 +608,43 @@ public class CloudhostAPI
         } catch (Exception ex) {
             handleException(response, ex);
             return null;
+        }
+    }
+    
+    
+    /**
+     * Return status of cloud
+     * @param bucketName s3 bucket - rackspace container
+     * @return null=not supported or unable, true=running, false=failed condition occured
+     * @throws TException 
+     */
+    public Boolean getStateLocal (
+            String bucketName)
+        throws TException
+    {
+        try {
+            
+            CloudhostServiceState state = CloudhostClient.getService(base, 0, logger);
+            return state.getOk();
+            
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+    
+        
+    @Override
+    public StateHandler.RetState getState (
+            String bucketName)
+        throws TException
+    {
+        StateHandler stateHandler = null;
+        try {
+            stateHandler = StateHandler.getStateHandler(this, bucketName, logger);
+            return stateHandler.process();
+            
+        } catch (Exception ex) {
+            return StateHandler.getError(bucketName, NAME, "Error getState:" + ex);
         }
     }
     
