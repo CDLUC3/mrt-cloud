@@ -59,7 +59,7 @@
         </dependency>
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
-            <artifactId>mrt-openstack</artifactId>
+            <artifactId>mrt-openstackpub</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
