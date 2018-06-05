@@ -226,6 +226,12 @@ accessMode=near-line
 * 
             nodeIO = NodeIO.getNodeIO(nodeName, logger);
             NodeIO.AccessNode accessNode = nodeIO.getAccessNode(nodeNumber);
+            if (accessNode == null) {
+               throw new TException.REQUESTED_ITEM_NOT_FOUND("test fails:"
+                  + " - nodeName:" + nodeName
+                  + " - nodeNumber:" + nodeNumber
+               );
+            }
             CloudStoreInf service = accessNode.service;
             String container = accessNode.container;
             StateHandler stateHandler = StateHandler.getStateHandler(service, container, KEY, logger);
