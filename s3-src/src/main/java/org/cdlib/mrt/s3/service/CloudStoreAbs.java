@@ -167,7 +167,7 @@ public abstract class CloudStoreAbs
             buf.append("Exception:" + exception);
             
         } else {
-            exception.printStackTrace();
+            dumpException("Cloudhost", exception);
             buf.append("NAME=" + exception.getClass().getName());
             buf.append("Exception:" + exception);
             
@@ -178,6 +178,19 @@ public abstract class CloudStoreAbs
             System.out.println(buf.toString());
         }
         logger.logError(buf.toString(), 5);
+    }
+    
+    public static void dumpException(String header, Exception exception) 
+    {
+        StackTraceElement ele[] = exception.getStackTrace();
+        System.out.println("\n***" + header + " Exception: " + exception);
+        int i=0;
+        for (StackTraceElement e : ele) {
+            i++;
+            String d = e.toString();
+            if (!d.contains("org.cdlib.mrt")) continue;
+            System.out.println("(" + i + "):" + e.toString());
+        }
     }
     
     public CloudResponse validateMd5(String bucketName, String key, String inMd5)

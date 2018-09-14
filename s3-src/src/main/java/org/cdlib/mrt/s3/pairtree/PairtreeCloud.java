@@ -633,8 +633,7 @@ public class PairtreeCloud
             return fileProp;
             
         } catch (Exception ex) {
-                System.out.println("HERE Exception");
-            ex.printStackTrace();
+            dumpException("getObjectMeta", ex);
             return null;
         }
     }

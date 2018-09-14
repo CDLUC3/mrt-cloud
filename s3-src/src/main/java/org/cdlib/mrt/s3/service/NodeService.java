@@ -46,6 +46,7 @@ public class NodeService
 {    
     protected static final String NAME = "NodeService";
     protected static final String MESSAGE = NAME + ": ";
+    private boolean DEBUG = false;
     protected NodeIO.AccessNode cloudNode = null;
     protected CloudStoreInf service = null;
     protected String nodeName = null;
@@ -79,7 +80,7 @@ public class NodeService
         service = cloudNode.service;
         bucket = cloudNode.container;
         this.node = node;
-        System.out.println(cloudNode.dump("NodeService"));
+        if (DEBUG) System.out.println(cloudNode.dump("NodeService"));
     }
     
     public NodeService(NodeIO.AccessNode cloudNode, long node, LoggerInf logger)
@@ -92,7 +93,7 @@ public class NodeService
         service = cloudNode.service;
         bucket = cloudNode.container;
         this.node = node;
-        System.out.println(cloudNode.dump("NodeService"));
+        if (DEBUG) System.out.println(cloudNode.dump("NodeService"));
     }
     
     public Properties getServiceProperties()

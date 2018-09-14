@@ -720,6 +720,19 @@ public class NodeIO
             cnt++;
         }
     }
+    
+    public void printNodes(String header, long nodeNumber)
+    {
+        System.out.println("\nNodeIO:" + header);
+        int cnt = 0;
+        Collection<AccessNode> collection = getCollection();
+        for (AccessNode node : collection) {
+            if (node.nodeNumber == nodeNumber) {
+                System.out.println(node.dump("--" + nodeNumber + "--"));
+                break;
+            }
+        }
+    }
 
     public String getNodeName() {
         return nodeName;

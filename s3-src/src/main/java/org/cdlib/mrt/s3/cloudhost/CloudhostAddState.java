@@ -45,7 +45,7 @@ public class CloudhostAddState
         extends CloudhostStateAbs
         implements StateInf, Serializable
 {
-    protected static final String NAME = "PairDeleteState";
+    protected static final String NAME = "CloudhostAddState";
 
     protected boolean added = false;
     protected String bucket = null;
