@@ -40,6 +40,7 @@ public class TestStateHandler {
             list.add(test("nodes-dev", 9001, logger));
             list.add(test("nodes-dev", 5001, logger));
             list.add(test("nodes-ch-ucdn", 7013, logger));
+            list.add(test("nodes-ch-ucdn", 7032, logger));
             for (Test result : list) {
                 System.out.println(result.state.dump("Node: " + result.node));
             }

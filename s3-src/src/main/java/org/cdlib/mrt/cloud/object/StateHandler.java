@@ -185,14 +185,12 @@ public class StateHandler
         throws TException
     {
         Boolean isAlive = manager.isAlive();
-        System.out.println("***isAlive:" 
-                + " - isAlive=" + isAlive
+        System.out.println("***(" + bucket + ")manager.isAlive:" + isAlive
         );
         if (isAlive == null) return true;
         if (isAlive) return true;
         error = "Service tested and not alive"
                                 + " - bucket:" + bucket
-                                + " - key:" + key
                                 ;
         return setError(error);
     }
