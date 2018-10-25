@@ -416,6 +416,12 @@ public class StoreCloud
     }
     
     @Override
+    public Boolean isAlive()
+    {
+        return null;
+    }
+    
+    @Override
     public boolean isAlphaNumericKey() 
     {
         return ALPHANUMERIC;

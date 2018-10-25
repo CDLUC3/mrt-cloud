@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.Socket;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
@@ -253,6 +255,52 @@ public abstract class CloudStoreAbs
             handleException(responseDigest, ex);
             return null;
         }
+    }
+        
+    /**
+     * Determine if host:port  is available
+     * @param testUrlS - base url for site to be tested
+     * @return true=alive; false=not alive; null=test not performed
+     */
+    public static Boolean isAliveTest(String testUrlS)
+    {
+        String aliveUrl = null;
+        Integer alivePort = null;
+        if (testUrlS == null) {
+            return null;
+        }
+        
+        URL testUrl = null;
+        try {
+            testUrl = new URL(testUrlS);
+            aliveUrl = testUrl.getHost();
+            alivePort = testUrl.getPort();
+            
+        } catch (Exception ex) {
+            return null;
+        }
+        
+        Socket s = null;
+        try {
+            s = new Socket(aliveUrl, alivePort);
+            return true;
+            
+        } catch (Exception ex) {
+            System.out.println("Alive exception:" 
+                    + " - aliveUrl=" + aliveUrl 
+                    + " - alivePort=" + alivePort
+                    + " - Exception:" + ex.toString()
+            );
+            /* ignore */
+            
+        } finally {
+            if (s != null) {
+                try {
+                    s.close();
+                } catch (Exception ex) { }
+            }
+        }
+        return false;
     }
 
     public Properties getCloudProp() {

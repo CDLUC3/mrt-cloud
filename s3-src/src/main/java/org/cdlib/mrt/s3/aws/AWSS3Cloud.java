@@ -66,6 +66,7 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
@@ -1236,6 +1237,12 @@ public class AWSS3Cloud
         }
         
         handleException(response, exception);
+    }
+    
+    @Override    
+    public Boolean isAlive()
+    {
+        return null;
     }
 
     public AmazonS3 getS3Client() {

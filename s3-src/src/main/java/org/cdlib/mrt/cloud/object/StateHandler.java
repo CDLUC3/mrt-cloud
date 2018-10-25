@@ -37,6 +37,8 @@ import org.cdlib.mrt.s3.service.NodeService;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.Socket;
+import java.net.URL;
 import java.util.Properties;
 import org.cdlib.mrt.core.FileComponent;
 import org.cdlib.mrt.core.FileContent;
@@ -122,6 +124,9 @@ public class StateHandler
         throws TException
     {
         try {
+            if (!testIsAlive()) {
+                return retState;
+            }
             if (false && !initialMeta(key)) {
                 return retState;
             }
@@ -174,6 +179,22 @@ public class StateHandler
         }
         System.out.println("isError2:" + response.getErrMsg());
         return true;
+    }
+    
+    protected boolean testIsAlive() 
+        throws TException
+    {
+        Boolean isAlive = manager.isAlive();
+        System.out.println("***isAlive:" 
+                + " - isAlive=" + isAlive
+        );
+        if (isAlive == null) return true;
+        if (isAlive) return true;
+        error = "Service tested and not alive"
+                                + " - bucket:" + bucket
+                                + " - key:" + key
+                                ;
+        return setError(error);
     }
     
     protected boolean initialMeta(String key)

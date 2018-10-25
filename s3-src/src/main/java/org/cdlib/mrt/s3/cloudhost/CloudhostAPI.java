@@ -640,7 +640,7 @@ public class CloudhostAPI
     {
         StateHandler stateHandler = null;
         try {
-            stateHandler = StateHandler.getStateHandler(this, bucketName, logger);
+            stateHandler = StateHandler.getStateHandler(this, bucketName, base, logger);
             return stateHandler.process();
             
         } catch (Exception ex) {
@@ -703,6 +703,11 @@ public class CloudhostAPI
         }
         
         handleException(response, exception);
+    }
+    
+    public Boolean isAlive()
+    {
+        return isAliveTest(base);
     }
 }
 

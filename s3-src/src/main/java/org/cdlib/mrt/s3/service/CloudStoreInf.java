@@ -321,6 +321,13 @@ public interface CloudStoreInf
         throws TException;
     
     /**
+     * Determine if host:port  is available
+     * @param testUrlS - base url for site to be tested
+     * @return true=alive; false=not alive; null=test not performed
+     */
+    public Boolean isAlive();
+    
+    /**
      * Because of earlier SDSC bug only alpha-numerics could be used in a key.
      * true=alpha-numeric key, false=ASCII (current default)
      * @return 

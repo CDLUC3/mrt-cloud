@@ -789,6 +789,12 @@ public class PairtreeCloud
         }
     }
     
+    @Override
+    public Boolean isAlive()
+    {
+        return true;
+    }
+    
     public boolean isAlphaNumericKey() 
     {
         return ALPHANUMERIC;

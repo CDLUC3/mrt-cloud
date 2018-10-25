@@ -54,6 +54,7 @@ public class TestStateHandler {
             
         NodeIO nodeIO = null;
         try {
+            System.out.println("\n***Test>" + nodeNumber);
             nodeIO = NodeIO.getNodeIO(nodeName, logger);
             NodeIO.AccessNode accessNode = nodeIO.getAccessNode(nodeNumber);
             CloudStoreInf service = accessNode.service;

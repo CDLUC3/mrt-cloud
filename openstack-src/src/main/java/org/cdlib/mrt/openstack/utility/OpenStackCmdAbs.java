@@ -1609,4 +1609,9 @@ public abstract class OpenStackCmdAbs {
             HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
             return httpClient;
     }
+    
+    public String getOpenStackHost()
+    {
+        return auth.getOpenStackHost();
+    }
 }

@@ -149,4 +149,8 @@ public class OpenStackAuth {
                  );
         }
     }
+
+    public String getOpenStackHost() {
+        return host;
+    }
 }

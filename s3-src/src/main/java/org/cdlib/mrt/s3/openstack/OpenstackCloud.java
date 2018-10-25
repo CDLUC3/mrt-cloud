@@ -736,6 +736,14 @@ public class OpenstackCloud
         return true;
     }
     
+    @Override
+    public Boolean isAlive()
+    {
+        String host = cmd.getOpenStackHost();
+        host = "https://" + host + ":443";
+        return isAliveTest(host);
+    }
+    
     public boolean isAlphaNumericKey() 
     {
         return ALPHANUMERIC;
