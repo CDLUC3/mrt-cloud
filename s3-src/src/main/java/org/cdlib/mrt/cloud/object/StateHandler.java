@@ -184,7 +184,7 @@ public class StateHandler
     protected boolean testIsAlive() 
         throws TException
     {
-        Boolean isAlive = manager.isAlive();
+        Boolean isAlive = manager.isAlive(bucket);
         System.out.println("***(" + bucket + ")manager.isAlive:" + isAlive
         );
         if (isAlive == null) return true;
@@ -392,6 +392,7 @@ public class StateHandler
         private String key = null;
         private String error = null;
         private Boolean ok = null;
+        private Boolean isAlive = null;
         private long duration = 0;
         public RetState(String bucket, String key, String error) 
         {

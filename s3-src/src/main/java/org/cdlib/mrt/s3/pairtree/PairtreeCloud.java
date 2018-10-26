@@ -790,7 +790,7 @@ public class PairtreeCloud
     }
     
     @Override
-    public Boolean isAlive()
+    public Boolean isAlive(String bucketName)
     {
         return true;
     }

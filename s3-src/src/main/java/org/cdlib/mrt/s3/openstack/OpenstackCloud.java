@@ -737,7 +737,7 @@ public class OpenstackCloud
     }
     
     @Override
-    public Boolean isAlive()
+    public Boolean isAlive(String bucketName)
     {
         String host = cmd.getOpenStackHost();
         host = "https://" + host + ":443";

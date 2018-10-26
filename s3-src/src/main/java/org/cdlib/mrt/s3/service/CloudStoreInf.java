@@ -325,7 +325,7 @@ public interface CloudStoreInf
      * @param testUrlS - base url for site to be tested
      * @return true=alive; false=not alive; null=test not performed
      */
-    public Boolean isAlive();
+    public Boolean isAlive(String bucketName);
     
     /**
      * Because of earlier SDSC bug only alpha-numerics could be used in a key.

@@ -705,7 +705,7 @@ public class CloudhostAPI
         handleException(response, exception);
     }
     
-    public Boolean isAlive()
+    public Boolean isAlive(String bucketName)
     {
         return isAliveTest(base);
     }

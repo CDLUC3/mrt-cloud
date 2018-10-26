@@ -1240,9 +1240,15 @@ public class AWSS3Cloud
     }
     
     @Override    
-    public Boolean isAlive()
+    public Boolean isAlive(String bucketName)
     {
-        return null;
+        boolean exists = false;
+        try {
+            exists = s3Client.doesBucketExist(bucketName);
+            return exists;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 
     public AmazonS3 getS3Client() {

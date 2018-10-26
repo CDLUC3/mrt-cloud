@@ -416,7 +416,7 @@ public class StoreCloud
     }
     
     @Override
-    public Boolean isAlive()
+    public Boolean isAlive(String bucketName)
     {
         return null;
     }
