@@ -1251,6 +1251,12 @@ public class AWSS3Cloud
         }
     }
 
+    @Override    
+    public CloudAPI getType()
+    {
+        return CloudAPI.AWS_S3;
+    }
+
     public AmazonS3 getS3Client() {
         return s3Client;
     }

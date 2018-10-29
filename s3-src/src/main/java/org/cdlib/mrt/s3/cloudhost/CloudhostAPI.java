@@ -705,6 +705,12 @@ public class CloudhostAPI
         handleException(response, exception);
     }
     
+    @Override    
+    public CloudAPI getType()
+    {
+        return CloudAPI.CLOUDHOST;
+    }
+    
     public Boolean isAlive(String bucketName)
     {
         return isAliveTest(base);

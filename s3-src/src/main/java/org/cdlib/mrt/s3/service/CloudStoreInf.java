@@ -44,6 +44,8 @@ import org.cdlib.mrt.core.Identifier;
  */
 public interface CloudStoreInf
 {    
+    public static enum CloudAPI{AWS_S3, SDSC_SWIFT, CLOUDHOST, PAIRTREE, STORE};
+    
     /**
      * Upload cloud object
      * @param bucketName s3 bucket - rackspace container
@@ -326,6 +328,12 @@ public interface CloudStoreInf
      * @return true=alive; false=not alive; null=test not performed
      */
     public Boolean isAlive(String bucketName);
+    
+    /**
+     * Return the API type
+     * @return AWS-S3, SDSC-Swift, Cloudhost, Pairtree
+     */
+    public CloudAPI getType();
     
     /**
      * Because of earlier SDSC bug only alpha-numerics could be used in a key.

@@ -421,6 +421,12 @@ public class StoreCloud
         return null;
     }
     
+    @Override    
+    public CloudAPI getType()
+    {
+        return CloudAPI.STORE;
+    }
+    
     @Override
     public boolean isAlphaNumericKey() 
     {

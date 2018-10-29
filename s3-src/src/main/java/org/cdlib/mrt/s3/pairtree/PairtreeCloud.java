@@ -795,6 +795,12 @@ public class PairtreeCloud
         return true;
     }
     
+    @Override    
+    public CloudAPI getType()
+    {
+        return CloudAPI.PAIRTREE;
+    }
+    
     public boolean isAlphaNumericKey() 
     {
         return ALPHANUMERIC;

@@ -744,6 +744,12 @@ public class OpenstackCloud
         return isAliveTest(host);
     }
     
+    @Override    
+    public CloudAPI getType()
+    {
+        return CloudAPI.SDSC_SWIFT;
+    }
+    
     public boolean isAlphaNumericKey() 
     {
         return ALPHANUMERIC;
