@@ -243,6 +243,7 @@ public class NodeIO
     protected static final String NAME = "NodeIO";
     protected static final String MESSAGE = NAME + ": ";
     private static boolean DEBUG = false;
+    private static boolean DEBUG_ACCESS = false;
     
     protected HashMap<Long,AccessNode> map = new HashMap<>();
     protected String nodeName = null;
@@ -385,7 +386,7 @@ public class NodeIO
             InputStream propStream =  test.getClass().getClassLoader().
                     getResourceAsStream("nodes/" + propName + ".properties");
             if (propStream == null) {
-                System.out.println("Unable to find resource");
+                System.out.println("Unable to find resource:" + propName);
                 return null;
             }
             Properties cloudProp = new Properties();
@@ -511,7 +512,7 @@ public class NodeIO
         throws TException
     {
         CloudStoreInf service = null;
-        System.out.println("getAccessNode:" 
+        if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
                 + " - nodeNumber=" + nodeNumber
                 + " - container=" + container
                 + " - propName=" + propName
@@ -531,9 +532,9 @@ public class NodeIO
                 
             } else if (serviceType.equals("aws")) {
                 String storageClassS = cloudProp.getProperty("storageClass");
-                System.out.println("StorageClassS=" + storageClassS);
+                if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
                 accessMode = cloudProp.getProperty("accessMode");
-                System.out.println("accessMode=" + accessMode);
+                if (DEBUG_ACCESS) System.out.println("accessMode=" + accessMode);
                 service = AWSS3Cloud.getAWSS3(storageClassS, logger);
                 
             } else if (serviceType.equals("pairtree")) {

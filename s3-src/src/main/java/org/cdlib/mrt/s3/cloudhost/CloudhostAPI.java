@@ -373,7 +373,7 @@ public class CloudhostAPI
     {
      try {
             response.set(container, key);
-            System.out.println("awsGet"
+            if (DEBUG) System.out.println("CloudhostAPI"
                     + " - container:" + container
                     + " - key:" + key
             );

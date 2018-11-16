@@ -185,7 +185,7 @@ public class StateHandler
         throws TException
     {
         Boolean isAlive = manager.isAlive(bucket);
-        System.out.println("***" + manager.getType() + "(" + bucket + ")manager.isAlive:" + isAlive
+        if (DEBUG) System.out.println("***" + manager.getType() + "(" + bucket + ")manager.isAlive:" + isAlive
         );
         if (isAlive == null) return true;
         if (isAlive) return true;
