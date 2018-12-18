@@ -145,7 +145,7 @@ public class StateHandler
             if (!delete(key)) {
                 return retState;
             }
-            System.out.println("Delete performed:" + key);
+            if (DEBUG) System.out.println("Delete performed:" + key);
             if (forceTest == 5) {
                 retState.setOk(false);
                 return retState;
