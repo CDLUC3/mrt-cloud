@@ -84,7 +84,7 @@ public class NodeIOTest {
             test("nodes-dev", 9001, logger);
             test("nodes-dev", 5001, logger);
             test("nodes-dev", 6001, logger);
-            test("nodes-ch-ucdn", 7013, logger);
+            //test("nodes-ch-ucdn", 7013, logger);
             assertTrue(true);
             
         } catch (Exception ex) {

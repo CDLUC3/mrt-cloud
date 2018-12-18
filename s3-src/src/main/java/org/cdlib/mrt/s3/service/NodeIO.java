@@ -537,6 +537,18 @@ public class NodeIO
                 if (DEBUG_ACCESS) System.out.println("accessMode=" + accessMode);
                 service = AWSS3Cloud.getAWSS3(storageClassS, logger);
                 
+            } else if (serviceType.equals("minio")) {
+                String accessKey = cloudProp.getProperty("accessKey");
+                String secretKey = cloudProp.getProperty("secretKey");
+                String endPoint = cloudProp.getProperty("endPoint");
+                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                        + " - accessKey=" + accessKey
+                        + " - secretKey=" + secretKey
+                        + " - endPoint=" + endPoint
+                );
+                service = AWSS3Cloud.getMinio(
+                        accessKey, secretKey, endPoint, logger);
+                
             } else if (serviceType.equals("pairtree")) {
                 service = PairtreeCloud.getPairtreeCloud(true, logger);
                 container = cloudProp.getProperty("base");
@@ -661,6 +673,12 @@ public class NodeIO
         throws TException
     {
         CloudResponse response = new CloudResponse(container, key);
+        if (container == null) {
+            throw new TException.REQUESTED_ITEM_NOT_FOUND("Container not found:"
+                    + " - service=" + service.getType().toString()
+                    + " - key=" + key
+            );
+        }
         service.getObject(container, key, outfile, response);
         Exception exception = response.getException();
         if (exception != null) {
@@ -682,11 +700,16 @@ public class NodeIO
             File tempFile = FileUtil.getTempFile("temp", ".txt");
             AccessKey access = getAccessKey(storageURLS);
             if (access == null) {
-                throw new TException.REQUESTED_ITEM_NOT_FOUND (MESSAGE + "Unable to access:" + storageURLS);
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "Unable to access:" + storageURLS);
             }
             CloudStoreInf service = access.accessNode.service;
             String key = access.key;
             String container = access.accessNode.container;
+            if (DEBUG_ACCESS) System.out.println(MESSAGE + "getInputStream"
+                    + " - service=" + service.getType().toString()
+                    + " - container=" + container
+                    + " - key=" + key
+            );
             getFileException(service, container, key, tempFile);
             deleteInputStream = new DeleteOnCloseFileInputStream(tempFile);
             return deleteInputStream;

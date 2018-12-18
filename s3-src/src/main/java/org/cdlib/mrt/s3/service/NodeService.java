@@ -33,6 +33,7 @@ import org.cdlib.mrt.core.MessageDigest;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
+import org.cdlib.mrt.cloud.object.StateHandler;
 
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
@@ -309,7 +310,18 @@ public class NodeService
     {
         return service.getManifest(bucket, objectID);
     }
-
+    
+    /**
+     * Run mini-regression
+     * @return completion state
+     * @throws TException 
+     */
+    public StateHandler.RetState getState ()
+        throws TException
+    {
+        return service.getState(bucket);
+    }
+    
     /**
      * Return content that matches for the length of the key
      * @param key prefix of content to be returned
@@ -363,6 +375,17 @@ public class NodeService
         throws TException
     {
         return service.validateDigest(bucket, key, digest, length);
+    }
+
+    /**
+     * is service there - true=yes, false=no
+     * @return
+     * @throws TException 
+     */
+    public Boolean isAlive()
+        throws TException
+    {
+        return service.isAlive(bucket);
     }
     
     /**

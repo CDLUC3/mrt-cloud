@@ -97,7 +97,7 @@ public class PairtreeCloud
             filePath = filePath.trim();
             File baseDir = new File(filePath);
             if (!baseDir.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "getBase file does not exist:" + filePath);
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "getBase file does not exist:" + filePath);
                 
             }
             return baseDir;
@@ -596,6 +596,7 @@ public class PairtreeCloud
         throws TException
     { 
         InputStream inStream = getObject(bucketName, key,response);
+        if (response.getException() != null) return;
         FileUtil.stream2File(inStream, outFile);
     }
 
@@ -792,7 +793,15 @@ public class PairtreeCloud
     @Override
     public Boolean isAlive(String bucketName)
     {
-        return true;
+        try {
+            if (bucketName == null) return false;
+            File bucketFile = new File(bucketName);
+            if (!bucketFile.exists()) return false;
+            return true;
+            
+        } catch (Exception ex) {
+            return false;
+        }
     }
     
     @Override    

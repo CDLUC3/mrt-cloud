@@ -133,13 +133,19 @@ public class StateHandler
             if (!add(key)) {
                 return retState;
             }
+            
             if (DEBUG) meta(key);
+            
             if (!content(key)) {
                 return retState;
             }
             if (DEBUG && !fixity(key, checksumType, checksum, testLength)) {
                 return retState;
             }
+            if (!delete(key)) {
+                return retState;
+            }
+            System.out.println("Delete performed:" + key);
             if (forceTest == 5) {
                 retState.setOk(false);
                 return retState;

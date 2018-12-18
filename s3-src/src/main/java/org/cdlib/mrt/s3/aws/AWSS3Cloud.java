@@ -59,14 +59,19 @@ import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 
+import com.amazonaws.Protocol;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.ec2.model.AssociateIamInstanceProfileRequest;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.Bucket;
+import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
@@ -76,7 +81,10 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectResult;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
@@ -87,12 +95,17 @@ import com.amazonaws.services.s3.model.RestoreObjectRequest;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
+import com.amazonaws.util.AwsHostNameUtils;
 import java.util.List;
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.MessageDigestValue;
 import org.cdlib.mrt.utility.PropertiesUtil;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
+import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
+import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest;
+import com.amazonaws.services.identitymanagement.model.CreateAccessKeyResult;
 
 /**
  * Specific SDSC Storage Cloud handling
@@ -108,6 +121,7 @@ public class AWSS3Cloud
     protected static final String MESSAGE = NAME + ": ";
     private AmazonS3 s3Client = null;
     private StorageClass storageClass = null;
+    private String endPoint = null;
 
     public static AWSS3Cloud getAWSS3(
             String storageClass,
@@ -120,7 +134,39 @@ public class AWSS3Cloud
         }
         return cloud;
     }
-
+    
+    public static AWSS3Cloud getMinio(
+            String accessKey,
+            String secretKey, 
+            String endPoint, 
+            LoggerInf logger)
+        throws TException
+    {
+        
+        if (DEBUG) System.out.println("getMinio:"
+                + " - accessKey=" + accessKey
+                + " - secretKey=" + secretKey
+                + " - endPoint=" + endPoint
+        );
+        AmazonS3Client s3Client = amazonS3Client(
+            accessKey,
+            secretKey, 
+            endPoint);
+        AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
+        return cloud;
+    }
+    
+    protected AWSS3Cloud(
+            AmazonS3Client s3Client,
+            String endPoint,
+            LoggerInf logger)
+        throws TException
+    {
+        super(logger);
+        this.endPoint = endPoint;
+        this.s3Client =  s3Client;
+    } 
+    
     public static AWSS3Cloud getAWSS3(
             LoggerInf logger)
         throws TException
@@ -128,37 +174,78 @@ public class AWSS3Cloud
         return new AWSS3Cloud(logger);
     }
     
-    public static AWSS3Cloud getAWSS3(
-            AWSCredentials awsCredentials, 
-            LoggerInf logger)
-        throws TException
-    {
-        return new AWSS3Cloud(awsCredentials, logger);
-    }
-    
     protected AWSS3Cloud(
             LoggerInf logger)
         throws TException
     {
         super(logger);
-        s3Client = new AmazonS3Client(new InstanceProfileCredentialsProvider());
+        s3Client =  amazonS3ClientDefault();
+    }   
+    
+    public TransferManager getTransferManager() 
+    {
+        TransferManager transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
+        return transferManager;
     }
     
-    protected AWSS3Cloud(
-            AWSCredentials awsCredentials,
-            LoggerInf logger)
-        throws TException
+    public static AmazonS3Client amazonS3Client(
+            String accessKey,
+            String secretKey, 
+            String endPoint) 
     {
-        super(logger);
-        ClientConfiguration cc = new ClientConfiguration()
+        System.out.println("amazonS3Client:"
+                + " - accessKey=" + accessKey
+                + " - secretKey=" + secretKey
+                + " - endPoint=" + endPoint
+        );
+        //********************************
+        //AWSCredentials credentials = new BasicAWSCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
+        AWSCredentials credentials =
+                new BasicAWSCredentials(
+                        accessKey,
+                        secretKey);
+        
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+        clientConfiguration.withMaxErrorRetry (15)
+            .withConnectionTimeout (10_000)
+            .withSocketTimeout (10_000)
+            .withTcpKeepAlive (true);
+        clientConfiguration.setUseThrottleRetries(true);
+
+        AmazonS3Client s3Client = (AmazonS3Client)AmazonS3ClientBuilder
+                .standard()
+                .withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(
+                        endPoint,
+                        Regions.DEFAULT_REGION.getName()))
+        
+                .withPathStyleAccessEnabled(true)
+                .withClientConfiguration(clientConfiguration)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .build();
+        return s3Client;
+    }
+    
+    
+    public static AmazonS3Client amazonS3ClientDefault() {
+
+        ClientConfiguration clientConfig = new ClientConfiguration()
             .withMaxErrorRetry (15)
             .withConnectionTimeout (10_000)
             .withSocketTimeout (10_000)
             .withTcpKeepAlive (true);
-        cc.setUseThrottleRetries(true);
-        s3Client = new AmazonS3Client(awsCredentials, cc);
+        clientConfig.setUseThrottleRetries(true);
+        clientConfig.setProtocol(Protocol.HTTP);
+        InstanceProfileCredentialsProvider credentialProvider 
+                = InstanceProfileCredentialsProvider.getInstance();
+        AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
+                .withClientConfiguration(clientConfig)
+                .withCredentials(credentialProvider)
+                .build();
+        
+        return s3client;
     }
-    
     public CloudResponse putObject(
             CloudResponse response,
             File inputFile)
@@ -209,7 +296,8 @@ public class AWSS3Cloud
                 putObjectRequest.withStorageClass(storageClass);
             }
             
-            TransferManager tm = new TransferManager();  
+            //TransferManager tm = new TransferManager();  
+            TransferManager tm = getTransferManager();
             Upload upload = tm.upload(putObjectRequest);
             try {
                 upload.waitForCompletion();
@@ -474,7 +562,9 @@ public class AWSS3Cloud
                 );
             }
             ////////
-            TransferManager tm = new TransferManager();        
+            //TransferManager tm = new TransferManager();   
+            
+            TransferManager tm = getTransferManager();
             if (DEBUG) System.out.println("Start");
             GetObjectRequest gor = new GetObjectRequest(container, key);
             Download download = tm.download(gor, outFile, 5000000L);
@@ -1243,6 +1333,10 @@ public class AWSS3Cloud
     public Boolean isAlive(String bucketName)
     {
         boolean exists = false;
+        if (endPoint != null) {
+            return isAliveTest(endPoint);
+        }
+        if (true) return null;
         try {
             exists = s3Client.doesBucketExist(bucketName);
             return exists;
@@ -1263,6 +1357,10 @@ public class AWSS3Cloud
 
     public LoggerInf getLogger() {
         return logger;
+    }
+
+    public void setS3Client(AmazonS3 s3Client) {
+        this.s3Client = s3Client;
     }
 }
 
