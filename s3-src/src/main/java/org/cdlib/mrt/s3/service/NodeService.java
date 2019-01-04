@@ -66,7 +66,9 @@ public class NodeService
     {
         NodeIO.AccessNode cloudNode = nodes.getAccessNode(node);
         if (cloudNode == null) return null;
-        return new NodeService(cloudNode, node, logger);
+        NodeService nodeService = new NodeService(cloudNode, node, logger);
+        nodeService.setNodeName(nodes.getNodeName());
+        return nodeService;
     }
     
     public NodeService(String nodeName, long node, LoggerInf logger)
@@ -400,6 +402,10 @@ public class NodeService
 
     public String getNodeName() {
         return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
     public String getBucket() {
