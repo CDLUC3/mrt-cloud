@@ -193,7 +193,7 @@ public class AWSS3Cloud
             String secretKey, 
             String endPoint) 
     {
-        System.out.println("amazonS3Client:"
+        if (DEBUG) System.out.println("amazonS3Client:"
                 + " - accessKey=" + accessKey
                 + " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint

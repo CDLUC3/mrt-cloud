@@ -68,6 +68,7 @@ public class NodeService
         if (cloudNode == null) return null;
         NodeService nodeService = new NodeService(cloudNode, node, logger);
         nodeService.setNodeName(nodes.getNodeName());
+        if (nodeService.getBucket() == null) return null;
         return nodeService;
     }
     
