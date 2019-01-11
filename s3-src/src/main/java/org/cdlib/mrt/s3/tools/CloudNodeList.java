@@ -54,6 +54,7 @@ public class CloudNodeList
     private File runFile = null;
     private BufferedReader reader = null;
     private PrintWriter writer = null;
+    private boolean cloudNodeTestDebug = false;
     
     
             
@@ -63,12 +64,15 @@ public class CloudNodeList
         
         LoggerInf logger = new TFileLogger("tcloud", 0, 50);
         String testDirS = "/apps/replic/test/minio/181213-inittest";
-        String testName = "inittest";
+        //String testName = "inittest";
+        String testName = "stagetest";
+        //String testName = "sdsc";
         
         CloudNodeList cloudNodeList = getCloudNodeList(
             testDirS, 
             testName,
             logger);
+        //cloudNodeList.setCloudNodeTestDebug(true);
         try {
             if (true) cloudNodeList.run();
 
@@ -208,6 +212,7 @@ public class CloudNodeList
                 keyName, 
                 dataName,
                 logger);
+            cloudNodeTest.setDEBUG_STANDALONE(cloudNodeTestDebug);
             cloudNodeTest.runTest();
             return cloudNodeTest.getTests();
             
@@ -238,6 +243,10 @@ public class CloudNodeList
         } catch (Exception ex) {
             ex.printStackTrace();;
         }
+    }
+
+    public void setCloudNodeTestDebug(boolean cloudNodeTestDebug) {
+        this.cloudNodeTestDebug = cloudNodeTestDebug;
     }
     
 }

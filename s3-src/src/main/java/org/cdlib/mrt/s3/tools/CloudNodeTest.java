@@ -81,11 +81,13 @@ public class CloudNodeTest
         LoggerInf logger = new TFileLogger("tcloud", 0, 50);
         String testDirS = "/apps/replic/test/minio/181213-inittest";
         String nodeIOName = "nodes-test-minio";
+        //String nodeIOName = "nodes-stg-test";
         //String nodeNums = "5001;9001;9501";
         //String nodeNums = "9001";
-        String nodeNums = "9501";
+        //String nodeNums = "9501";
+        String nodeNums = "5001";
         //String keyName = "ascii";
-        String dataName = "big";
+        String dataName = "small";
         //String keyName = "utf8";
         String keyName = "utf8";
         //String dataName = "big";
@@ -105,6 +107,7 @@ public class CloudNodeTest
             dataName,
             logger);
         try {
+            testCloudNode.setDEBUG_STANDALONE(true);
             testCloudNode.runTest();
 
         } catch (TException tex) {
@@ -200,9 +203,9 @@ public class CloudNodeTest
             }
             key = runProp.getProperty("KEY." + keyName);
             if (StringUtil.isAllBlank(key)) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "key not found in properties:" + key);
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "key not found in properties:" + keyName);
             }
-            
+            key += "/" + keyName + "/" + dataName;
             //set nodes
             
             if (StringUtil.isAllBlank(nodeNums)) {
@@ -326,7 +329,8 @@ public class CloudNodeTest
             ex.printStackTrace();
             
         } finally {
-            //testDeleteState(service);
+            if (service == null) return;
+            testDeleteState(service);
         }
     }      
     
@@ -647,6 +651,10 @@ public class CloudNodeTest
 
     public ArrayList<Test> getTests() {
         return tests;
+    }
+
+    public void setDEBUG_STANDALONE(boolean DEBUG_STANDALONE) {
+        this.DEBUG_STANDALONE = DEBUG_STANDALONE;
     }
     
 }
