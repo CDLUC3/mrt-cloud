@@ -80,12 +80,13 @@ public class CloudNodeTest
         
         LoggerInf logger = new TFileLogger("tcloud", 0, 50);
         String testDirS = "/apps/replic/test/minio/181213-inittest";
-        String nodeIOName = "nodes-test-minio";
-        //String nodeIOName = "nodes-stg-test";
+        //String nodeIOName = "nodes-test-minio";
+        String nodeIOName = "nodes-stg-test";
         //String nodeNums = "5001;9001;9501";
         //String nodeNums = "9001";
         //String nodeNums = "9501";
-        String nodeNums = "5001";
+        //String nodeNums = "5001";
+        String nodeNums = "2111";
         //String keyName = "ascii";
         String dataName = "small";
         //String keyName = "utf8";
@@ -466,7 +467,7 @@ public class CloudNodeTest
             //serviceTest.ok = response.
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             serviceTest.exception = ex;
             
         } finally {

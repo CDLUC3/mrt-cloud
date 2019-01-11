@@ -4,21 +4,16 @@
  * and open the template in the editor.
  */
 package launch;
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Properties;
-import org.cdlib.mrt.cloud.main.RunRestore;
 import org.cdlib.mrt.s3.tools.CloudNodeList;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFileLogger;
-import org.cdlib.mrt.utility.TFrame;
 public class Main {
     public static void main(String args[])
         throws TException
     {
-        LoggerInf logger = new TFileLogger("tcloud", 0, 50);
+        LoggerInf logger = new TFileLogger("tcloud", 0, 0);
         boolean debug = false;
         String testDirS = ".";
         if (args.length == 0) {
