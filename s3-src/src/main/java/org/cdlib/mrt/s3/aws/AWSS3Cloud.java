@@ -1332,17 +1332,10 @@ public class AWSS3Cloud
     @Override    
     public Boolean isAlive(String bucketName)
     {
-        boolean exists = false;
         if (endPoint != null) {
             return isAliveTest(endPoint);
         }
-        if (true) return null;
-        try {
-            exists = s3Client.doesBucketExist(bucketName);
-            return exists;
-        } catch (Exception ex) {
-            return false;
-        }
+        return null;
     }
 
     @Override    
