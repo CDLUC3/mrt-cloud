@@ -19,16 +19,21 @@ public class Main {
         throws TException
     {
         LoggerInf logger = new TFileLogger("tcloud", 0, 50);
+        boolean debug = false;
         String testDirS = ".";
         if (args.length == 0) {
             throw new TException.INVALID_OR_MISSING_PARM("name test not provided");
         }
         String testName = args[0];
+        if (args.length == 2)  {
+            debug = true;
+        }
         
         CloudNodeList cloudNodeList = CloudNodeList.getCloudNodeList(
             testDirS, 
             testName,
             logger);
+        cloudNodeList.setCloudNodeTestDebug(debug);
         try {
             if (true) cloudNodeList.run();
 
