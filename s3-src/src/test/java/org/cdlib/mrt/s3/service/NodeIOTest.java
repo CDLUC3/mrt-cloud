@@ -70,10 +70,10 @@ public class NodeIOTest {
             throw ex;
         }
     }
-
-
+    
+    
     @Test
-    public void testNodeIOTrue()
+    public void testNodeIODev()
         throws TException
     {
         
@@ -92,17 +92,77 @@ public class NodeIOTest {
             assertFalse("TestIT exception:" + ex, true);
         }
     }
-    
+
     @Test
-    public void testNodeIOFalse()
+    public void testNodeIOUNM()
         throws TException
     {
-        
-        NodeIO nodeIO = null;
+       
         LoggerInf logger = new TFileLogger("sh", 2, 2);
-        long badNode = 666;
         try {
-            test("nodes-dev", badNode, logger);
+            test("nodes-pair-unm", 8101, logger);
+            test("nodes-ch-unm", 7301, logger);
+            test("nodes-ch-unm", 7101, logger);
+            assertTrue(true);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assertFalse("TestIT exception:" + ex, true);
+        }
+    }
+
+    @Test
+    public void testNodeIOStage()
+        throws TException
+    {
+        LoggerInf logger = new TFileLogger("sh", 2, 2);
+        try {
+            test("nodes-stg-store", 2111, logger);
+            test("nodes-stg-store", 9502, logger);
+            test("nodes-stg-store", 4101, logger);
+            test("nodes-stg-store", 3042, logger);
+            test("nodes-stg-store", 9901, logger);
+            test("nodes-stg-store", 9001, logger);
+            test("nodes-stg-store", 5001, logger);
+            test("nodes-stg-store", 6001, logger);
+            test("nodes-stg-store", 7001, logger);
+            assertTrue(true);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assertFalse("TestIT exception:" + ex, true);
+        }
+    }
+
+    @Test
+    public void testNodeIOProd()
+        throws TException
+    {
+        LoggerInf logger = new TFileLogger("sh", 2, 2);
+        try {
+            test("nodes-prd-store", 9103, logger);
+            test("nodes-prd-store", 3041, logger);
+            test("nodes-prd-store", 4001, logger);
+            test("nodes-prd-store", 9001, logger);
+            test("nodes-prd-store", 5001, logger);
+            test("nodes-prd-store", 6001, logger);
+            test("nodes-prd-store", 7001, logger);
+            assertTrue(true);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            assertFalse("TestIT exception:" + ex, true);
+        }
+    }
+    
+    @Test
+    public void testNodeIOBadNode()
+        throws TException
+    {
+        LoggerInf logger = new TFileLogger("sh", 2, 2);
+        int badNode = 666;
+        try {
+            test("nodes-dev-store", badNode, logger);
             assertFalse("node should fail:" + badNode,true);
             
         } catch (Exception ex) {
@@ -110,6 +170,23 @@ public class NodeIOTest {
             assertTrue(true);
         }
     }
+    
+    @Test
+    public void testNodeIOBadTable()
+        throws TException
+    {
+        LoggerInf logger = new TFileLogger("sh", 2, 2);
+        String badTable = "nodes-xxx";
+        try {
+            test(badTable, 5001, logger);
+            assertFalse("node table should fail:" + badTable,true);
+            
+        } catch (Exception ex) {
+            //ex.printStackTrace();
+            assertTrue(true);
+        }
+    }
+
 
 
     //@Test (expected=org.cdlib.mrt.utility.TException.INVALID_OR_MISSING_PARM.class)
