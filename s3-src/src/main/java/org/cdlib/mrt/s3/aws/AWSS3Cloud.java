@@ -306,6 +306,10 @@ public class AWSS3Cloud
                             + " - bucket:" + bucketName
                             + " - key:" + key
                 );
+            } catch( com.amazonaws.services.s3.model.AmazonS3Exception s3ex) {
+                if (s3ex.toString().contains("upload may have been aborted or completed")) {
+                    System.out.println(MESSAGE + "S3 upload error - continue processing:" + key);
+                }
             } finally {
                 tm.shutdownNow(false);
             }
