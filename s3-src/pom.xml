@@ -77,9 +77,9 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
             <version>1.11.438</version>
-            <!--version>1.11.545</version-->
-            <!--version>1.11.438 failed segments minio</version-->
-            <!--version>1.11.527</version-->
+            <!--version>1.11.438 working memory management</version-->
+            <!--version>1.11.527 memory problems storage</version-->
+            <!--version>1.11.545 memory problems storage</version-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
