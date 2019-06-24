@@ -571,7 +571,7 @@ public class AWSS3Cloud
             TransferManager tm = getTransferManager();
             if (DEBUG) System.out.println("Start");
             GetObjectRequest gor = new GetObjectRequest(container, key);
-            Download download = tm.download(gor, outFile, 5000000L);
+            Download download = tm.download(gor, outFile, 86400000L);
             try {
                 download.waitForCompletion();
             } catch(InterruptedException ex) {
@@ -623,8 +623,10 @@ public class AWSS3Cloud
                         /*
                         RestoreObjectRequest requestRestore = new RestoreObjectRequest(container, key, 2);
                         s3Client.restoreObject(requestRestore);
-                        */
-                        s3Client.restoreObject(container, key, 2);
+                        */ 
+                        RestoreObjectRequest requestRestore = new RestoreObjectRequest(container, key, 2);
+                        s3Client.restoreObjectV2(requestRestore);
+                        //s3Client.restoreObject(container, key, 2);
                         msg = "Requested item in Glacier - restore issued" ;
                         
                     // restore processing
