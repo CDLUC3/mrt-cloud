@@ -232,8 +232,10 @@ public class AWSS3Cloud
 
         ClientConfiguration clientConfig = new ClientConfiguration()
             .withMaxErrorRetry (15)
-            .withConnectionTimeout (10_000)
-            .withSocketTimeout (10_000)
+            //.withConnectionTimeout (10_000)
+            //.withSocketTimeout (10_000)
+            .withConnectionTimeout (120_000)
+            .withSocketTimeout (120_000)
             .withTcpKeepAlive (true);
         clientConfig.setUseThrottleRetries(true);
         clientConfig.setProtocol(Protocol.HTTP);
