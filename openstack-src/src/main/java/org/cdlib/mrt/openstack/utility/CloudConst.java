@@ -32,11 +32,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author dloy
  */
 package org.cdlib.mrt.openstack.utility;
-import java.util.Properties;
-import org.cdlib.mrt.utility.StringUtil;
-import org.cdlib.mrt.utility.TException;
     
 public interface CloudConst
 {
-    public int LONG_TIMEOUT = 300000;
+    public int LONG_TIMEOUT = 86400000;
 }
