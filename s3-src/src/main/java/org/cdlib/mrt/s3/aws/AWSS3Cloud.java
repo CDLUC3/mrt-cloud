@@ -234,8 +234,8 @@ public class AWSS3Cloud
             .withMaxErrorRetry (15)
             //.withConnectionTimeout (10_000)
             //.withSocketTimeout (10_000)
-            .withConnectionTimeout (120_000)
-            .withSocketTimeout (120_000)
+            .withConnectionTimeout (600_000)
+            .withSocketTimeout (600_000)
             .withTcpKeepAlive (true);
         clientConfig.setUseThrottleRetries(true);
         clientConfig.setProtocol(Protocol.HTTP);
