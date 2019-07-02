@@ -208,8 +208,8 @@ public class AWSS3Cloud
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setSignerOverride("AWSS3V4SignerType");
         clientConfiguration.withMaxErrorRetry (15)
-            .withConnectionTimeout (600_000)
-            .withSocketTimeout (600_000)
+            .withConnectionTimeout (7200_000)
+            .withSocketTimeout (7200_000)
             .withTcpKeepAlive (true);
         clientConfiguration.setUseThrottleRetries(true);
 
