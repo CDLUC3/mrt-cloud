@@ -66,6 +66,8 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.ec2.model.AssociateIamInstanceProfileRequest;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.event.ProgressEvent;
+import com.amazonaws.event.ProgressListener;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -86,6 +88,9 @@ import com.amazonaws.services.s3.model.Region;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferProgress;
+import com.amazonaws.services.s3.transfer.Transfer;
+import com.amazonaws.services.s3.transfer.Transfer.TransferState;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
@@ -106,6 +111,9 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
 import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest;
 import com.amazonaws.services.identitymanagement.model.CreateAccessKeyResult;
+import com.amazonaws.services.s3.transfer.Transfer;
+//import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.eraseProgressBar;
+//import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.printProgressBar;
 
 /**
  * Specific SDSC Storage Cloud handling
@@ -208,8 +216,8 @@ public class AWSS3Cloud
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setSignerOverride("AWSS3V4SignerType");
         clientConfiguration.withMaxErrorRetry (15)
-            .withConnectionTimeout (7200_000)
-            .withSocketTimeout (7200_000)
+            .withConnectionTimeout (43200_000)
+            .withSocketTimeout (43200_000)
             .withTcpKeepAlive (true);
         clientConfiguration.setUseThrottleRetries(true);
 
@@ -253,12 +261,13 @@ public class AWSS3Cloud
             File inputFile)
         throws TException
     {        
+        String key = null;
         try {
             if (!isValidFile(inputFile)) {
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "putObject - file not valid");
             }
             String bucketName = response.getBucketName();
-            String key = response.getStorageKey();
+            key = response.getStorageKey();
             if (DEBUG)System.out.println("FILE " 
                     + " - size:" + inputFile.length()
                     + " - bucket:" + bucketName
@@ -297,12 +306,16 @@ public class AWSS3Cloud
             if (storageClass != null ) {
                 putObjectRequest.withStorageClass(storageClass);
             }
-            
-            //TransferManager tm = new TransferManager();  
+
             TransferManager tm = getTransferManager();
             Upload upload = tm.upload(putObjectRequest);
             try {
+                long fileLen = inputFile.length();
+                if (fileLen > 10_000_000_000L) {
+                    showTransferProgress(upload, key,1800, fileLen);
+                }
                 upload.waitForCompletion();
+            
             } catch(InterruptedException ex) {
                 throw new TException.REMOTE_IO_SERVICE_EXCEPTION("AWS service exception:" + ex
                             + " - bucket:" + bucketName
@@ -381,8 +394,7 @@ public class AWSS3Cloud
         }
         return response;
     }
-    
-    
+            
     @Override
     public CloudResponse putObject(
             String bucket,
@@ -1362,6 +1374,53 @@ public class AWSS3Cloud
 
     public void setS3Client(AmazonS3 s3Client) {
         this.s3Client = s3Client;
+    }
+
+    // Prints progress while waiting for the transfer to finish.
+    public void showTransferProgress(Transfer xfer, String key, long inSleepSec, long fileLen)
+    {
+        long sleepTime = inSleepSec * 1000;
+        // print the transfer's human-readable description
+        if (DEBUG) System.out.println("showTransferProgress:" + key);
+        if (DEBUG) System.out.println(xfer.getDescription());
+        long remaining = fileLen;
+        long saveProgress = 0;
+        if (false || logger.getMessageMaxLevel() < 1) {
+            logger.logMessage("showTransferProgress not used for " + key, 0, true);
+            return;
+        }
+        logger.logMessage("showTransferProgress used for " + key 
+                + " - inSleepSec:" + inSleepSec 
+                + " - getMessageMaxLevel:" + logger.getMessageMaxLevel()
+                , 0, true);
+        do {
+            
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                return;
+            }
+            // Note: so_far and total aren't used, they're just for
+            // documentation purposes.
+            TransferProgress progress = xfer.getProgress();
+            long so_far = progress.getBytesTransferred();
+            long total = progress.getTotalBytesToTransfer();
+            double pct = progress.getPercentTransferred();
+            logger.logMessage("key:" + key
+                    + " - so_far:" + so_far
+                    + " - sleep:" + sleepTime
+                    + " - pct:" + pct, 
+                    0, true
+            );
+            remaining = fileLen - so_far;
+            if (remaining  < (so_far - saveProgress)) {
+                sleepTime = 180000;
+            }
+            saveProgress = so_far;
+        } while (xfer.isDone() == false);
+        // print the final state of the transfer.
+        Transfer.TransferState xfer_state = xfer.getState();
+        logger.logMessage("showTransferProgress key:" + key + "- state:" + xfer_state, 0, true);
     }
 }
 
