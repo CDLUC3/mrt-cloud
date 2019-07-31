@@ -35,5 +35,5 @@ package org.cdlib.mrt.openstack.utility;
     
 public interface CloudConst
 {
-    public int LONG_TIMEOUT = 86400000;
+    public int LONG_TIMEOUT = 300000;
 }
