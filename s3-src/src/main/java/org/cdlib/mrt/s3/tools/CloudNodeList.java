@@ -198,7 +198,7 @@ public class CloudNodeList
             String nodeIOName = parts[0]; 
             String nodeNums = parts[1]; 
             String keyName = parts[2]; 
-            String dataName = parts[3]; 
+            String dataName = parts[3].trim(); 
             System.out.println("CloudNodeList:"
                     + " - nodeIOName=" + nodeIOName
                     + " - nodeNums=" + nodeNums

@@ -123,7 +123,7 @@ public class AWSS3Cloud
     extends CloudStoreAbs
     implements CloudStoreInf
 {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static final boolean ALPHANUMERIC = false;
     protected static final String NAME = "AWSS3Cloud";
     protected static final String MESSAGE = NAME + ": ";
@@ -131,18 +131,34 @@ public class AWSS3Cloud
     private StorageClass storageClass = null;
     private String endPoint = null;
 
-    public static AWSS3Cloud getAWSS3(
+    public static AWSS3Cloud getAWSS3Region(
             String storageClass,
+            String regionS,
             LoggerInf logger)
         throws TException
     {
-        AWSS3Cloud cloud =  new AWSS3Cloud(logger);
+        Regions region = Regions.fromName(regionS);
+        AWSS3Cloud cloud =  new AWSS3Cloud(region, logger);
         if (storageClass != null) {
             cloud.setStorageClass(storageClass);
         }
         return cloud;
     }
     
+    // Depricated older storage method
+    public static AWSS3Cloud getAWSS3(
+            String storageClass,
+            LoggerInf logger)
+        throws TException
+    {
+        Regions region = Regions.US_WEST_2;
+        AWSS3Cloud cloud =  new AWSS3Cloud(region, logger);
+        if (storageClass != null) {
+            cloud.setStorageClass(storageClass);
+        }
+        return cloud;
+    }
+     
     public static AWSS3Cloud getMinio(
             String accessKey,
             String secretKey, 
@@ -159,7 +175,35 @@ public class AWSS3Cloud
         AmazonS3Client s3Client = amazonS3Client(
             accessKey,
             secretKey, 
-            endPoint);
+            endPoint,
+            null);
+        AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
+        return cloud;
+    }
+    
+    
+    public static AWSS3Cloud getWasabi(
+            String accessKey,
+            String secretKey, 
+            String endPoint, 
+            String regionName,
+            LoggerInf logger)
+        throws TException
+    {
+        
+        if (DEBUG) System.out.println("getWasabi:"
+                + " - accessKey=" + accessKey
+                + " - secretKey=" + secretKey
+                + " - endPoint=" + endPoint
+                + " - regionName=" + regionName
+        );
+        
+        Regions region = Regions.fromName(regionName);
+        AmazonS3Client s3Client = amazonS3Client(
+            accessKey,
+            secretKey, 
+            endPoint,
+            region);
         AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
         return cloud;
     }
@@ -179,15 +223,34 @@ public class AWSS3Cloud
             LoggerInf logger)
         throws TException
     {
-        return new AWSS3Cloud(logger);
+        Regions region = Regions.US_WEST_2;
+        return new AWSS3Cloud(region, logger);
     }
     
     protected AWSS3Cloud(
+            Regions region,
             LoggerInf logger)
         throws TException
     {
         super(logger);
-        s3Client =  amazonS3ClientDefault();
+        s3Client =  amazonS3ClientDefault(region);
+    }
+    
+    public static AWSS3Cloud getDefault(
+            String endPoint,
+            LoggerInf logger)
+        throws TException
+    {
+        return new AWSS3Cloud(endPoint, logger);
+    }
+    
+    protected AWSS3Cloud( 
+            String endPoint,
+            LoggerInf logger)
+        throws TException
+    {
+        super(logger);
+        s3Client =  amazonS3ClientDefault(endPoint);
     }   
     
     public TransferManager getTransferManager() 
@@ -199,13 +262,17 @@ public class AWSS3Cloud
     public static AmazonS3Client amazonS3Client(
             String accessKey,
             String secretKey, 
-            String endPoint) 
+            String endPoint,
+            Regions regions) 
     {
         if (DEBUG) System.out.println("amazonS3Client:"
                 + " - accessKey=" + accessKey
                 + " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint
         );
+        if (regions == null) {
+            regions = Regions.DEFAULT_REGION;
+        }
         //********************************
         //AWSCredentials credentials = new BasicAWSCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
         AWSCredentials credentials =
@@ -226,7 +293,7 @@ public class AWSS3Cloud
                 .withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(
                         endPoint,
-                        Regions.DEFAULT_REGION.getName()))
+                        regions.getName()))
         
                 .withPathStyleAccessEnabled(true)
                 .withClientConfiguration(clientConfiguration)
@@ -236,7 +303,7 @@ public class AWSS3Cloud
     }
     
     
-    public static AmazonS3Client amazonS3ClientDefault() {
+    public static AmazonS3Client amazonS3ClientDefault(Regions region) {
 
         ClientConfiguration clientConfig = new ClientConfiguration()
             .withMaxErrorRetry (15)
@@ -250,6 +317,32 @@ public class AWSS3Cloud
         InstanceProfileCredentialsProvider credentialProvider 
                 = InstanceProfileCredentialsProvider.getInstance();
         AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
+//                .withRegion("us-west-2")
+                .withRegion(region)
+                .withClientConfiguration(clientConfig)
+                .withCredentials(credentialProvider)
+                .build();
+        
+        return s3client;
+    }    
+    
+    public static AmazonS3Client amazonS3ClientDefault( 
+            String endPoint) 
+    {
+
+        ClientConfiguration clientConfig = new ClientConfiguration()
+            .withMaxErrorRetry (15)
+            //.withConnectionTimeout (10_000)
+            //.withSocketTimeout (10_000)
+            .withConnectionTimeout (600_000)
+            .withSocketTimeout (600_000)
+            .withTcpKeepAlive (true);
+        clientConfig.setUseThrottleRetries(true);
+        clientConfig.setProtocol(Protocol.HTTP);
+        InstanceProfileCredentialsProvider credentialProvider 
+                = InstanceProfileCredentialsProvider.getInstance();
+        AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
+                .withRegion(endPoint)
                 .withClientConfiguration(clientConfig)
                 .withCredentials(credentialProvider)
                 .build();

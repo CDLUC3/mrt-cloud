@@ -533,9 +533,8 @@ public class NodeIO
             } else if (serviceType.equals("aws")) {
                 String storageClassS = cloudProp.getProperty("storageClass");
                 if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
-                accessMode = cloudProp.getProperty("accessMode");
-                if (DEBUG_ACCESS) System.out.println("accessMode=" + accessMode);
-                service = AWSS3Cloud.getAWSS3(storageClassS, logger);
+                String regionS = cloudProp.getProperty("region");
+                service = AWSS3Cloud.getAWSS3Region(storageClassS, regionS, logger);
                 
             } else if (serviceType.equals("minio")) {
                 String accessKey = cloudProp.getProperty("accessKey");
@@ -548,6 +547,20 @@ public class NodeIO
                 );
                 service = AWSS3Cloud.getMinio(
                         accessKey, secretKey, endPoint, logger);
+                
+            } else if (serviceType.equals("wasabi")) {
+                String accessKey = cloudProp.getProperty("accessKey");
+                String secretKey = cloudProp.getProperty("secretKey");
+                String endPoint = cloudProp.getProperty("endPoint");
+                String regionName = cloudProp.getProperty("regionName");
+                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                        + " - accessKey=" + accessKey
+                        + " - secretKey=" + secretKey
+                        + " - endPoint=" + endPoint
+                        + " - regionName=" + regionName
+                );
+                service = AWSS3Cloud.getWasabi(
+                        accessKey, secretKey, endPoint, regionName, logger);
                 
             } else if (serviceType.equals("pairtree")) {
                 service = PairtreeCloud.getPairtreeCloud(true, logger);
