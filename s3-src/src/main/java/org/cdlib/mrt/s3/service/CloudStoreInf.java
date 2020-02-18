@@ -330,6 +330,20 @@ public interface CloudStoreInf
     public Boolean isAlive(String bucketName);
     
     /**
+     * Returns an S3 presigned URL
+     * @param expirationMinutes minutes for the signed URL to work
+     * @param bucketName cloud container
+     * @param key cloud key
+     * @return CloudResponse where response.getReturnURL returns the presigned URL
+     * @throws TException
+     */
+    public CloudResponse getPreSigned (
+            long expirationMinutes,
+            String bucketName,
+            String key)
+        throws TException;
+    
+    /**
      * Return the API type
      * @return AWS-S3, SDSC-Swift, Cloudhost, Pairtree
      */

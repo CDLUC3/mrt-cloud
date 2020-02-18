@@ -44,7 +44,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
 
 
 import org.cdlib.mrt.cloud.CloudList;
@@ -55,10 +57,13 @@ import org.cdlib.mrt.utility.TException;
 
 import org.cdlib.mrt.s3.service.CloudStoreAbs;
 import org.cdlib.mrt.s3.service.CloudUtil;
+import org.cdlib.mrt.s3.service.CloudResponse;
+import org.cdlib.mrt.s3.service.CloudResponse.ResponseStatus;
 import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 
+import com.amazonaws.HttpMethod;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -101,7 +106,9 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.util.AwsHostNameUtils;
-import java.util.List;
+import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+
+
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.utility.DateUtil;
@@ -123,11 +130,11 @@ public class AWSS3Cloud
     extends CloudStoreAbs
     implements CloudStoreInf
 {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final boolean ALPHANUMERIC = false;
     protected static final String NAME = "AWSS3Cloud";
     protected static final String MESSAGE = NAME + ": ";
-    private AmazonS3 s3Client = null;
+    private AmazonS3Client s3Client = null;
     private StorageClass storageClass = null;
     private String endPoint = null;
 
@@ -1450,6 +1457,80 @@ public class AWSS3Cloud
         }
         return null;
     }
+    
+    public void displayResourceUrl (
+            String bucketName,
+            String key)
+        throws TException
+    {
+        String resourceUrl = s3Client.getResourceUrl(bucketName, key);
+        System.out.println("RESOURCEURL:" +  resourceUrl);
+    }
+    
+    @Override
+    public CloudResponse getPreSigned (
+            long expirationMinutes,
+            String bucketName,
+            String key)
+        throws TException
+    {
+        CloudResponse response = new CloudResponse(bucketName, key);
+        try {
+            Properties metaProp = getObjectMeta(bucketName, key);
+            if (metaProp.size() == 0) {
+                TException tex = new TException.REQUESTED_ITEM_NOT_FOUND("Item not found "
+                        + " - bucket:" + bucketName
+                        + " - key:" + key
+                    );
+                response.setException(tex);
+                response.setHttpStatus(tex.getHTTPResponse());
+                response.setReturnURL(null);
+                response.setStatus(CloudResponse.ResponseStatus.missing);
+                return response;
+                
+            } else {
+                response.setFromProp(metaProp);
+                String storageClass = metaProp.getProperty("storageClass");
+                String expirationS = metaProp.getProperty("expiration");
+                if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
+                    TException tex = new TException.REQUEST_ITEM_EXISTS("Requested item in Glacier:" 
+                            + " - bucket=" + bucketName
+                            + " - key=" + key);
+                    response.setException(tex);
+                    response.setHttpStatus(tex.getHTTPResponse());
+                    response.setReturnURL(null);
+                    response.setStatus(CloudResponse.ResponseStatus.dark);
+                    return response;
+                }
+                
+            }
+            // Set the presigned URL to expire after one hour.
+            java.util.Date expiration = new java.util.Date();
+            long expTimeMillis = expiration.getTime();
+            expTimeMillis += 1000 * 60 * expirationMinutes;
+            expiration.setTime(expTimeMillis);
+            
+            GeneratePresignedUrlRequest generatePresignedUrlRequest =
+                new GeneratePresignedUrlRequest(bucketName, key)
+                            .withMethod(HttpMethod.GET)
+                            .withExpiration(expiration);
+            URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+            response.setReturnURL(url);
+            response.setStatus(CloudResponse.ResponseStatus.ok);
+            
+        } catch (Exception ex) {
+            String exc = "Exception bucketName:" + bucketName + " - key=" + key;
+            if (ex.toString().contains("404")) {
+                Exception returnException = new TException.REQUESTED_ITEM_NOT_FOUND(exc);
+                response.setException(returnException);
+            } else {
+                response.setException(ex);
+            }
+            response.setReturnURL(null);
+            response.setStatus(CloudResponse.ResponseStatus.fail);
+        }
+        return response;
+    }
 
     @Override    
     public CloudAPI getType()
@@ -1457,7 +1538,7 @@ public class AWSS3Cloud
         return CloudAPI.AWS_S3;
     }
 
-    public AmazonS3 getS3Client() {
+    public AmazonS3Client getS3Client() {
         return s3Client;
     }
 
@@ -1465,7 +1546,7 @@ public class AWSS3Cloud
         return logger;
     }
 
-    public void setS3Client(AmazonS3 s3Client) {
+    public void setS3Client(AmazonS3Client s3Client) {
         this.s3Client = s3Client;
     }
 

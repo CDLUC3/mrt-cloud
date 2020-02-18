@@ -744,6 +744,23 @@ public class OpenstackCloud
         return isAliveTest(host);
     }
     
+    @Override
+    public CloudResponse getPreSigned (
+        long expirationMinutes,
+        String bucketName,
+        String key)
+    throws TException
+    {
+        CloudResponse response = new CloudResponse(bucketName, key);
+        try {
+            throw new TException.UNIMPLEMENTED_CODE(MESSAGE + "getPreSigned: this cloud repository does not support this function");
+            
+        } catch (Exception ex) {
+            handleException(response, ex);
+            return response;
+        }
+    }
+    
     @Override    
     public CloudAPI getType()
     {
