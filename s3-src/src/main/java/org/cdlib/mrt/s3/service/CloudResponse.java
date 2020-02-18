@@ -35,7 +35,7 @@ import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.utility.StringUtil;
 
 //import org.jets3t.service.model.StorageObject;
-
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +52,13 @@ import java.util.Set;
 public class CloudResponse
 {
     private static final boolean DEBUG = false;
-    public enum ResponseStatus{ok, fail, unknown};
+    public enum ResponseStatus{ok, fail, missing, dark, unknown};
     private int httpStatus = 0;
     private ResponseStatus status = ResponseStatus.ok;
     private CloudList cloudList = new CloudList();
     private Exception exception = null;
 
+    private URL returnURL = null;
     private String bucketName = null;
     private Identifier objectID = null;
     private Integer versionID = null;
@@ -477,6 +478,12 @@ public class CloudResponse
         this.storageClassConverted = storageClassConverted;
     }
 
-    
+    public URL getReturnURL() {
+        return returnURL;
+    }
+
+    public void setReturnURL(URL returnURL) {
+        this.returnURL = returnURL;
+    }
 }
 
