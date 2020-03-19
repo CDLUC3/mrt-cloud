@@ -99,6 +99,7 @@ import com.amazonaws.services.s3.transfer.Transfer.TransferState;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
+import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
 import com.amazonaws.services.s3.model.StorageClass;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.services.s3.model.RestoreObjectRequest;
@@ -1141,6 +1142,53 @@ public class AWSS3Cloud
             return null;
         }
     }
+    
+    
+    
+    public Properties dumpMeta (
+            String bucketName,
+            String key)
+        throws TException
+    {
+        Properties prop = new Properties();
+        try {
+            GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
+            ObjectMetadata metadata = s3Client.getObjectMetadata(request);
+            Map<String, String> userMeta = metadata.getUserMetadata();
+            Set<String> userKeys = userMeta.keySet();
+            for (String userKey : userKeys) {
+                addProp(prop, "user|" + userKey, metadata.getUserMetaDataOf(userKey));
+                System.out.println("addProp:"
+                        + " - userKey:" + userKey
+                        + " - user value:" + metadata.getUserMetaDataOf(userKey)
+                );
+            }
+            Map<String, Object> rawMeta = metadata.getRawMetadata();
+            Set<String> rawKeys = rawMeta.keySet();
+            for (String rawKey : rawKeys) {
+                Object rawData = rawMeta.get(rawKey);
+                String rawOut="";
+                if (rawData instanceof String) {
+                    rawOut = (String)rawData;
+                    addProp(prop, "raw|" + rawKey, rawOut);
+                    System.out.println("addProp:"
+                            + " - rawKey:" + rawKey
+                            + " - rawOut:" + rawOut
+                    );
+                }
+            }
+            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("getObjectMeta", prop));
+            return prop;
+            
+        } catch (Exception ex) {
+            if (ex.toString().contains("404")) {
+                return new Properties();
+            }
+            CloudResponse response = new CloudResponse(bucketName, key);
+            awsHandleException(response, ex);
+            return null;
+        }
+    }
   
     public StorageClass getStorageClass (
             String bucketName,
@@ -1471,7 +1519,8 @@ public class AWSS3Cloud
     public CloudResponse getPreSigned (
             long expirationMinutes,
             String bucketName,
-            String key)
+            String key,
+            String contentType)
         throws TException
     {
         CloudResponse response = new CloudResponse(bucketName, key);
@@ -1514,6 +1563,12 @@ public class AWSS3Cloud
                 new GeneratePresignedUrlRequest(bucketName, key)
                             .withMethod(HttpMethod.GET)
                             .withExpiration(expiration);
+            if (!StringUtil.isAllBlank(contentType)) {
+                ResponseHeaderOverrides headerOverrides = new ResponseHeaderOverrides();
+                headerOverrides.setContentType(contentType);
+                generatePresignedUrlRequest.setResponseHeaders(headerOverrides);
+            }
+            
             URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
             response.setReturnURL(url);
             response.setStatus(CloudResponse.ResponseStatus.ok);

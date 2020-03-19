@@ -334,13 +334,15 @@ public interface CloudStoreInf
      * @param expirationMinutes minutes for the signed URL to work
      * @param bucketName cloud container
      * @param key cloud key
+     * @param contentType optional contentType for this file
      * @return CloudResponse where response.getReturnURL returns the presigned URL
      * @throws TException
      */
     public CloudResponse getPreSigned (
             long expirationMinutes,
             String bucketName,
-            String key)
+            String key,
+            String contentType)
         throws TException;
     
     /**

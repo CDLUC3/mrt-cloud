@@ -425,7 +425,8 @@ public class StoreCloud
     public CloudResponse getPreSigned (
         long expirationMinutes,
         String bucketName,
-        String key)
+        String key,
+        String contentType)
     throws TException
     {
         CloudResponse response = new CloudResponse(bucketName, key);
