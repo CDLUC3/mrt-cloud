@@ -24,6 +24,7 @@ import org.cdlib.mrt.utility.TFileLogger;
  */
 public class NodeIOTest {
     public static final boolean ALPHANUMERIC = true;
+    public static final boolean PROCESS = true;
 	public static final String KEY = "ark:/99999/test|1|prod/test";
         //public static final String nodeName = "nodes-dev";
     public NodeIOTest() {
@@ -49,6 +50,10 @@ public class NodeIOTest {
     public void test(String nodeName, long nodeNumber, LoggerInf logger) 
         throws Exception
     {
+        System.out.println("test:"
+                + " - nodeName:" + nodeName
+                + " - nodeNumber:" + nodeNumber
+        );
         NodeIO nodeIO = null;
         try {
             nodeIO = NodeIO.getNodeIO(nodeName, logger);
@@ -71,29 +76,8 @@ public class NodeIOTest {
         }
     }
     
-    
-    @Test
-    public void testNodeIODev()
-        throws TException
-    {
-        
-        NodeIO nodeIO = null;
-        LoggerInf logger = new TFileLogger("sh", 2, 2);
-        try {
-            test("nodes-dev-store", 910, logger);
-            test("nodes-dev-store", 9001, logger);
-            test("nodes-dev-store", 5001, logger);
-            test("nodes-dev-store", 6001, logger);
-            //test("nodes-ch-ucdn", 7013, logger);
-            assertTrue(true);
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            assertFalse("TestIT exception:" + ex, true);
-        }
-    }
 
-    @Test
+    //@Test
     public void testNodeIOUNM()
         throws TException
     {
@@ -117,15 +101,13 @@ public class NodeIOTest {
     {
         LoggerInf logger = new TFileLogger("sh", 2, 2);
         try {
-            test("nodes-stg-store", 2111, logger);
-            test("nodes-stg-store", 9502, logger);
-            test("nodes-stg-store", 4101, logger);
-            test("nodes-stg-store", 3042, logger);
-            test("nodes-stg-store", 9901, logger);
-            test("nodes-stg-store", 9001, logger);
-            test("nodes-stg-store", 5001, logger);
-            test("nodes-stg-store", 6001, logger);
-            test("nodes-stg-store", 7001, logger);
+            test("nodes-stage", 5001, logger);
+            test("nodes-stage", 6001, logger);
+            test("nodes-stage", 9502, logger);
+            test("nodes-stage", 3042, logger);
+            test("nodes-stage", 4101, logger);
+            test("nodes-stage", 7001, logger);
+            test("nodes-stage", 2002, logger);
             assertTrue(true);
             
         } catch (Exception ex) {
@@ -140,13 +122,13 @@ public class NodeIOTest {
     {
         LoggerInf logger = new TFileLogger("sh", 2, 2);
         try {
-            test("nodes-prd-store", 9103, logger);
-            test("nodes-prd-store", 3041, logger);
-            test("nodes-prd-store", 4001, logger);
-            test("nodes-prd-store", 9001, logger);
-            test("nodes-prd-store", 5001, logger);
-            test("nodes-prd-store", 6001, logger);
-            test("nodes-prd-store", 7001, logger);
+            test("nodes-prod", 5001, logger);
+            test("nodes-prod", 6001, logger);
+            test("nodes-prod", 7001, logger);
+            test("nodes-prod", 4001, logger);
+            test("nodes-prod", 3041, logger);
+            test("nodes-prod", 9501, logger);
+            test("nodes-prod", 2001, logger);
             assertTrue(true);
             
         } catch (Exception ex) {
