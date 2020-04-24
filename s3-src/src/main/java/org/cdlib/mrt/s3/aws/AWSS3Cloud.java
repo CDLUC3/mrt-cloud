@@ -1520,7 +1520,8 @@ public class AWSS3Cloud
             long expirationMinutes,
             String bucketName,
             String key,
-            String contentType)
+            String contentType,
+            String contentDisp)
         throws TException
     {
         CloudResponse response = new CloudResponse(bucketName, key);
@@ -1563,9 +1564,14 @@ public class AWSS3Cloud
                 new GeneratePresignedUrlRequest(bucketName, key)
                             .withMethod(HttpMethod.GET)
                             .withExpiration(expiration);
-            if (!StringUtil.isAllBlank(contentType)) {
+            if (!StringUtil.isAllBlank(contentType) || !StringUtil.isAllBlank(contentDisp)) {
                 ResponseHeaderOverrides headerOverrides = new ResponseHeaderOverrides();
-                headerOverrides.setContentType(contentType);
+                if (!StringUtil.isAllBlank(contentType)) {
+                    headerOverrides.setContentType(contentType);
+                }
+                if (!StringUtil.isAllBlank(contentDisp)) {
+                    headerOverrides.setContentDisposition(contentDisp);
+                }
                 generatePresignedUrlRequest.setResponseHeaders(headerOverrides);
             }
             
