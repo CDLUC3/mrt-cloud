@@ -426,7 +426,8 @@ public class StoreCloud
         long expirationMinutes,
         String bucketName,
         String key,
-        String contentType)
+        String contentType,
+        String contentDisp)
     throws TException
     {
         CloudResponse response = new CloudResponse(bucketName, key);
