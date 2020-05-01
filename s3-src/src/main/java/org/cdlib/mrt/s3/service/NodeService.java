@@ -285,6 +285,16 @@ public class NodeService
         return service.getObjectMeta(bucket, key);
     }
     
+    public CloudResponse getPreSigned (
+            long expirationMinutes,
+            String key,
+            String contentType,
+            String contentDisp)
+        throws TException
+    {
+        return service.getPreSigned(expirationMinutes, bucket, key, contentType, contentDisp);
+    }
+    
     /**
      * Retrieve cloud manifest
      * @param objectID Object identifier
