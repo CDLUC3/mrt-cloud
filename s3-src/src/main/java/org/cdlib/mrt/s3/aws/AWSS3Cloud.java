@@ -135,9 +135,13 @@ public class AWSS3Cloud
     private static final boolean ALPHANUMERIC = false;
     protected static final String NAME = "AWSS3Cloud";
     protected static final String MESSAGE = NAME + ": ";
+    
+    public enum S3Type {aws, minio, wasabi};
+    
     private AmazonS3Client s3Client = null;
     private StorageClass storageClass = null;
     private String endPoint = null;
+    private S3Type s3Type = S3Type.aws;
 
     public static AWSS3Cloud getAWSS3Region(
             String storageClass,
@@ -186,6 +190,7 @@ public class AWSS3Cloud
             endPoint,
             null);
         AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
+        cloud.setS3Type(S3Type.minio);
         return cloud;
     }
     
@@ -213,6 +218,7 @@ public class AWSS3Cloud
             endPoint,
             region);
         AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
+        cloud.setS3Type(S3Type.wasabi);
         return cloud;
     }
     
@@ -1576,6 +1582,17 @@ public class AWSS3Cloud
             }
             
             URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
+            String urlS = url.toString();
+            if (urlS.startsWith("http:") && (s3Type == S3Type.aws)) {
+                urlS = "https" + urlS.substring(4);
+                if (DEBUG) {
+                    System.out.println("Presign http to https:"
+                            + " - s3Type:" + s3Type
+                            + " - url:" + urlS
+                    );
+                }
+            }
+            url = new URL(urlS);
             response.setReturnURL(url);
             response.setStatus(CloudResponse.ResponseStatus.ok);
             
@@ -1657,5 +1674,14 @@ public class AWSS3Cloud
         Transfer.TransferState xfer_state = xfer.getState();
         logger.logMessage("showTransferProgress key:" + key + "- state:" + xfer_state, 0, true);
     }
+
+    public S3Type getS3Type() {
+        return s3Type;
+    }
+
+    public void setS3Type(S3Type s3Type) {
+        this.s3Type = s3Type;
+    }
+    
 }
 
