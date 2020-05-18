@@ -1127,6 +1127,15 @@ public class AWSS3Cloud
             addProp(prop, "modified", isoDate);
             addProp(prop, "md5", metadata.getContentMD5());
             addProp(prop, "storageClass", metadata.getStorageClass());
+            Date expireDate = metadata.getExpirationTime();
+            if (expireDate != null) {
+                Long expireDateL = expireDate.getTime();
+                addProp(prop, "expires", "" + expireDateL);
+                Long current = new Date().getTime();
+                if (current < expireDateL) {
+                    addProp(prop, "expRemain", "" + (expireDateL - current));
+                }
+            }
             Boolean restoreFlag = metadata.getOngoingRestore();
             if ((restoreFlag != null) && restoreFlag) {
                 addProp(prop, "ongoingRestore", "true");
