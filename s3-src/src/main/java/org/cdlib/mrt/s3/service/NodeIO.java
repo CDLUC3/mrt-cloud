@@ -534,6 +534,7 @@ public class NodeIO
                 String storageClassS = cloudProp.getProperty("storageClass");
                 if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
                 String regionS = cloudProp.getProperty("region");
+                accessMode = cloudProp.getProperty("accessMode");
                 service = AWSS3Cloud.getAWSS3Region(storageClassS, regionS, logger);
                 
             } else if (serviceType.equals("minio")) {
@@ -709,8 +710,9 @@ public class NodeIO
     {    
         if (DEBUG) System.out.println("NodeIO: getInputStream entered:" + storageURLS);
         DeleteOnCloseFileInputStream deleteInputStream = null;
+        File tempFile = null;
         try {
-            File tempFile = FileUtil.getTempFile("temp", ".txt");
+            tempFile = FileUtil.getTempFile("xtemp", ".txt");
             AccessKey access = getAccessKey(storageURLS);
             if (access == null) {
                 throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "Unable to access:" + storageURLS);
@@ -729,10 +731,15 @@ public class NodeIO
             
             
         } catch (TException tex) {
+            if (tempFile != null) {
+                tempFile.delete();
+            }
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
+            if (tempFile != null) {
+                tempFile.delete();
+            }
             ex.printStackTrace();
             throw new TException(ex);
         }

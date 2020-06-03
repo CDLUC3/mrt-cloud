@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.utility.LoggerInf;
+import org.cdlib.mrt.utility.StringUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -75,8 +76,37 @@ public class NodeIOTest {
             throw ex;
         }
     }
-    
 
+    public void testGlacier(String nodeName, long nodeNumber, LoggerInf logger) 
+        throws Exception
+    {
+        System.out.println("test:"
+                + " - nodeName:" + nodeName
+                + " - nodeNumber:" + nodeNumber
+        );
+        NodeIO nodeIO = null;
+        try {
+            nodeIO = NodeIO.getNodeIO(nodeName, logger);
+            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(nodeNumber);
+            if (accessNode == null) {
+               throw new TException.REQUESTED_ITEM_NOT_FOUND("test fails:"
+                  + " - nodeName:" + nodeName
+                  + " - nodeNumber:" + nodeNumber
+               );
+            }
+            CloudStoreInf service = accessNode.service;
+            String container = accessNode.container;
+            String accessMode = accessNode.accessMode;
+            if (StringUtil.isAllBlank(accessMode) || !accessMode.equals("near-line")) {
+                throw new TException.INVALID_CONFIGURATION("Glacier content must be 'near-line'");
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
+    
     //@Test
     public void testNodeIOUNM()
         throws TException
@@ -99,15 +129,17 @@ public class NodeIOTest {
     public void testNodeIOStage()
         throws TException
     {
+        String nodeName="nodes-stage";
         LoggerInf logger = new TFileLogger("sh", 2, 2);
         try {
-            test("nodes-stage", 5001, logger);
-            test("nodes-stage", 6001, logger);
-            test("nodes-stage", 9502, logger);
-            test("nodes-stage", 3042, logger);
-            test("nodes-stage", 4101, logger);
-            test("nodes-stage", 7001, logger);
-            test("nodes-stage", 2002, logger);
+            test(nodeName, 5001, logger);
+            test(nodeName, 6001, logger);
+            test(nodeName, 9502, logger);
+            test(nodeName, 3042, logger);
+            test(nodeName, 4101, logger);
+            test(nodeName, 7001, logger);
+            test(nodeName, 2002, logger);
+            testGlacier(nodeName, 6001, logger);
             assertTrue(true);
             
         } catch (Exception ex) {
@@ -120,15 +152,17 @@ public class NodeIOTest {
     public void testNodeIOProd()
         throws TException
     {
+        String nodeName="nodes-prod";
         LoggerInf logger = new TFileLogger("sh", 2, 2);
         try {
-            test("nodes-prod", 5001, logger);
-            test("nodes-prod", 6001, logger);
-            test("nodes-prod", 7001, logger);
-            test("nodes-prod", 4001, logger);
-            test("nodes-prod", 3041, logger);
-            test("nodes-prod", 9501, logger);
-            test("nodes-prod", 2001, logger);
+            test(nodeName, 5001, logger);
+            test(nodeName, 6001, logger);
+            test(nodeName, 7001, logger);
+            test(nodeName, 4001, logger);
+            test(nodeName, 3041, logger);
+            test(nodeName, 9501, logger);
+            test(nodeName, 2001, logger);
+            testGlacier(nodeName, 6001, logger);
             assertTrue(true);
             
         } catch (Exception ex) {
