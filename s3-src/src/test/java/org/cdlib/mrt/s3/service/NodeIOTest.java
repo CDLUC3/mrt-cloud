@@ -25,6 +25,7 @@ import org.cdlib.mrt.utility.TFileLogger;
  */
 public class NodeIOTest {
     public static final boolean ALPHANUMERIC = true;
+    public static final boolean RUNSTATE = false;
     public static final boolean PROCESS = true;
 	public static final String KEY = "ark:/99999/test|1|prod/test";
         //public static final String nodeName = "nodes-dev";
@@ -68,7 +69,11 @@ public class NodeIOTest {
             CloudStoreInf service = accessNode.service;
             String container = accessNode.container;
             StateHandler stateHandler = StateHandler.getStateHandler(service, container, KEY, logger);
-            //StateHandler.RetState result =  stateHandler.process();
+            if (RUNSTATE) {
+                StateHandler.RetState result =  stateHandler.process();
+                System.out.println(result.dump("NodeIOTest Test " + nodeName + ":" + nodeNumber));
+                assertTrue("NodeIOTest Fail Test " + nodeName + ":" + nodeNumber, result.getOk());
+            }
             //return new Test(nodeNumber, result);
             
         } catch (Exception ex) {
