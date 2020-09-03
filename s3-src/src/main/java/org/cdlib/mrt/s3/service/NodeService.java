@@ -55,6 +55,13 @@ public class NodeService
     protected long node = 0;
     protected LoggerInf logger = null;
     
+    public static NodeService getNodeServiceConfig(String config, long node, LoggerInf logger)
+        throws TException
+    {  
+        NodeIO.AccessNode accessNode=NodeIO.getNodeIOAccess(config, node, logger);
+        return new NodeService(accessNode, node, logger);
+    }
+    
     public static NodeService getNodeService(String nodeName, long node, LoggerInf logger)
         throws TException
     {
