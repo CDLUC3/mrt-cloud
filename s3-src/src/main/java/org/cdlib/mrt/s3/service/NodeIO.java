@@ -33,15 +33,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;      
 import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.List;      
+import java.util.HashMap;   
+import java.util.Set;
 import java.util.Properties;
 import org.cdlib.mrt.s3.aws.AWSS3Cloud;
 import org.cdlib.mrt.s3.cloudhost.CloudhostAPI;
 import org.cdlib.mrt.s3.openstack.OpenstackCloud;
 import org.cdlib.mrt.s3.pairtree.PairtreeCloud;
-import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.store.StoreCloud;
 import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 import org.cdlib.mrt.utility.FileUtil;
@@ -49,7 +50,6 @@ import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFileLogger;
-
 /**
  *
  * @author DLoy
@@ -245,37 +245,70 @@ public class NodeIO
     private static boolean DEBUG = false;
     private static boolean DEBUG_ACCESS = false;
     
-    protected HashMap<Long,AccessNode> map = new HashMap<>();
+    protected HashMap<Long,AccessNode> accessNodes = new HashMap<>();
     protected String nodeName = null;
     protected LoggerInf logger = null;
+    //protected ConfigType configType = ConfigType.jar;
     
+    //public enum ConfigType {jar, file, ssm, yaml};
     
     public static void main(String[] args) throws Exception {
+        //main_ssm(args);
+        //main_ssm_default(args);
+        //main_file(args);
+        //main_yaml(args);
+        main_yaml2(args);
+        //main_jar(args);
+    }
+    
+    public static void main_ssm(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        NodeIO nodeIO = new NodeIO("nodes-dev", logger);
+        String ssmBase = "SSM:/uc3/mrt/stg/";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(ssmBase, logger) ;
         nodeIO.printNodes("main dump");
-        
-        String urlS = "http://store-dev.cdlib.org:35121"
-                + "/content/910/ark%3A%2F99999%2Ffk4db8k7z/1/producer%2Fsource.mets.xml?fixity=no";
-        //URL url = new URL( "http://store-aws-dev.cdlib.org:35121/content/9001/ark%3A%2F99999%2Ff" 
-        //        + "k4ww7m184/1/producer%2Fmrt-datacite.xml");
-        //String urlS = "http://store-aws-dev.cdlib.org:35121/content/9001/ark%3A%2F99999%2Ff" 
-        //        + "k4ww7m184/1/producer%2Fmrt-datacite.xml";
-        AccessKey accessKey = nodeIO.getAccessKey(urlS);
-        System.out.println(accessKey.dump("main"));
-        if (false) return;
-        File tempFile = FileUtil.getTempFile("temp", ".txt");
-        try {
-            nodeIO.getFile(urlS,tempFile);
-            String out = FileUtil.file2String(tempFile);
-            System.out.println("OUT:\n" + out);
-        } catch (Exception ex) {
-            
-        } finally {
-            tempFile.delete();
-        }
+    } 
+    
+    public static void main_ssm_default(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String ssmBase = "SSM:";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(ssmBase, logger) ;
+        nodeIO.printNodes("main dump");
     }
+    
+    public static void main_file(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String fileBase = ""
+                + "file:/apps/replic/tasks/nodeio/200728-newnodeio/nodes";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(fileBase, logger) ;
+        nodeIO.printNodes("main dump");
+    } 
+    
+    public static void main_jar(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String jarBase = "jar:nodes-stage";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
+        nodeIO.printNodes("jar dump");
+    } 
+    
+    public static void main_yaml(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "yaml:/apps/replic/tasks/date/200514-yaml/cloudConfig4.yml|nodes-stage";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        nodeIO.printNodes("yaml dump");
+    }  
+    
+    public static void main_yaml2(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "yaml:/apps/replic/tasks/date/200514-yaml/cloudConfig4.yml|nodes-pairtree-docker-ec2";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        nodeIO.printNodes("yaml dump");
+    } 
     
     
     public static void testmain(String[] args) throws Exception {
@@ -293,20 +326,71 @@ public class NodeIO
         System.out.println("ref = " + aURL.getRef());
         System.out.println("pathdecode = " + URLDecoder.decode(aURL.getPath(), "utf-8"));
     }
+    
+    public static AccessNode getNodeIOAccess(String nodeName, long nodeNumber, LoggerInf logger) 
+        throws TException
+    {
+        
+        try {
+            
+            if (nodeName== null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "nodeName required and missing");
+            }
+            NodeIO nodeIO = getNodeIOConfig(nodeName, logger);
+            return nodeIO.getAccessNode(nodeNumber);
+            
+        } catch (TException tex) {
+            throw tex;
+            
+        } catch (Exception ex) {
+            System.out.println(MESSAGE + "Exception:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+    
+    public static NodeIO getNodeIOConfig(String config, LoggerInf logger) 
+        throws TException
+    {
+        NodeIO nodeIO = NodeIOConf.getNodeIOConfig(config, logger);
+        return nodeIO;
+    }
+    
+    /**
+     * DefNode extract of multiple nodes from list
+     * @param ssmBase SSM path
+     * @param nodeNumber list of nodeNumbers to resolve
+     * @param logger
+     * @throws TException 
+     */
+    public NodeIO(List<DefNode> defNodes, LoggerInf logger)
+            throws TException
+    {
+        try {
+            if (logger == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "log missing");
+            }
+            this.logger = logger;
+            for (DefNode defNode : defNodes) {
+                addMapEntry(defNode);
+            }
+            
+        } catch (TException tex) {
+            throw tex;
+            
+        } catch (Exception ex) {
+            System.out.println(MESSAGE + "Exception:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
 
     public static AccessNode getCloudNode(String nodeName, long node, LoggerInf logger) 
         throws TException
     {
-        NodeIO nodeIO = new NodeIO(nodeName, node,  logger);
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(nodeName, logger);
         AccessNode cloudNode = nodeIO.getNode(node);
         return cloudNode;
-    }
-
-    public static NodeIO getNodeIO(String nodeName, LoggerInf logger) 
-        throws TException
-    {
-        NodeIO nodeIO = new NodeIO(nodeName, logger);
-        return nodeIO;
     }
     
     public NodeIO(String nodeName,LoggerInf logger) 
@@ -332,6 +416,13 @@ public class NodeIO
             ex.printStackTrace();
             throw new TException(ex);
         }
+    }
+
+    public static NodeIO getNodeIO(String nodeName, LoggerInf logger) 
+        throws TException
+    {
+        NodeIO nodeIO = new NodeIO(nodeName, logger);
+        return nodeIO;
     }
     
     public NodeIO(String nodeName, long node, LoggerInf logger) 
@@ -450,7 +541,7 @@ public class NodeIO
     public AccessNode getNode(long node) 
         throws TException
     {
-        return map.get(node);
+        return accessNodes.get(node);
     }
     
     protected long getNode(String line) 
@@ -492,9 +583,14 @@ public class NodeIO
             if (parts.length == 3) {
                 container = parts[2];
             }
-            AccessNode copyNode = getAccessNode(nodeNumber, container, propName);
+            
+            Properties cloudProp = getNodeProp(propName);
+            if (cloudProp == null) {
+                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - Unable to locate:" +  propName);
+            }
+            AccessNode copyNode = getAccessNode(nodeNumber, container, null, cloudProp, logger);
             if (DEBUG) System.out.println(copyNode.dump("copyNode"));
-            map.put(nodeNumber, copyNode);
+            accessNodes.put(nodeNumber, copyNode);
             
             
         } catch (TException tex) {
@@ -508,24 +604,66 @@ public class NodeIO
         
     }
     
-    protected AccessNode getAccessNode(Long nodeNumber, String container, String propName) 
+    private AccessNode addMapEntry(DefNode defNode)
+        throws TException
+    {
+        try {
+            AccessNode copyNode = addMapEntry(defNode.nodeNumber, defNode.bucket, defNode.nodeDescription, defNode.propNodeDef);
+            
+            if (DEBUG) System.out.println(copyNode.dump("copyNode"));
+            accessNodes.put(defNode.nodeNumber, copyNode);
+            return copyNode;
+            
+        } catch (TException tex) {
+            throw tex;
+            
+        } catch (Exception ex) {
+            System.out.println(MESSAGE + "Exception:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+        
+    }
+    
+    
+    protected AccessNode addMapEntry(Long nodeNumber, String container, String nodeDescription, Properties cloudProp) 
+        throws TException
+    {
+        try {
+            
+            AccessNode copyNode = getAccessNode(nodeNumber, container, nodeDescription, cloudProp, logger);
+            if (DEBUG) System.out.println(copyNode.dump("copyNode"));
+            accessNodes.put(nodeNumber, copyNode);
+            return copyNode;
+            
+            
+        } catch (TException tex) {
+            throw tex;
+            
+        } catch (Exception ex) {
+            System.out.println(MESSAGE + "Exception:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+        
+    }
+    
+    public static AccessNode getAccessNode(Long nodeNumber, String container, String nodeDescription, Properties cloudProp, LoggerInf logger) 
         throws TException
     {
         CloudStoreInf service = null;
         if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
                 + " - nodeNumber=" + nodeNumber
                 + " - container=" + container
-                + " - propName=" + propName
         );
         String accessMode = null;
         try {
-            Properties cloudProp = getNodeProp(propName);
             if (cloudProp == null) {
-                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - Unable to locate:" +  propName);
+                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - CloudProp not supplied");
             }
             String serviceType = cloudProp.getProperty("serviceType");
             if (StringUtil.isAllBlank(serviceType)) {
-                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - serviceType property required but not found for :" +  propName);
+                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - serviceType property required but not found");
             }
             if (serviceType.equals("swift")) {
                 service = OpenstackCloud.getOpenstackCloud(cloudProp, logger);
@@ -584,7 +722,7 @@ public class NodeIO
             } else {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - serviceType not found for :" +  serviceType);
             }
-            AccessNode copyNode = new AccessNode(serviceType, accessMode, service, nodeNumber, container);
+            AccessNode copyNode = new AccessNode(serviceType, accessMode, service, nodeNumber, container, nodeDescription);
             return copyNode;
             
             
@@ -600,10 +738,9 @@ public class NodeIO
         
     }
     
-    
     public AccessNode getAccessNode(long nodeNumber) 
     {
-        return map.get(nodeNumber);
+        return accessNodes.get(nodeNumber);
     }
     
     
@@ -745,18 +882,19 @@ public class NodeIO
         }
         
     }
-
+    
     public Collection<AccessNode> getCollection() {
-        return map.values();
+        return accessNodes.values();
     }
 
     public HashMap<Long, AccessNode> getMap() {
-        return map;
+        return accessNodes;
     }
     
     public void printNodes(String header)
     {
-        System.out.println("\nNodeIO:" + header);
+        System.out.println("\nNodeIO: " + header);
+        System.out.println("nodeName: " + getNodeName() +"\n");
         int cnt = 0;
         Collection<AccessNode> collection = getCollection();
         for (AccessNode node : collection) {
@@ -768,6 +906,7 @@ public class NodeIO
     public void printNodes(String header, long nodeNumber)
     {
         System.out.println("\nNodeIO:" + header);
+        System.out.println("nodeName: " + getNodeName() +"\n");
         int cnt = 0;
         Collection<AccessNode> collection = getCollection();
         for (AccessNode node : collection) {
@@ -778,8 +917,26 @@ public class NodeIO
         }
     }
 
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
     public String getNodeName() {
         return nodeName;
+    }
+
+    public HashMap<Long, AccessNode> getAccessNodesMap() {
+        return accessNodes;
+    }
+
+    public ArrayList<AccessNode> getAccessNodesList() {
+        ArrayList<AccessNode> responseArr = new ArrayList();
+        Set<Long> nodes = accessNodes.keySet();
+        for (Long node : nodes) {
+            AccessNode accessNode = accessNodes.get(node);
+            responseArr.add(accessNode);
+        }
+        return responseArr;
     }
     
     public static class AccessKey
@@ -812,6 +969,7 @@ public class NodeIO
         public String serviceType = null;
         public String accessMode = null;
         public Long nodeNumber = null;
+        public String nodeDescription = null;
         public String container = null;
         public AccessNode() { }
         public AccessNode(
@@ -827,6 +985,21 @@ public class NodeIO
             this.nodeNumber = nodeNumber;
             this.container = container;
         }
+        public AccessNode(
+            String serviceType,
+            String accessMode,
+            CloudStoreInf service,
+            Long nodeNumber,
+            String container,
+            String nodeDescription
+        ) {
+            this.serviceType = serviceType;
+            this.accessMode = accessMode;
+            this.service = service;
+            this.nodeNumber = nodeNumber;
+            this.container = container;
+            this.nodeDescription = nodeDescription;
+        }
         
         public String dump(String header)
         {
@@ -839,10 +1012,9 @@ public class NodeIO
                     + " - serviceType:" + serviceType
                     + " - accessMode:" + accessMode
                     + " - container:" + container
+                    + " - nodeDescription:" + nodeDescription
             );
             return buf.toString();
         }
     }
-    
-    
 }

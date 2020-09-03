@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -94,6 +95,28 @@ public class CloudManifestCopyTiming {
         throws TException
     {
         NodeIO nodeIO = new NodeIO(nodeName, logger);
+        nodeIO.printNodes("CloudManifestCopyNode" + nodeName);
+        NodeIO.AccessNode inAccessNode = nodeIO.getAccessNode(inNode);
+        NodeIO.AccessNode outAccessNode = nodeIO.getAccessNode(outNode);
+        System.out.println("setServices:" 
+                + " - inAccessNode.container=" + inAccessNode.container
+                + " - outAccessNode.container=" + outAccessNode.container
+        );
+        CloudManifestCopyTiming cmc = new CloudManifestCopyTiming(inAccessNode.service, inAccessNode.container,
+            outAccessNode.service, outAccessNode.container, printWriter, logger);
+        return cmc;
+    }
+    
+    public static CloudManifestCopyTiming getCloudManifestCopyTimingJSON(
+            String nodeName,
+            long inNode,
+            long outNode,
+            PrintWriter printWriter,
+            LoggerInf logger
+    ) 
+        throws TException
+    {
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(nodeName, logger);
         nodeIO.printNodes("CloudManifestCopyNode" + nodeName);
         NodeIO.AccessNode inAccessNode = nodeIO.getAccessNode(inNode);
         NodeIO.AccessNode outAccessNode = nodeIO.getAccessNode(outNode);
