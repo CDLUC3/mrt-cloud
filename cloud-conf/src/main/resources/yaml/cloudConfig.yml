@@ -124,7 +124,7 @@ nodes-tables:
         desc: "ONEShare"
 
       - # Dryad, AWS Standard
-        identifier: 3041
+        identifier: 3042
         <<: *aws-std
         bucket: dryad-assetstore-merritt-stage
         desc: "Merritt Dryad"
