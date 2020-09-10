@@ -1,0 +1,174 @@
+---
+node-table: "{!ENV: NODE_TABLE}"
+services: &services
+  aws-near: &aws-near
+    type: aws-near
+    service-properties:
+      serviceType: aws
+      accessMode: near-line
+      region: us-west-2
+
+  aws-std: &aws-std
+    type: aws-std
+    service-properties:
+      serviceType: aws
+      accessMode: on-line
+      storageClass: Standard
+      region: us-west-2
+
+  ch-unm-prd: &ch-unm-prd
+    type: ch-unm-prd
+    service-properties:
+      serviceType: cloudhost
+      base: http://oneshare.unm.edu:8080/cloudhost
+
+  minio-sdsc-new: &minio-sdsc-new
+    type: minio-sdsc
+    service-properties:
+      serviceType: minio
+      endPoint: https://cdl.s3.sdsc.edu:443
+      accessKey: "{!SSM: cloud/nodes/sdsc-accessKey !DEFAULT: SSMFAIL}"
+      secretKey: "{!SSM: cloud/nodes/sdsc-secretKey !DEFAULT: SSMFAIL}"
+
+  minio-docker: &minio-docker
+    type: minio-docker
+    service-properties:
+      serviceType: minio
+      endPoint: http://my-minio-localhost-alias:9000
+      accessKey: minioadmin
+      secretKey: minioadmin
+
+  minio-sdsc-new: &minio-docker-ec2
+    type: minio-docker-ec2
+    service-properties:
+      serviceType: minio
+      endPoint: http://uc3-mrtdocker2-stg.cdlib.org:8088
+      accessKey: minioadmin
+      secretKey: minioadmin
+
+  pair-docker: &pair-docker
+    type: pair-docker
+    service-properties:
+      serviceType: pairtree
+      base: /opt/storage
+
+  wasabi-east: &wasabi-east
+    type: wasabi-east
+    service-properties:
+      serviceType: wasabi
+      endPoint: https://s3.us-east-2.wasabisys.com:443
+      accessKey: "{!SSM: cloud/nodes/wasabi-accessKey !DEFAULT: SSMFAIL}"
+      secretKey: "{!SSM: cloud/nodes/wasabi-secretKey !DEFAULT: SSMFAIL}"
+      regionName: us-east-2
+
+nodes-tables:
+  nodes-prod:
+      - # AWS Standard
+        identifier: 5001
+        <<: *aws-std
+        bucket: uc3-s3mrt5001-prd
+
+      - # AWS Glacier
+        identifier: 6001
+        <<: *aws-near
+        bucket: uc3-s3mrt6001-prd
+
+      - # Merritt Cloudhost - on AWS
+        identifier: 7001
+        <<: *aws-std
+        bucket: uc3-s3mrt1001-prd
+
+      - # UNM Remote Storage
+        identifier: 4001
+        <<: *ch-unm-prd
+        bucket: 8101
+
+      - # Dryad, AWS Standard
+        identifier: 3041
+        <<: *aws-std
+        bucket: dryad-assetstore-merritt-west
+
+      - # SDSC Minio, Mar 2020
+        identifier: 9501
+        <<: *minio-sdsc-new
+        bucket: cdl.sdsc.prod
+
+      - # Wasabi
+        identifier: 2001
+        <<: *wasabi-east
+        bucket: uc3-wasabi-useast-2.prod
+
+  nodes-stage:
+      - # AWS Standard
+        identifier: 5001
+        <<: *aws-std
+        bucket: uc3-s3mrt5001-stg
+        desc: "AWS standard stage"
+
+      - # AWS Glacier
+        identifier: 6001
+        <<: *aws-near
+        bucket: uc3-s3mrt6001-stg
+        desc: "AWS glacier stage"
+
+      - # Merritt Cloudhost - on AWS
+        identifier: 7001
+        <<: *aws-std
+        bucket: uc3-s3mrt1001-stg
+        desc: "###ArchiveNode"
+
+      - # UNM Remote Storage
+        identifier: 4101
+        <<: *minio-sdsc-new
+        bucket: cdl.sdsc.stg4101
+        desc: "ONEShare"
+
+      - # Dryad, AWS Standard
+        identifier: 3041
+        <<: *aws-std
+        bucket: dryad-assetstore-merritt-stage
+        desc: "Merritt Dryad"
+
+      - # SDSC Minio
+        identifier: 9502
+        <<: *minio-sdsc-new
+        bucket: cdl.sdsc.stage
+        desc: "sdsc minio"
+
+      - # Wasabi
+        identifier: 2002
+        <<: *wasabi-east
+        bucket: uc3-wasabi-useast-2.stage
+        desc: "wasabi s3"
+
+  nodes-pairtree-docker:
+      - # Pairtree 1
+        identifier: 8012
+        <<: *pair-docker
+        bucket: /opt/storage
+
+      - # Pairtree 2
+        identifier: 7001
+        <<: *pair-docker
+        bucket: /opt/storage
+
+      - # Minio Docker
+        identifier: 7777
+        <<: *minio-docker
+        bucket: my-bucket
+
+  nodes-pairtree-docker-ec2:
+      - # Pairtree 1
+        identifier: 8012
+        <<: *pair-docker
+        bucket: /opt/storage
+
+      - # Pairtree 2
+        identifier: 7001
+        <<: *pair-docker
+        bucket: /opt/storage
+
+      - # Minio Docker EC2
+        identifier: 7777
+        <<: *minio-docker-ec2
+        bucket: my-bucket

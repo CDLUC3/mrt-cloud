@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.cdlib.mrt.s3.service;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;      
 import java.util.List;      
 import java.util.Properties;
@@ -249,12 +250,7 @@ public class NodeIOConf
         throws TException
     {
         try {
-            if (DEBUG) System.out.println("Add:" + yamlName);
-            String[] parts = yamlName.split("\\s*\\|\\s*");
-            if (parts.length < 2) {
-                throw new TException.INVALID_OR_MISSING_PARM("getNodeIOYaml requires 2 parts:" + yamlName);
-            }
-            return getNodeIOYaml(parts[0], parts[1], logger);
+            return getNodeIOYaml(logger);
             
             
         } catch (TException tex) {
@@ -268,34 +264,48 @@ public class NodeIOConf
         
     }
     
-    public static NodeIO getNodeIOYaml(String yamlPath, String envName, LoggerInf logger) 
+    public static NodeIO getNodeIOYaml(LoggerInf logger) 
         throws TException
     {
         
         try {
-            SSMConfigResolver ssm = new SSMConfigResolver();
-            
-            if (StringUtil.isAllBlank(envName)) {
-                throw new TException.INVALID_OR_MISSING_PARM("Yaml envName missing");
+            NodeIO.AccessNode test = new NodeIO.AccessNode();
+            String propName = "yaml/cloudConfig.yml";
+            InputStream propStream =  test.getClass().getClassLoader().
+                    getResourceAsStream(propName);
+            if (propStream == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("yaml/cloudConfig.yml not found");
             }
+            String inYml = StringUtil.streamToString(propStream, "utf8");
+            if (DEBUG) System.out.println("***inYml:\n" + inYml);
+            
+            
             List<DefNode> defNodes = new ArrayList<DefNode>();
             SSMConfigResolver ssmResolver = new SSMConfigResolver();
             YamlParser yamlParser = new YamlParser(ssmResolver);
-            File fin = new File(yamlPath);
-            if (!fin.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM("Yaml file does not exist:" + yamlPath);
+            yamlParser.parseString(inYml);
+            try {
+                yamlParser.resolveValues();
+            } catch (Exception ex) {
+                throw new TException.INVALID_OR_MISSING_PARM("resolve on yalParser fails: - Exception:" + ex);
             }
-            if (DEBUG) {
-                String inYml = FileUtil.file2String(fin);
-                System.out.println("inYml:\n" + inYml);
-            }
-            yamlParser.parse(yamlPath);
-            yamlParser.resolveValues();
             String jsonout = yamlParser.dumpJson();
 
             JSONObject jsonBase = new JSONObject(jsonout);
+            if (DEBUG) System.out.println("***jsonBase\n" + jsonBase.toString());
+            
+            String nodeTable = null;
+            try {
+                nodeTable = jsonBase.getString("node-table");
+            } catch (Exception ex) {
+                nodeTable = null;
+            }
+            String envName = nodeTable;
+            if (envName == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("Yaml envName missing");
+            }
+            
             JSONObject nodestables = jsonBase.getJSONObject("nodes-tables");
-            if (DEBUG) System.out.println("nodestables\n" + nodestables.toString());
             JSONArray envTables = nodestables.getJSONArray(envName);
             for (int i=0; i<envTables.length(); i++) {
                 JSONObject entry = envTables.optJSONObject(i);
@@ -306,7 +316,7 @@ public class NodeIOConf
             }
             NodeIO nodeIO = new NodeIO(defNodes, logger);
             
-            nodeIO.setNodeName("yaml:" + yamlPath + "|" + envName);
+            nodeIO.setNodeName("yaml:");
             return nodeIO;
             
         } catch (TException tex) {

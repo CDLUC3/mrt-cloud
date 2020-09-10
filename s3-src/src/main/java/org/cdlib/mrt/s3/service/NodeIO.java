@@ -257,7 +257,7 @@ public class NodeIO
         //main_ssm_default(args);
         //main_file(args);
         //main_yaml(args);
-        main_yaml2(args);
+        main_yaml(args);
         //main_jar(args);
     }
     
@@ -297,7 +297,7 @@ public class NodeIO
     public static void main_yaml(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String yamlName = "yaml:/apps/replic/tasks/date/200514-yaml/cloudConfig4.yml|nodes-stage";
+        String yamlName = "yaml:";
         NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
         nodeIO.printNodes("yaml dump");
     }  
