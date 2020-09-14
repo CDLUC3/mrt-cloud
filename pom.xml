@@ -27,7 +27,7 @@
         <module>cloud-conf</module>
         <module>openstack-src</module>
         <module>s3-src</module>
-        <module>node-test</module>
+        <!--module>node-test</module-->
         <!--module>s3-test</module>
         <module>s3-cmd</module-->
     </modules>
