@@ -139,11 +139,11 @@ public class NodeIOTest {
         try {
             test(nodeName, 5001, logger);
             test(nodeName, 6001, logger);
-            test(nodeName, 9502, logger);
+            //test(nodeName, 9502, logger);
             test(nodeName, 3042, logger);
             test(nodeName, 4101, logger);
             test(nodeName, 7001, logger);
-            test(nodeName, 2002, logger);
+            //test(nodeName, 2002, logger);
             testGlacier(nodeName, 6001, logger);
             assertTrue(true);
             
@@ -165,8 +165,8 @@ public class NodeIOTest {
             test(nodeName, 7001, logger);
             test(nodeName, 4001, logger);
             test(nodeName, 3041, logger);
-            test(nodeName, 9501, logger);
-            test(nodeName, 2001, logger);
+            //test(nodeName, 9501, logger);
+            //test(nodeName, 2001, logger);
             testGlacier(nodeName, 6001, logger);
             assertTrue(true);
             
