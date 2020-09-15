@@ -30,11 +30,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.cdlib.mrt.s3.service;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;      
 import java.util.List;      
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static org.cdlib.mrt.s3.service.NodeIO.MESSAGE;
 import org.cdlib.mrt.tools.SSMConfigResolver;
 import org.cdlib.mrt.tools.YamlParser;
 import org.cdlib.mrt.utility.FileUtil;
@@ -52,46 +55,29 @@ public class NodeIOConf
     protected static final String MESSAGE = NAME + ": ";
     private static boolean DEBUG = false;
     private static boolean DEBUG_ACCESS = false;
-    private static Pattern pConfig = Pattern.compile("(ssm|file|jar|yaml):[\\s]*([^\\s]*)[\\s]*");
+    private static Pattern pConfig = Pattern.compile("(jar|yaml):[\\s]*([^\\s]*)[\\s]*");
     private static Pattern p2Config = Pattern.compile("([^\\s]*):[\\s]*([^\\s]*)[\\s]*");
     
     protected String nodeName = null;
     protected LoggerInf logger = null;
     protected ConfigType configType = ConfigType.jar;
     
-    public enum ConfigType {jar, file, ssm, yaml};
+    public enum ConfigType {jar, yaml};
     
     public static void main(String[] args) throws Exception {
         //main_ssm(args);
-        main_ssm_default(args);
+        main_yaml(args);
         //main_file(args);
         //main_jar(args);
     }
     
-    public static void main_ssm(String[] args) throws Exception {
+    public static void main_yaml(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String ssmBase = "SSM:/uc3/mrt/stg/";
-        NodeIO nodeIO = NodeIOConf.getNodeIOConfig(ssmBase, logger) ;
-        nodeIO.printNodes("main dump");
-    } 
-    
-    public static void main_ssm_default(String[] args) throws Exception {
-
-        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String ssmBase = "SSM:";
+        String ssmBase = "yaml:";
         NodeIO nodeIO = NodeIOConf.getNodeIOConfig(ssmBase, logger) ;
         nodeIO.printNodes("main dump");
     }
-    
-    public static void main_file(String[] args) throws Exception {
-
-        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String fileBase = ""
-                + "file:/apps/replic/tasks/nodeio/200728-newnodeio/nodes";
-        NodeIO nodeIO = NodeIOConf.getNodeIOConfig(fileBase, logger) ;
-        nodeIO.printNodes("main dump");
-    } 
     
     public static void main_jar(String[] args) throws Exception {
 
@@ -99,33 +85,12 @@ public class NodeIOConf
         String jarBase = "jar:nodes-stage";
         NodeIO nodeIO = NodeIOConf.getNodeIOConfig(jarBase, logger) ;
     }
-
-    public static NodeIO getNodeIOConfig(LoggerInf logger) 
-        throws TException
-    {
-        
-        try {
-            ConfigType configType = ConfigType.ssm;
-            return getNodeIOSSM(null,  logger);
-            
-        } catch (TException tex) {
-            throw tex;
-            
-        } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
+    
+    
     public static NodeIO getNodeIOConfig(String config, LoggerInf logger) 
         throws TException
     {
-       
-        
         ConfigType configType = ConfigType.jar;
-        if (StringUtil.isAllBlank(config)) {
-            return getNodeIOConfig(logger);
-        }
         
         String test = config.toLowerCase();
         String type = "jar";
@@ -147,8 +112,6 @@ public class NodeIOConf
             
             switch (configType) {
                 case jar:  return getNodeIOJar(nodeIOName, logger);
-                case file: return getNodeIOFile(nodeIOName,  logger);
-                case ssm: return getNodeIOSSM(nodeIOName,  logger);
                 case yaml: return getNodeIOYaml(nodeIOName,  logger);
             default: 
                 throw new TException.INVALID_OR_MISSING_PARM("NodeIO configuration switch not found:" + configType);
@@ -185,76 +148,11 @@ public class NodeIOConf
         }
     }
     
-    public static NodeIO getNodeIOSSM(String ssmBase, LoggerInf logger) 
-        throws TException
-    {
-        
-        try {
-            SSMConfigResolver ssm = new SSMConfigResolver(ssmBase);
-            
-            List<DefNode> defNodes = new ArrayList<DefNode>();
-            String jsonS = ssm.getResolvedValue("cloud/nodes/services");
-            
-                System.out.println("JSONNODES:" + jsonS);
-            JSONObject jobj = new JSONObject(jsonS);
-            JSONArray jarr = jobj.getJSONArray("nodes");
-            
-            for (int i=0; i < jarr.length(); i++) {
-                JSONObject serviceNode = (JSONObject)jarr.get(i);
-                DefNode defNode = getNodeSSM(ssm, serviceNode, logger);
-                defNodes.add(defNode);
-            }
-            NodeIO nodeIO = new NodeIO(defNodes, logger);
-            nodeIO.setNodeName("ssm:" + ssmBase);
-            return nodeIO;
-            
-        } catch (TException tex) {
-            throw tex;
-            
-        } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-    
-    public static DefNode getNodeSSM(SSMConfigResolver ssm, JSONObject serviceNode, LoggerInf logger) 
-        throws TException
-    {
-        
-        try {
-            
-            if (serviceNode == null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "ssmNode required and missing");
-            }
-                long nodeNumber = serviceNode.getLong("id");
-                String nodeDescription = serviceNode.getString("desc");
-                
-                String jsonNodeS = ssm.getResolvedStorageNode(nodeNumber);
-                JSONObject jsonObject = new JSONObject((String)jsonNodeS);
-                DefNode defNode = jsonDefNode(nodeNumber, nodeDescription, null, jsonObject);
-            return defNode;
-            
-        } catch (TException tex) {
-            throw tex;
-            
-        } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-    
     public static NodeIO getNodeIOYaml(String yamlName, LoggerInf logger) 
         throws TException
     {
         try {
-            if (DEBUG) System.out.println("Add:" + yamlName);
-            String[] parts = yamlName.split("\\s*\\|\\s*");
-            if (parts.length < 2) {
-                throw new TException.INVALID_OR_MISSING_PARM("getNodeIOYaml requires 2 parts:" + yamlName);
-            }
-            return getNodeIOYaml(parts[0], parts[1], logger);
+            return getNodeIOYaml(logger);
             
             
         } catch (TException tex) {
@@ -268,34 +166,48 @@ public class NodeIOConf
         
     }
     
-    public static NodeIO getNodeIOYaml(String yamlPath, String envName, LoggerInf logger) 
+    public static NodeIO getNodeIOYaml(LoggerInf logger) 
         throws TException
     {
         
         try {
-            SSMConfigResolver ssm = new SSMConfigResolver();
-            
-            if (StringUtil.isAllBlank(envName)) {
-                throw new TException.INVALID_OR_MISSING_PARM("Yaml envName missing");
+            NodeIO.AccessNode test = new NodeIO.AccessNode();
+            String propName = "yaml/cloudConfig.yml";
+            InputStream propStream =  test.getClass().getClassLoader().
+                    getResourceAsStream(propName);
+            if (propStream == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("yaml/cloudConfig.yml not found");
             }
+            String inYml = StringUtil.streamToString(propStream, "utf8");
+            if (DEBUG) System.out.println("***inYml:\n" + inYml);
+            
+            
             List<DefNode> defNodes = new ArrayList<DefNode>();
             SSMConfigResolver ssmResolver = new SSMConfigResolver();
             YamlParser yamlParser = new YamlParser(ssmResolver);
-            File fin = new File(yamlPath);
-            if (!fin.exists()) {
-                throw new TException.INVALID_OR_MISSING_PARM("Yaml file does not exist:" + yamlPath);
+            yamlParser.parseString(inYml);
+            try {
+                yamlParser.resolveValues();
+            } catch (Exception ex) {
+                throw new TException.INVALID_OR_MISSING_PARM("resolve on yalParser fails: - Exception:" + ex);
             }
-            if (DEBUG) {
-                String inYml = FileUtil.file2String(fin);
-                System.out.println("inYml:\n" + inYml);
-            }
-            yamlParser.parse(yamlPath);
-            yamlParser.resolveValues();
             String jsonout = yamlParser.dumpJson();
 
             JSONObject jsonBase = new JSONObject(jsonout);
+            if (DEBUG) System.out.println("***jsonBase\n" + jsonBase.toString());
+            
+            String nodeTable = null;
+            try {
+                nodeTable = jsonBase.getString("node-table");
+            } catch (Exception ex) {
+                nodeTable = null;
+            }
+            String envName = nodeTable;
+            if (envName == null) {
+                throw new TException.INVALID_OR_MISSING_PARM("Yaml envName missing");
+            }
+            
             JSONObject nodestables = jsonBase.getJSONObject("nodes-tables");
-            if (DEBUG) System.out.println("nodestables\n" + nodestables.toString());
             JSONArray envTables = nodestables.getJSONArray(envName);
             for (int i=0; i<envTables.length(); i++) {
                 JSONObject entry = envTables.optJSONObject(i);
@@ -306,7 +218,7 @@ public class NodeIOConf
             }
             NodeIO nodeIO = new NodeIO(defNodes, logger);
             
-            nodeIO.setNodeName("yaml:" + yamlPath + "|" + envName);
+            nodeIO.setNodeName("yaml:");
             return nodeIO;
             
         } catch (TException tex) {
@@ -317,6 +229,41 @@ public class NodeIOConf
             ex.printStackTrace();
             throw new TException(ex);
         }
+    }
+    
+    public static Properties setPropSSM(Properties cloudProp)
+        throws TException
+    {
+        SSMConfigResolver ssmResolver = new SSMConfigResolver();
+        try {
+            
+            Properties retProp = new Properties();
+            Set<String> keys = cloudProp.stringPropertyNames();
+            for (String key : keys) {
+                String value = cloudProp.getProperty(key);
+                if (value.startsWith("{!")) {
+                    String resolveValue = ssmResolver.resolveConfigValue(value);
+                    if (resolveValue.equals("SSMFAIL")) {
+                        throw new TException.INVALID_CONFIGURATION("Unable to locate SSM:" + value);
+                    }
+                    retProp.setProperty(key, resolveValue);
+                } else {
+                    retProp.setProperty(key, value);
+                }
+            }
+            return retProp;
+            
+        } catch (TException tex) {
+            System.out.println(MESSAGE + "Exception:" + tex);
+            tex.printStackTrace();
+            throw tex;
+            
+        } catch (Exception ex) {
+            System.out.println(MESSAGE + "Exception:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+        
     }
     
     public static DefNode getNodeYaml(JSONObject yamlEntry, LoggerInf logger) 
@@ -338,74 +285,6 @@ public class NodeIOConf
             JSONObject jsonProp = yamlEntry.getJSONObject("service-properties");
             
             DefNode defNode = jsonDefNode(nodeNumber, nodeDescription, bucket, jsonProp);
-            return defNode;
-            
-        } catch (TException tex) {
-            throw tex;
-            
-        } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-    
-    public static NodeIO getNodeIOFile(String fileBaseS, LoggerInf logger) 
-        throws TException
-    {
-        
-        try {
-            
-            if (fileBaseS== null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "fileBase required and missing");
-            }
-            
-            List<DefNode> defNodes = new ArrayList<DefNode>();
-            File fileBase = new File(fileBaseS);
-            File keyFile = new File(fileBase, "services");
-            String jsonS = FileUtil.file2String(keyFile);
-            JSONObject jobj = new JSONObject(jsonS);
-            JSONArray jarr = jobj.getJSONArray("nodes");
-            
-            for (int i=0; i < jarr.length(); i++) {
-                JSONObject node = (JSONObject)jarr.get(i);
-                long nodeNumber = node.getLong("id");
-                String nodeDescription = node.getString("desc");
-                DefNode defNode = getNodeFile(fileBase, nodeNumber, nodeDescription, logger);
-                defNodes.add(defNode);
-            }
-            NodeIO nodeIO = new NodeIO(defNodes, logger);
-            nodeIO.setNodeName("file:" + fileBaseS);
-            return nodeIO;
-            
-        } catch (TException tex) {
-            throw tex;
-            
-        } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-    }
-    
-    public static DefNode getNodeFile(File fileBase, Long nodeNumber, String nodeDescription, LoggerInf logger) 
-        throws TException
-    {
-        
-        try {
-            
-            if (fileBase == null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "fileBase required and missing");
-            }
-            if (nodeNumber == null) {
-                throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "node required and missing");
-            }
-            
-            File keyFile = new File(fileBase, "" + nodeNumber);
-            String jsonS = FileUtil.file2String(keyFile);
-            
-            JSONObject jsonObject = new JSONObject(jsonS);
-            DefNode defNode = jsonDefNode(nodeNumber, nodeDescription, null, jsonObject);
             return defNode;
             
         } catch (TException tex) {

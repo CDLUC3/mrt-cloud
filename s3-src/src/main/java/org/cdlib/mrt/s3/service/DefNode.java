@@ -6,6 +6,8 @@
 package org.cdlib.mrt.s3.service;
 
 import java.util.Properties;
+import java.util.Map;
+import java.util.Set;
 import org.cdlib.mrt.utility.StringUtil;
 import org.json.JSONObject;
 
@@ -45,5 +47,23 @@ public class DefNode {
                     + " - nodeDescription:" + nodeDescription
             );
             return buf.toString();
+        }
+        
+        public boolean isFail() 
+        {
+            if ((propNodeDef == null) 
+                    || (propNodeDef.size() == 0))
+            {
+                return true;
+            }
+            Map<String, String> map = (Map)propNodeDef;
+            Set<String> keys = map.keySet();
+            for(String k:keys){
+                String value = map.get(k);
+                if (value.equals("SSMFAIL")) {
+                    return true;
+                }
+            }
+            return false;
         }
 }

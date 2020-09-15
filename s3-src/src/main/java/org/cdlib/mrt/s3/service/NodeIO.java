@@ -47,6 +47,7 @@ import org.cdlib.mrt.s3.store.StoreCloud;
 import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.LoggerInf;
+import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFileLogger;
@@ -255,36 +256,10 @@ public class NodeIO
     public static void main(String[] args) throws Exception {
         //main_ssm(args);
         //main_ssm_default(args);
-        //main_file(args);
-        //main_yaml(args);
-        main_yaml2(args);
+        main_default(args);
+        main_yaml(args);
         //main_jar(args);
     }
-    
-    public static void main_ssm(String[] args) throws Exception {
-
-        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String ssmBase = "SSM:/uc3/mrt/stg/";
-        NodeIO nodeIO = NodeIO.getNodeIOConfig(ssmBase, logger) ;
-        nodeIO.printNodes("main dump");
-    } 
-    
-    public static void main_ssm_default(String[] args) throws Exception {
-
-        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String ssmBase = "SSM:";
-        NodeIO nodeIO = NodeIO.getNodeIOConfig(ssmBase, logger) ;
-        nodeIO.printNodes("main dump");
-    }
-    
-    public static void main_file(String[] args) throws Exception {
-
-        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String fileBase = ""
-                + "file:/apps/replic/tasks/nodeio/200728-newnodeio/nodes";
-        NodeIO nodeIO = NodeIO.getNodeIOConfig(fileBase, logger) ;
-        nodeIO.printNodes("main dump");
-    } 
     
     public static void main_jar(String[] args) throws Exception {
 
@@ -297,7 +272,7 @@ public class NodeIO
     public static void main_yaml(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String yamlName = "yaml:/apps/replic/tasks/date/200514-yaml/cloudConfig4.yml|nodes-stage";
+        String yamlName = "yaml:";
         NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
         nodeIO.printNodes("yaml dump");
     }  
@@ -310,6 +285,13 @@ public class NodeIO
         nodeIO.printNodes("yaml dump");
     } 
     
+    public static void main_default(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String nodeTable = "nodes-stage";
+        NodeIO nodeIO = new NodeIO(nodeTable, logger) ;
+        nodeIO.printNodes("nodes-stage dump");
+    } 
     
     public static void testmain(String[] args) throws Exception {
 
@@ -482,6 +464,7 @@ public class NodeIO
             }
             Properties cloudProp = new Properties();
             cloudProp.load(propStream);
+            cloudProp = NodeIOConf.setPropSSM(cloudProp);
             return cloudProp;
             
         } catch (Exception ex) {
