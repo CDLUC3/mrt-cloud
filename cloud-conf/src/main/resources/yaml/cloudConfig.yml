@@ -30,19 +30,12 @@ services: &services
       accessKey: "{!SSM: cloud/nodes/sdsc-accessKey !DEFAULT: SSMFAIL}"
       secretKey: "{!SSM: cloud/nodes/sdsc-secretKey !DEFAULT: SSMFAIL}"
 
-  minio-docker: &minio-docker
-    type: minio-docker
-    service-properties:
-      serviceType: minio
-      endPoint: http://my-minio-localhost-alias:9000
-      accessKey: minioadmin
-      secretKey: minioadmin
-
-  minio-sdsc-new: &minio-docker-ec2
+  minio-sdsc-new: &minio-docker
     type: minio-docker-ec2
     service-properties:
       serviceType: minio
-      endPoint: http://uc3-mrtdocker2-stg.cdlib.org:8088
+      # Note, we use ec2_host:8088 on our ec2 docker test machine
+      endPoint: "http://{!ENV: MRT_DOCKER_HOST !DEFAULT: my-minio-localhost-alias}:{!ENV: MRT_MINIO_PORT !DEFAULT: 9000}"
       accessKey: minioadmin
       secretKey: minioadmin
 
@@ -165,23 +158,4 @@ nodes-tables:
         identifier: 7777
         <<: *minio-docker
         bucket: my-bucket
-        desc: "###docker minio 7777"
-
-  nodes-pairtree-docker-ec2:
-      - # Pairtree 1
-        identifier: 8012
-        <<: *pair-docker
-        bucket: /opt/storage
-        desc: "docker pair ec2 8012"
-
-      - # Pairtree 2
-        identifier: 7001
-        <<: *pair-docker
-        bucket: /opt/storage
-        desc: "docker pair ec2 7001"
-
-      - # Minio Docker EC2
-        identifier: 7777
-        <<: *minio-docker-ec2
-        bucket: my-bucket
-        desc: "###docker minio ec2 7777"
+        desc: "docker minio 7777"
