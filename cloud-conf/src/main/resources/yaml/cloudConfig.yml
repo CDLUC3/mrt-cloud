@@ -67,36 +67,43 @@ nodes-tables:
         identifier: 5001
         <<: *aws-std
         bucket: uc3-s3mrt5001-prd
+        desc: "AWS standard prod"
 
       - # AWS Glacier
         identifier: 6001
         <<: *aws-near
         bucket: uc3-s3mrt6001-prd
+        desc: "AWS glacier prod"
 
       - # Merritt Cloudhost - on AWS
         identifier: 7001
         <<: *aws-std
         bucket: uc3-s3mrt1001-prd
+        desc: "###ArchiveNode"
 
       - # UNM Remote Storage
         identifier: 4001
         <<: *ch-unm-prd
-        bucket: 8101
+        bucket: dryad-assetstore-merritt-west
+        desc: "ONEShare"
 
       - # Dryad, AWS Standard
         identifier: 3041
         <<: *aws-std
         bucket: dryad-assetstore-merritt-west
+        desc: "Merritt Dryad prod"
 
       - # SDSC Minio, Mar 2020
         identifier: 9501
         <<: *minio-sdsc-new
         bucket: cdl.sdsc.prod
+        desc: "sdsc minio prod"
 
       - # Wasabi
         identifier: 2001
         <<: *wasabi-east
         bucket: uc3-wasabi-useast-2.prod
+        desc: "wasabi s3 prod"
 
   nodes-stage:
       - # AWS Standard
@@ -121,19 +128,19 @@ nodes-tables:
         identifier: 4101
         <<: *minio-sdsc-new
         bucket: cdl.sdsc.stg4101
-        desc: "ONEShare"
+        desc: "ONEShare stage"
 
       - # Dryad, AWS Standard
         identifier: 3042
         <<: *aws-std
         bucket: dryad-assetstore-merritt-stage
-        desc: "Merritt Dryad"
+        desc: "Merritt Dryad stage"
 
       - # SDSC Minio
         identifier: 9502
         <<: *minio-sdsc-new
         bucket: cdl.sdsc.stage
-        desc: "sdsc minio"
+        desc: "sdsc minio stage"
 
       - # Wasabi
         identifier: 2002
@@ -146,29 +153,35 @@ nodes-tables:
         identifier: 8012
         <<: *pair-docker
         bucket: /opt/storage
+        desc: "docker pair 8012"
 
       - # Pairtree 2
         identifier: 7001
         <<: *pair-docker
         bucket: /opt/storage
+        desc: "docker pair 7001"
 
       - # Minio Docker
         identifier: 7777
         <<: *minio-docker
         bucket: my-bucket
+        desc: "###docker minio 7777"
 
   nodes-pairtree-docker-ec2:
       - # Pairtree 1
         identifier: 8012
         <<: *pair-docker
         bucket: /opt/storage
+        desc: "docker pair ec2 8012"
 
       - # Pairtree 2
         identifier: 7001
         <<: *pair-docker
         bucket: /opt/storage
+        desc: "docker pair ec2 7001"
 
       - # Minio Docker EC2
         identifier: 7777
         <<: *minio-docker-ec2
         bucket: my-bucket
+        desc: "###docker minio ec2 7777"
