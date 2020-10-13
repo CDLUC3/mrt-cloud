@@ -39,12 +39,6 @@ services: &services
       accessKey: minioadmin
       secretKey: minioadmin
 
-  pair-docker: &pair-docker
-    type: pair-docker
-    service-properties:
-      serviceType: pairtree
-      base: /opt/storage
-
   wasabi-east: &wasabi-east
     type: wasabi-east
     service-properties:
@@ -142,18 +136,6 @@ nodes-tables:
         desc: "wasabi s3"
 
   nodes-pairtree-docker:
-      - # Pairtree 1
-        identifier: 8012
-        <<: *pair-docker
-        bucket: /opt/storage
-        desc: "docker pair 8012"
-
-      - # Pairtree 2
-        identifier: 7001
-        <<: *pair-docker
-        bucket: /opt/storage
-        desc: "docker pair 7001"
-
       - # Minio Docker
         identifier: 7777
         <<: *minio-docker
