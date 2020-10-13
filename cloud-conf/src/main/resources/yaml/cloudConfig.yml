@@ -35,7 +35,7 @@ services: &services
     service-properties:
       serviceType: minio
       # Note, we use ec2_host:8088 on our ec2 docker test machine
-      endPoint: "http://{!ENV: MRT_DOCKER_HOST !DEFAULT: my-minio-localhost-alias}:{!ENV: MRT_MINIO_PORT !DEFAULT: 9000}"
+      endPoint: "http://{!ENV: MRT_MINIO_HOST !DEFAULT: my-minio-localhost-alias}:{!ENV: MRT_MINIO_PORT !DEFAULT: 8088}"
       accessKey: minioadmin
       secretKey: minioadmin
 
