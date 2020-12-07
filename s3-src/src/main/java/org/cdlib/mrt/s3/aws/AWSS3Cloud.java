@@ -684,9 +684,10 @@ public class AWSS3Cloud
                             + " - bucket=" + container
                             + " - key=" + key
                 );
-            }
-            ////////
-            //TransferManager tm = new TransferManager();   
+            } 
+            
+            // Minio has repeatedly failed using multipart TransferManager
+            // This change uses single stream only when minio
             if (s3Type == S3Type.minio) {
                 InputStream is = getObjectStreaming(container, key, response);
                 if (response.getException() != null) {
@@ -696,6 +697,8 @@ public class AWSS3Cloud
                 if (DEBUG) System.out.println("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
                 
             } else {
+            ////////
+            //TransferManager tm = new TransferManager();  
                 TransferManager tm = getTransferManager();
                 if (DEBUG) System.out.println("Start");
                 GetObjectRequest gor = new GetObjectRequest(container, key);
