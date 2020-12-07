@@ -109,7 +109,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.util.AwsHostNameUtils;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 
-
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.utility.DateUtil;
@@ -688,17 +687,27 @@ public class AWSS3Cloud
             }
             ////////
             //TransferManager tm = new TransferManager();   
-            
-            TransferManager tm = getTransferManager();
-            if (DEBUG) System.out.println("Start");
-            GetObjectRequest gor = new GetObjectRequest(container, key);
-            Download download = tm.download(gor, outFile, 86400000L);
-            try {
-                download.waitForCompletion();
-            } catch(InterruptedException ex) {
-                System.out.println("InterruptedException:" + ex.getMessage());
-            } finally {
-                tm.shutdownNow(false);
+            if (s3Type == S3Type.minio) {
+                InputStream is = getObjectStreaming(container, key, response);
+                if (response.getException() != null) {
+                    throw response.getException();
+                }
+                FileUtil.stream2File(is, outFile);
+                if (DEBUG) System.out.println("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
+                
+            } else {
+                TransferManager tm = getTransferManager();
+                if (DEBUG) System.out.println("Start");
+                GetObjectRequest gor = new GetObjectRequest(container, key);
+                Download download = tm.download(gor, outFile, 86400000L);
+                try {
+                    download.waitForCompletion();
+                } catch(InterruptedException ex) {
+                    System.out.println("InterruptedException:" + ex.getMessage());
+                } finally {
+                    tm.shutdownNow(false);
+                }
+                if (DEBUG) System.out.print("Non-Minio file built(" + container + "):" + outFile.getCanonicalPath());
             }
             
         } catch (TException tex) {
@@ -1620,9 +1629,9 @@ public class AWSS3Cloud
     }
 
     @Override    
-    public CloudAPI getType()
+    public CloudStoreInf.CloudAPI getType()
     {
-        return CloudAPI.AWS_S3;
+        return CloudStoreInf.CloudAPI.AWS_S3;
     }
 
     public AmazonS3Client getS3Client() {
