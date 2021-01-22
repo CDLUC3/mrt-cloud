@@ -172,3 +172,8 @@ nodes-tables:
         <<: *minio-docker
         bucket: my-bucket
         desc: "docker minio 7777"
+      - # Minio Docker Replic
+        identifier: 8888
+        <<: *minio-docker
+        bucket: my-bucket-repl
+        desc: "docker minio 8888"
