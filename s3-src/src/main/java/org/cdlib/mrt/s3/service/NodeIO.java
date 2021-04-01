@@ -557,21 +557,25 @@ public class NodeIO
         try {
             if (DEBUG) System.out.println("Add:" + line);
             String[] parts = line.split("\\s*\\|\\s*");
-            if ((parts.length < 2) || (parts.length > 3)) {
+            if ((parts.length < 2) || (parts.length > 4)) {
                 throw new TException.INVALID_OR_MISSING_PARM("addMapENtry requires 2 or 3 parts:" + line);
             }
             Long nodeNumber = Long.parseLong(parts[0]);
             String propName = parts[1];
             String container = null;
-            if (parts.length == 3) {
+            if (parts.length >= 3) {
                 container = parts[2];
+            }
+            String description = null;
+            if (parts.length >= 4) {
+                description = parts[3];
             }
             
             Properties cloudProp = getNodeProp(propName);
             if (cloudProp == null) {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - Unable to locate:" +  propName);
             }
-            AccessNode copyNode = getAccessNode(nodeNumber, container, null, cloudProp, logger);
+            AccessNode copyNode = getAccessNode(nodeNumber, container, description, cloudProp, logger);
             if (DEBUG) System.out.println(copyNode.dump("copyNode"));
             accessNodes.put(nodeNumber, copyNode);
             
