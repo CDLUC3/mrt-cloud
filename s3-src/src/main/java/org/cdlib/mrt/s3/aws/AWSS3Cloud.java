@@ -1631,6 +1631,32 @@ public class AWSS3Cloud
         return response;
     }
 
+    
+    public InputStream getRangeStream(
+            String bucketName,
+            String key,
+            long start,
+            long stop,
+            CloudResponse response)
+        throws TException
+    {
+        try {
+            response.set(bucketName, key);
+            //AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider()); 
+            GetObjectRequest getObjectRequest =
+                    new GetObjectRequest(bucketName, key);
+            getObjectRequest.setRange(start, stop);
+            S3Object object = s3Client.getObject(getObjectRequest);
+            return object.getObjectContent();
+            // Process the objectData stream.
+            //objectData.close();
+            
+        } catch (Exception ex) {
+            handleException(response, ex);
+            return null;
+        }
+    }
+    
     @Override    
     public CloudStoreInf.CloudAPI getType()
     {
