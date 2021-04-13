@@ -346,6 +346,23 @@ public interface CloudStoreInf
             String contentType,
             String contentDisp)
         throws TException;
+    /**
+     * Return part of a cloud object as stream
+     * @param bucketName cloud container
+     * @param key cloud key
+     * @param start byte location to start from zero
+     * @param stop byte location to stop from zero
+     * @param response Res[pmse tp reqiest
+     * @return input stream for segment
+     * @throws TException 
+     */
+    public InputStream getRangeStream(
+            String bucketName,
+            String key,
+            long start,
+            long stop,
+            CloudResponse response)
+        throws TException;
     
     /**
      * Return the API type

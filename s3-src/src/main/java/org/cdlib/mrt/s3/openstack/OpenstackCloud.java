@@ -763,6 +763,25 @@ public class OpenstackCloud
         }
     }
     
+      
+    @Override    
+    public InputStream getRangeStream(
+         String bucketName,
+         String key,
+         long start,
+         long stop,
+         CloudResponse response)
+     throws TException
+    {
+        
+        try {
+            TException exception =  new TException.UNIMPLEMENTED_CODE(MESSAGE + "getRangeStream: this cloud repository does not support this function");
+            response.setException(exception);
+            
+        } catch (Exception ex) { }
+        return null;
+    }
+    
     @Override    
     public CloudAPI getType()
     {
