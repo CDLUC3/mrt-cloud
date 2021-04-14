@@ -24,7 +24,7 @@ public class CloudChecksum {
     protected static final String NAME = "CloudChecksum";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
-    protected static final int BUFSIZE = 32000000;
+    protected int buffsize = 32000000;
     protected ArrayList<Digest> digestList = new ArrayList();
     protected int segCnt = 0;
     protected long runTime = 0;
@@ -35,24 +35,35 @@ public class CloudChecksum {
     protected Long metaObjectSize = null;
     protected long physicalObjectSize = 0L;
     protected String metaSha256 = null;
-    protected byte[] buf = new byte[BUFSIZE];
+    protected byte[] buf = new byte[buffsize];
     
     public static CloudChecksum getChecksums(String [] types, CloudStoreInf service, String bucket, String key)
         throws TException
     {
-        CloudChecksum checksums = new CloudChecksum(types, service, bucket, key);
+        CloudChecksum checksums = new CloudChecksum(types, service, bucket, key, null);
+        //checksums.process();
+        return checksums;
+    }
+    
+    public static CloudChecksum getChecksums(String [] types, CloudStoreInf service, String bucket, String key, int buffsize)
+        throws TException
+    {
+        CloudChecksum checksums = new CloudChecksum(types, service, bucket, key, buffsize);
         //checksums.process();
         return checksums;
     }
     
     
-    public CloudChecksum(String [] types, CloudStoreInf service, String bucket, String key)
+    protected CloudChecksum(String [] types, CloudStoreInf service, String bucket, String key, Integer buffsize)
         throws TException
     {
         digestList = new ArrayList();
         for (String checksumType : types) {
             Digest digest = new Digest(checksumType);
             digestList.add(digest);
+        }
+        if ((buffsize != null) && (buffsize > 10000)) {
+            this.buffsize = buffsize;
         }
         this.service = service;
         this.bucket = bucket;
@@ -127,7 +138,7 @@ public class CloudChecksum {
         System.out.println(header + "stats:\n" 
                         + " - bucket=" + getBucket() + "\n" 
                         + " - key=" + getKey() + "\n"
-                        + " - bufsize=" + BUFSIZE + "\n"
+                        + " - bufsize=" + buffsize + "\n"
                         + " - metaObjectSize=" + getMetaObjectSize() + "\n"
                         + " - segCnt=" + getSegCnt() + "\n"
                         + " - runTime=" + getRunTime() + "\n"
@@ -142,7 +153,7 @@ public class CloudChecksum {
             inputSize = 0;
             int addLen;
             long start = 0;
-            long stop = BUFSIZE - 1;
+            long stop = buffsize - 1;
             complete:
             while (true) {
                 addLen = add(start, stop);
@@ -150,8 +161,8 @@ public class CloudChecksum {
                 inputSize += addLen;
                 segCnt += 1;
                 if (inputSize >= metaObjectSize) break;
-                start += BUFSIZE;
-                stop += BUFSIZE;
+                start += buffsize;
+                stop += buffsize;
             }
             
             long stopTime = System.currentTimeMillis();

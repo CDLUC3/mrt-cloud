@@ -68,7 +68,8 @@ public class TestCloudChecksum {
         throws TException
     {
         try {
-            CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, key);
+            // CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, key);
+            CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, key, 2000000);
             System.out.println("begin:"
                     + " - metaObjectSize=" + cloudChecksum.getMetaObjectSize()
                     + " - metaSha256=" + cloudChecksum.getMetaSha256()
