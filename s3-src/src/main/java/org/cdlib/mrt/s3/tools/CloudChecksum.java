@@ -24,7 +24,9 @@ public class CloudChecksum {
     protected static final String NAME = "CloudChecksum";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
-    protected int buffsize = 32000000;
+    protected static int RETRY=3;
+    protected int buffsize = 0;
+    protected int maxsize = 32000000;
     protected ArrayList<Digest> digestList = new ArrayList();
     protected int segCnt = 0;
     protected long runTime = 0;
@@ -32,10 +34,10 @@ public class CloudChecksum {
     protected CloudStoreInf service = null;
     protected String bucket = null;
     protected String key = null;
-    protected Long metaObjectSize = null;
+    protected long metaObjectSize = 0;
     protected long physicalObjectSize = 0L;
     protected String metaSha256 = null;
-    protected byte[] buf = new byte[buffsize];
+    protected byte[] buf = null;
     
     public static CloudChecksum getChecksums(String [] types, CloudStoreInf service, String bucket, String key)
         throws TException
@@ -45,16 +47,16 @@ public class CloudChecksum {
         return checksums;
     }
     
-    public static CloudChecksum getChecksums(String [] types, CloudStoreInf service, String bucket, String key, int buffsize)
+    public static CloudChecksum getChecksums(String [] types, CloudStoreInf service, String bucket, String key, Integer maxsize)
         throws TException
     {
-        CloudChecksum checksums = new CloudChecksum(types, service, bucket, key, buffsize);
+        CloudChecksum checksums = new CloudChecksum(types, service, bucket, key, maxsize);
         //checksums.process();
         return checksums;
     }
     
     
-    protected CloudChecksum(String [] types, CloudStoreInf service, String bucket, String key, Integer buffsize)
+    protected CloudChecksum(String [] types, CloudStoreInf service, String bucket, String key, Integer maxsize)
         throws TException
     {
         digestList = new ArrayList();
@@ -62,8 +64,8 @@ public class CloudChecksum {
             Digest digest = new Digest(checksumType);
             digestList.add(digest);
         }
-        if ((buffsize != null) && (buffsize > 10000)) {
-            this.buffsize = buffsize;
+        if ((maxsize != null) && (maxsize > 10000)) {
+            this.maxsize = maxsize;
         }
         this.service = service;
         this.bucket = bucket;
@@ -73,7 +75,7 @@ public class CloudChecksum {
                 + " - key=" + key
         );
         try {
-            Properties metaProp = service.getObjectMeta(bucket, key);
+            Properties metaProp = getMeta(RETRY);
             if ((metaProp == null) || (metaProp.size() == 0)) {
                 throw new TException.REQUESTED_ITEM_NOT_FOUND(MESSAGE + "object not found:"
                         + " - service=" + service.getType()
@@ -86,6 +88,16 @@ public class CloudChecksum {
             response.setFromProp(metaProp);
             metaObjectSize = response.getStorageSize();
             metaSha256 = response.getSha256();
+            buffsize = (int)metaObjectSize;
+            if (metaObjectSize > this.maxsize) {
+                buffsize = this.maxsize;
+            }
+            buf = new byte[buffsize];
+            if (DEBUG) System.out.println("buf allocate:"
+                    + " - metaObjectSize="+ metaObjectSize
+                    + " - maxsize="+ this.maxsize
+                    + " - buffsize="+ buffsize
+            );
             
         } catch (TException tex) {
                 tex.printStackTrace();
@@ -97,40 +109,102 @@ public class CloudChecksum {
         }
     }
     
-	public static void main(String[] args) {
-            LoggerInf logger = new TFileLogger("jtest", 50, 50);
-            try {
-                String [] types = {
-                    "md5",
-                    "sha256"
-                };
-                String jarBase = "jar:nodes-stage";
-                NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
-                NodeIO.AccessNode accessNode = nodeIO.getAccessNode(5001);
-                CloudStoreInf service = accessNode.service;
-                String bucket = accessNode.container;
-                String key = "ark:/28722/k23j3911v|1|system/mrt-object-map.ttl";
-                String keyBig = "ark:/28722/k23x83k93|1|producer/artiraq.org/static/opencontext/kenantepe/full/Fieldphotos/2005/AreaF/F7L06135T19.JPG";
-                String keyReallyBig = "ark:/99999/fk48k8jp86|1|producer/Asha_G.tar.gz";
-                CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, keyBig);
-                System.out.println("begin:"
-                        + " - metaObjectSize=" + cloudChecksum.getMetaObjectSize()
-                        + " - metaSha256=" + cloudChecksum.getMetaSha256()
-                );
-                cloudChecksum.process();
-                cloudChecksum.dump("the test");
-                
-               
-                for (String type : types) {
-                    String checksum = cloudChecksum.getChecksum(type);
-                    System.out.println("getChecksum(" + type + "):" + checksum);
+    protected Properties getMeta(int retry)
+        throws TException
+    {
+        
+        try {
+            Properties metaProp = null;
+            for (int i=0; i < retry; i++) {
+                try {
+                    metaProp = service.getObjectMeta(bucket, key);
+                } catch (Exception mex) {
+                    if (i < (retry-1)) {
+                        System.out.println(MESSAGE + "Meta exception retry(" + i + "):"
+                            + " - service=" + service.getType()
+                            + " - bucket=" + bucket
+                            + " - key=" + key
+                            + " - Exception=" + mex
+                        );
+                        try {
+                            Thread.sleep(i * 1000);
+                        } catch (Exception exs) { }
+                        continue;
+                    }
+                    throw new TException(mex);
                 }
-
-             } catch (TException tex) {
-                tex.printStackTrace();
-            } catch (Exception ex) {
-                ex.printStackTrace();;
+                if (metaProp.size() == 0) {
+                    throw new TException.REQUESTED_ITEM_NOT_FOUND(MESSAGE + "object not found:"
+                            + " - service=" + service.getType()
+                            + " - bucket=" + bucket
+                            + " - key=" + key
+                    );
+                    
+                } else if (metaProp == null) {
+                    
+                    if (i < (retry-1)) {
+                        System.out.println(MESSAGE + "Meta fail retry(" + i + "):"
+                            + " - service=" + service.getType()
+                            + " - bucket=" + bucket
+                            + " - key=" + key);
+                        try {
+                            Thread.sleep(i * 1000);
+                        } catch (Exception exs) { }
+                        continue;
+                    } 
+                }
+                return metaProp;
             }
+            throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "unable to extract meta-data for:"
+                    + " - service=" + service.getType()
+                    + " - bucket=" + bucket
+                    + " - key=" + key
+            );
+            
+        } catch (TException tex) {
+                tex.printStackTrace();
+                throw tex;
+                
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+    
+    public static void main(String[] args) {
+        LoggerInf logger = new TFileLogger("jtest", 50, 50);
+        try {
+            String [] types = {
+                "md5",
+                "sha256"
+            };
+            String jarBase = "jar:nodes-stage";
+            NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
+            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(5001);
+            CloudStoreInf service = accessNode.service;
+            String bucket = accessNode.container;
+            String key = "ark:/28722/k23j3911v|1|system/mrt-object-map.ttl";
+            String keyBig = "ark:/28722/k23x83k93|1|producer/artiraq.org/static/opencontext/kenantepe/full/Fieldphotos/2005/AreaF/F7L06135T19.JPG";
+            String keyReallyBig = "ark:/99999/fk48k8jp86|1|producer/Asha_G.tar.gz";
+            CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, keyReallyBig);
+            System.out.println("begin:"
+                    + " - metaObjectSize=" + cloudChecksum.getMetaObjectSize()
+                    + " - metaSha256=" + cloudChecksum.getMetaSha256()
+            );
+            cloudChecksum.process();
+            cloudChecksum.dump("the test");
+
+
+            for (String type : types) {
+                String checksum = cloudChecksum.getChecksum(type);
+                System.out.println("getChecksum(" + type + "):" + checksum);
+            }
+
+         } catch (TException tex) {
+            tex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();;
+        }
     }
         
     public void dump(String header)
@@ -179,6 +253,8 @@ public class CloudChecksum {
         } catch (Exception ex) {
             throw new TException(ex);
             
+        } finally {
+            buf = null;
         }
     }
         
@@ -191,7 +267,7 @@ public class CloudChecksum {
         try {
             CloudResponse streamResponse = new CloudResponse(bucket, key);
             int len;
-            inputStream = service.getRangeStream(bucket, key, start, stop, streamResponse);
+            inputStream = getStream(start, stop, RETRY);
             if ((inputStream == null) || (streamResponse.getException() != null)) {
                 throw streamResponse.getException();
             }
@@ -213,6 +289,57 @@ public class CloudChecksum {
             try {
                 inputStream.close();
             } catch (Exception ex) {}
+        }
+    }
+    
+    protected InputStream getStream(long start, long stop, int retry)
+        throws TException
+    {
+        
+        InputStream inputStream = null;
+        CloudResponse streamResponse = null;
+        Exception exi = null;
+        try {
+            for (int i=0; i < retry; i++) {
+                
+                streamResponse = new CloudResponse(bucket, key);
+                inputStream = service.getRangeStream(bucket, key, start, stop, streamResponse);
+               
+                if ((inputStream != null) && (streamResponse.getException() == null)) {
+                    return inputStream;
+                }
+                exi = streamResponse.getException();
+                if (i < (retry-1)) {
+                    System.out.println(MESSAGE + "Data stream fail retry(" + i + "):"
+                        + " - service=" + service.getType()
+                        + " - bucket=" + bucket
+                        + " - key=" + key
+                        + " - start=" + start
+                        + " - stop=" + stop
+                        + " - Exception=" + exi
+                    );
+                    try {
+                        Thread.sleep(i * 1000);
+                    } catch (Exception exs) { }
+                    continue;
+                } 
+            }
+            throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "unable to extract data for:"
+                    + " - service=" + service.getType()
+                    + " - bucket=" + bucket
+                    + " - key=" + key
+                    + " - start=" + start
+                    + " - stop=" + stop
+                    + " - Exception=" + exi
+            );
+            
+        } catch (TException tex) {
+                tex.printStackTrace();
+                throw tex;
+                
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
         }
     }
     
