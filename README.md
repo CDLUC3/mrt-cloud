@@ -29,4 +29,4 @@ This code is bundle into microservice WAR files for deployment.
 
 ### Deployment and Operations at CDL
 
-https://github.com/CDLUC3/mrt-doc-private/blob/main/uc3-mrt-replic.md
+See the implementing microservices for details.
