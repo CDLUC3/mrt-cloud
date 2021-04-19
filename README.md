@@ -10,7 +10,7 @@ A [Yaml Configuration File](cloud-conf/src/main/resources/yaml/cloudConfig.yml) 
 
 ## Used By
 
-This code is used by.
+This code is used by
 - [Merritt Storage](https://github.com/CDLUC3/mrt-store)
 - [Merritt Audit](https://github.com/CDLUC3/mrt-audit)
 - [Merritt Replic](https://github.com/CDLUC3/mrt-replic)
