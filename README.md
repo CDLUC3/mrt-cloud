@@ -21,7 +21,7 @@ This code is not intended to be run apart from the Merritt Preservation System.
 See [Merritt Docker](https://github.com/CDLUC3/merritt-docker) for a description of how to build a test instnce of Merritt.
 
 ## Build instructions
-This code is bundle into microservice WAR files for deployment.
+This code is bundled into microservice WAR files for deployment.
 
 ## Test instructions
 
