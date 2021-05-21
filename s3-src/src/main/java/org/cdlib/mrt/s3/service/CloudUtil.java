@@ -269,7 +269,7 @@ public class CloudUtil {
             }
             ele.objectID = new Identifier(parts[0]);
             if (parts.length >= 2) {
-                if (parts[1].equals("manifest")) ele.versionID = null;
+                if (parts[1].startsWith("manifest")) ele.versionID = null;
                 else {
                     try {
                         int version = Integer.parseInt(parts[1]);
