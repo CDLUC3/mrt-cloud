@@ -4,7 +4,7 @@ This library is part of the [Merritt Preservation System](https://github.com/CDL
 
 ## Component Diagram
 
-[![](mrt-cloud.mmd.svg)](https://cdluc3.github.io/mrt-doc/diagrams/mrt-cloud)
+[![Component Diagram](https://github.com/CDLUC3/mrt-doc/raw/main/diagrams/mrt-cloud.mmd.svg)](https://cdluc3.github.io/mrt-doc/diagrams/mrt-cloud)
 
 ## Purpose
 
