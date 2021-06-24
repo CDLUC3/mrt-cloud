@@ -2,6 +2,10 @@
 
 This library is part of the [Merritt Preservation System](https://github.com/CDLUC3/mrt-doc).
 
+## Component Diagram
+
+[![](mrt-cloud.mmd.svg)](https://cdluc3.github.io/mrt-doc/diagrams/mrt-cloud)
+
 ## Purpose
 
 This library abstracts the operations performed across the cloud storage providers utilized by the Merritt Preservation System.
