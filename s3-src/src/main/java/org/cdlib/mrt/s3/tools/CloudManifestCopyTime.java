@@ -121,12 +121,12 @@ public class CloudManifestCopyTime {
                 throw inResponse.getException();
             }
             long endGetTime = DateUtil.getEpochUTCDate() - startGetTime;
-            inSHA256 = inResponse.getFileMetaProperty("sha-256");
+            inSHA256 = inResponse.getSha256();
             if (StringUtil.isAllBlank(inSHA256)) {
                 inSHA256 = CloudUtil.getDigestValue("sha-256", tFile, logger);
-                System.out.println("Calculate inSHA256");
+                log("Calculate inSHA256:" + key, 1);
             }
-            String outSHA256 = entry.getEtag();
+            String entrySHA256 = entry.getEtag();
             //System.out.println("inSHA256:" + inSHA256);
             //System.out.println("outSHA256:" + outSHA256);
             long startPutTime = DateUtil.getEpochUTCDate();
@@ -136,15 +136,23 @@ public class CloudManifestCopyTime {
                 //System.out.println("CloudManifestCopyTime: getException not null:" + outResponse.getException());
                 throw inResponse.getException();
             }
+            String outSHA256 = outResponse.getSha256();
             //System.out.println("CloudManifestCopyTime: after putObject");
             long endPutTime = DateUtil.getEpochUTCDate() - startPutTime;
             String isoDate = DateUtil.getCurrentIsoDate();
-            if (!inSHA256.equals(outSHA256)) {
+            if (!entrySHA256.equals(outSHA256)) {
+                String msg = "$$$Digests:"
+                        + " - inSHA256:" + inSHA256
+                        + " - entrySHA256:" + entrySHA256
+                        + " - outSHA256:" + outSHA256
+                        ;
+                log(msg, 1);
+                System.out.println(msg);
                 throw new TException.INVALID_DATA_FORMAT("Copied content invalid:"
                         + " - key=" + key
                         + " - insize=" + tFile.length()
                         + " - entry.size=" + entry.size
-                        + " - inSHA256=" + inSHA256
+                        + " - entrySHA256=" + entrySHA256
                         + " - outSHA256=" + outSHA256
                 );
             }
@@ -161,7 +169,7 @@ public class CloudManifestCopyTime {
             
         } catch (Exception ex) {
             if (DEBUG) System.out.println("TException:" + ex);
-            if (DEBUG) ex.printStackTrace();
+            ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -174,14 +182,15 @@ public class CloudManifestCopyTime {
 
             CloudList cloudList = getCloudList(ark);
             List<CloudList.CloudEntry> list = cloudList.getList();
-            System.out.println(">>>Entries:" + list.size());
+            log(">>>Entries:" + list.size());
             long cnt = 0;
             for (CloudList.CloudEntry entry : list) {
                 long timeVal = DateUtil.getEpochUTCDate();
                 if (showEntry || ((cnt%1000) == 0)) 
-                    System.out.println("***(" + cnt + "):" + entry.key + "***" 
+                    log("***(" + cnt + "):" + entry.key + "***" 
                             + " - time=" + timeVal
                             + " - size=" + entry.size
+                            ,6
                     );
                 copy(entry, stat);
                 cnt++;
@@ -230,7 +239,7 @@ public class CloudManifestCopyTime {
                             null);
                     if ((cloudList.size() % 100) == 0) {
                         String msg =  "dump[" + cloudList.size() + "]" + key;
-                        System.out.println(msg);
+                        log(msg);
                     }
                 }
             }
@@ -300,6 +309,15 @@ public class CloudManifestCopyTime {
         this.showEntry = showEntry;
     }
     
+    protected void log(String msg)
+    {
+        logger.logMessage(msg, 5, true);
+    }
+    
+    protected void log(String msg, int lvl)
+    {
+        logger.logMessage(msg, lvl, true);
+    }
     
     public static class Test {
         public String val = "val";
