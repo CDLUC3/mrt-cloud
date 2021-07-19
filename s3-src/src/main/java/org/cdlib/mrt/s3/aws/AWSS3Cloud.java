@@ -380,8 +380,19 @@ public class AWSS3Cloud
                     + " - key:" + key
             );
             Properties objectMeta = getObjectMeta(bucketName, key);
+            /*
+            if (objectMeta == null) {
+                CloudResponse exResponse = new CloudResponse(bucketName, key);
+                Exception ex = new TException.REMOTE_IO_SERVICE_EXCEPTION("Metadata AWS service exception:"
+                            + " - bucket:" + bucketName
+                            + " - key:" + key
+                );
+                exResponse.setException(ex);
+                return exResponse;
+            }
+            */
             String fileSha256 = CloudUtil.getDigestValue("sha256", inputFile, logger);
-            if (objectMeta.size() > 0) {
+            if ((objectMeta != null) && (objectMeta.size() > 0)) {
                 String storeSha256= objectMeta.getProperty("sha256");
                 if ((storeSha256 != null) && fileSha256.equals(storeSha256))  {
                     if (DEBUG) System.out.println("***File match:"
@@ -389,8 +400,9 @@ public class AWSS3Cloud
                             + " - key:" + key
                             + " - sha256: "+ fileSha256
                     );
-                    response.setFileMeta(cloudProp);
-                    response.setFromProp();
+                    //response.setFileMeta(cloudProp);
+                    //System.out.println(PropertiesUtil.dumpProperties("&&&&&&skip", cloudProp));
+                    response.setFromProp(objectMeta);
                     return response;
                 } else {
                     CloudResponse deleteResponse = deleteObject(bucketName, key);
