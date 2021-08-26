@@ -28,6 +28,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 package org.cdlib.mrt.s3.service;
+import com.amazonaws.services.s3.model.Owner;
 import com.amazonaws.services.s3.model.StorageClass;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.CloudProperties;
@@ -36,6 +37,8 @@ import org.cdlib.mrt.utility.StringUtil;
 
 //import org.jets3t.service.model.StorageObject;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;

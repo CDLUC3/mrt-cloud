@@ -284,6 +284,20 @@ public interface CloudStoreInf
         throws TException;
     
     /**
+     * Return list of S3 keys after a start key
+     * @param bucketName s3 bucket
+     * @param afterKey start return list after this value
+     * @param limit number of keys to return
+     * @return cloud response with keys
+     * @throws TException 
+     */
+    public CloudResponse getObjectListAfter (
+            String bucketName,
+            String afterKey,
+            int limit)
+        throws TException;
+    
+    /**
      * Return state of cloud store manager
      * @param bucketName bucket container
      * @return
