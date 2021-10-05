@@ -118,6 +118,8 @@ import com.amazonaws.services.identitymanagement.AmazonIdentityManagement;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClientBuilder;
 import com.amazonaws.services.identitymanagement.model.CreateAccessKeyRequest;
 import com.amazonaws.services.identitymanagement.model.CreateAccessKeyResult;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.transfer.Transfer;
 //import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.eraseProgressBar;
 //import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.printProgressBar;
@@ -1344,7 +1346,7 @@ public class AWSS3Cloud
      * @param response filled CloudResponse
      * @throws TException 
      */
-    protected void awsList (
+    protected void awsListPrefix (
             String bucket,
             String listPrefix,
             int maxEntries,
@@ -1379,6 +1381,51 @@ public class AWSS3Cloud
         
     }
     
+
+    public void awsListAfter(
+            String bucketName,
+            String startAfter, 
+            int maxKeys,
+            CloudResponse response) 
+        throws TException 
+    {
+        try {
+
+            //System.out.println("Listing objects");
+
+            // maxKeys is set to 2 to demonstrate the use of
+            // ListObjectsV2Result.getNextContinuationToken()
+            ListObjectsV2Request req = new ListObjectsV2Request()
+                    .withBucketName(bucketName)
+                    .withStartAfter(startAfter)
+                    .withMaxKeys(maxKeys)
+                    ;
+            ListObjectsV2Result result;
+            int cnt = 0;
+            doBreak:
+            do {
+                result = s3Client.listObjectsV2(req);
+                for (S3ObjectSummary summary : result.getObjectSummaries()) {
+                    response.addObject(setSummary(summary));
+                    cnt++;
+                    if (cnt >= maxKeys) break doBreak;
+                    //System.out.printf(" - %s (size: %d)\n", summary.getKey(), summary.getSize());
+                }
+                String token = result.getNextContinuationToken();
+                if (DEBUG) System.out.println("Next Continuation Token: " + token + " - cnt=" + cnt);
+                req.setContinuationToken(token);
+            } while (result.isTruncated());
+            
+            
+        } catch (AmazonServiceException e) {
+            // The call was transmitted successfully, but Amazon S3 couldn't process 
+            // it, so it returned an error response.
+            throw new TException(e);
+            
+        } catch (Exception ex) {
+            throw new TException(ex);
+        }
+    }
 //    @Override
     public CloudResponse getObjectList (
             String bucketName,
@@ -1391,7 +1438,7 @@ public class AWSS3Cloud
         try {
             response = CloudResponse.get(bucketName, objectID, versionID, fileID);
             String key = CloudUtil.getKey(objectID, versionID, fileID, ALPHANUMERIC);
-            awsList(bucketName, key, -1,response);
+            awsListPrefix(bucketName, key, -1,response);
             return response;
             
         } catch (Exception ex) {
@@ -1410,7 +1457,7 @@ public class AWSS3Cloud
         try {
             response = new CloudResponse();
             CloudResponse.get(bucketName, key);
-            awsList(bucketName, key, -1,response);
+            awsListPrefix(bucketName, key, -1,response);
             return response;
             
         } catch (Exception ex) {
@@ -1431,7 +1478,27 @@ public class AWSS3Cloud
             response = new CloudResponse(bucketName, key);
             response.setStorageKey(key);
             
-            awsList(bucketName, key, limit,response);
+            awsListPrefix(bucketName, key, limit,response);
+            return response;
+            
+        } catch (Exception ex) {
+            handleException(response, ex);
+            return null;
+        }
+    }
+    
+    public CloudResponse getObjectListAfter (
+            String bucketName,
+            String afterKey,
+            int limit)
+        throws TException
+    {
+        CloudResponse response = null;
+        try {
+            response = new CloudResponse(bucketName, afterKey);
+            response.setStorageKey(afterKey);
+            
+            awsListAfter(bucketName, afterKey, limit, response);
             return response;
             
         } catch (Exception ex) {
@@ -1449,7 +1516,7 @@ public class AWSS3Cloud
         try {
             response = new CloudResponse();
             response.setBucketName(bucketName);
-            awsList(bucketName, "", -1,response);
+            awsListPrefix(bucketName, "", -1,response);
             return response;
             
         } catch (Exception ex) {
@@ -1733,7 +1800,6 @@ public class AWSS3Cloud
         Transfer.TransferState xfer_state = xfer.getState();
         logger.logMessage("showTransferProgress key:" + key + "- state:" + xfer_state, 0, true);
     }
-
     public S3Type getS3Type() {
         return s3Type;
     }

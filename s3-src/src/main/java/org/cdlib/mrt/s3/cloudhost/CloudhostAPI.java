@@ -611,6 +611,21 @@ public class CloudhostAPI
         }
     }
     
+    public CloudResponse getObjectListAfter (
+            String bucketName,
+            String afterKey,
+            int limit)
+        throws TException
+    {
+        CloudResponse response = null;
+        try {
+            throw new TException.UNIMPLEMENTED_CODE(MESSAGE + "getObjectListAfter: this repository form does not support this function");
+            
+        } catch (Exception ex) {
+            handleException(response, ex);
+            return null;
+        }
+    }
     
     /**
      * Return status of cloud
