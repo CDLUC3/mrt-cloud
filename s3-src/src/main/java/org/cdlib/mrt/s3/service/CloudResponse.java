@@ -33,6 +33,7 @@ import com.amazonaws.services.s3.model.StorageClass;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.CloudProperties;
 import org.cdlib.mrt.core.Identifier;
+import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.utility.StringUtil;
 
 //import org.jets3t.service.model.StorageObject;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import org.cdlib.mrt.core.DateState;
 
 
 
@@ -421,7 +423,6 @@ public class CloudResponse
     
     public void setFromProp(Properties prop)
     {
-        if (fileMeta == null) return;
         if (prop.getProperty("size") != null) setStorageSize(prop.getProperty("size"));
         if (prop.getProperty("key") != null) setStorageKey(prop.getProperty("key"));
         if (prop.getProperty("digest") != null) setMd5(prop.getProperty("digest"));
@@ -439,6 +440,38 @@ public class CloudResponse
                 setFileID(elements.fileID);
             } catch (Exception ex) { }
         }
+    }
+    
+    public static CloudList.CloudEntry getCloudEntry(Properties metaProp) 
+    {
+        if (metaProp == null) return null;
+        CloudList.CloudEntry entry = new CloudList.CloudEntry();
+        entry.setEtag(metaProp.getProperty("etag"));
+        entry.setContainer(metaProp.getProperty("bucket"));
+        String sizeS = metaProp.getProperty("size");
+        Long size = null;
+        if (sizeS != null) {
+            try {
+                size = Long.parseLong(sizeS);
+            } catch (Exception ex) {
+                size = null;
+            }
+        }
+        entry.setSize(size);
+        entry.setContentType(null);
+        entry.lastModified = metaProp.getProperty("modified");
+        entry.setStorageClass(metaProp.getProperty("storageClass"));
+        entry.setKey(metaProp.getProperty("key"));
+        String localSha256S = metaProp.getProperty("sha256");
+        if (localSha256S != null) {
+            MessageDigest localSha256 = null;
+            try {
+                localSha256 = new MessageDigest(localSha256S,"sha256");
+                entry.setDigest(localSha256);
+            } catch (Exception xx) { }
+            entry.setDigest(localSha256);
+        }
+        return entry;
     }
 
     public String getSha256() {
