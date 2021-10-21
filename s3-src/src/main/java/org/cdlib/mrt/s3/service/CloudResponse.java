@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.cdlib.mrt.core.DateState;
+import org.cdlib.mrt.utility.PropertiesUtil;
 
 
 
@@ -444,7 +445,9 @@ public class CloudResponse
     
     public static CloudList.CloudEntry getCloudEntry(Properties metaProp) 
     {
-        if (metaProp == null) return null;
+        if ((metaProp == null) || (metaProp.size() == 0)) {
+            return null;
+        }
         CloudList.CloudEntry entry = new CloudList.CloudEntry();
         entry.setEtag(metaProp.getProperty("etag"));
         entry.setContainer(metaProp.getProperty("bucket"));
