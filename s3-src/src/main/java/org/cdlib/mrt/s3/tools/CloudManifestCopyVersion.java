@@ -73,6 +73,7 @@ public class CloudManifestCopyVersion {
     protected static final String NAME = "CloudManifestCopyTime";
     protected static final String MESSAGE = NAME + ": ";
     protected static boolean DEBUG = false;
+    protected static int NEEDCOPYLOG = 7;
     
     
     protected CloudStoreInf inService = null;
@@ -142,7 +143,7 @@ public class CloudManifestCopyVersion {
         try {
             // outManProp set to null if no output manifest exists at startup
             if (outManProp == null) {
-                log(11, "needCopy outManProp null: true");
+                log(NEEDCOPYLOG, "needCopy outManProp null: true");
                 return true;
             }
             if (DEBUG) System.out.println(inEntry.dump("In-entrydump"));
@@ -155,18 +156,18 @@ public class CloudManifestCopyVersion {
             try {
                 objectMeta = outService.getObjectMeta(outContainer, key);
             } catch (Exception ex) {
-                log(11, "needCopy(" + key + ") Error getObjectMeta: true - ex:" + ex);
+                log(NEEDCOPYLOG, "needCopy(" + key + ") Error getObjectMeta: true - ex:" + ex);
                 return true;
             }
             if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("***META***", objectMeta));
             outEntry = CloudResponse.getCloudEntry(objectMeta);
             if (outEntry == null) {
-                log(11, "needCopy(" + key + ")  no meta: needCopy=TRUE");
+                log(NEEDCOPYLOG, "needCopy(" + key + ")  no meta: needCopy=TRUE");
                 return true;
             }
             if (DEBUG) System.out.println(outEntry.dump("out-entrydump"));
             if (inEntry.getDigest() == null) {
-                log(11, "needCopy(" + key + ")  no inEntry digest - needCopy=TRUE");
+                log(NEEDCOPYLOG, "needCopy(" + key + ")  no inEntry digest - needCopy=TRUE");
                 return true;
             }
             MessageDigest inCompDigest = inEntry.getDigest();
@@ -178,10 +179,10 @@ public class CloudManifestCopyVersion {
             long outSize = outEntry.getSize();
             stat.metaTime += DateUtil.getEpochUTCDate()-startTestTime;
             if (inDigestValue.equals(outDigestValue) && (inSize == outSize)) {
-                log(11, "needCopy(" + key + ")  needCopy=FALSE");
+                log(NEEDCOPYLOG, "needCopy(" + key + ")  needCopy=FALSE");
                 return false;
             }
-            log(11, "needCopy(" + key + ")  miss match: true"
+            log(NEEDCOPYLOG, "needCopy(" + key + ")  miss match: true"
                     + " - inSize:" + inSize
                     + " - outSize:" + outSize
                     + " - inDigestValue:" + inDigestValue
