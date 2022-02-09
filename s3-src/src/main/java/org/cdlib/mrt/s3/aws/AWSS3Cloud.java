@@ -1141,8 +1141,11 @@ public class AWSS3Cloud
     {
         Properties prop = new Properties();
         try {
+            ObjectMetadata metadata = getRetryObjectMeta (bucketName,key, 10);
+            /*
             GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
             ObjectMetadata metadata = s3Client.getObjectMetadata(request);
+            */
             addProp(prop, "sha256", metadata.getUserMetaDataOf("sha256"));
             addProp(prop, "size", "" + metadata.getContentLength());
             addProp(prop, "bucket", bucketName);
@@ -1184,7 +1187,42 @@ public class AWSS3Cloud
         }
     }
     
-    
+    public ObjectMetadata getRetryObjectMeta (
+            String bucketName,
+            String key,
+            int retryCnt)
+        throws Exception
+    {
+        
+        Exception doException = null;
+        for (int retry=0; retry<retryCnt; retry++) {
+            try {
+                GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
+                ObjectMetadata metadata = s3Client.getObjectMetadata(request);
+                return metadata;
+
+            } catch (Exception ex) {
+                if (ex.toString().contains("404")) {
+                    if (DEBUG) System.out.println("404(" + retry + "):"+ ex);
+                    throw ex;
+                }
+                String msg = "***getRetryObjectMeta Exception(" + retry + "):"
+                    + " - bucketName:" + bucketName
+                    + " - key:" + key
+                    + " - ex:" + ex;
+                if (DEBUG) System.out.println(msg);
+                logger.logMessage(msg,
+                    1, true
+                );
+                doException = ex;
+                try {
+                    Thread.sleep(500 * retry);
+                } catch (Exception tex) { }
+            }
+        }
+        
+        throw doException;
+    }
     
     public Properties dumpMeta (
             String bucketName,

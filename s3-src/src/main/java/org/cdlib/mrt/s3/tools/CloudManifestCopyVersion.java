@@ -34,6 +34,7 @@ import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
 import org.cdlib.mrt.cloud.VersionMapUtil;
+import org.cdlib.mrt.core.DateState;
 import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.core.FileComponent;
 import org.cdlib.mrt.core.Identifier;
@@ -255,7 +256,7 @@ public class CloudManifestCopyVersion {
             CloudResponse outResponse = outService.putObject(outContainer, key, tFile);
             if (outResponse.getException() != null) {
                 //System.out.println("CloudManifestCopyTime: getException not null:" + outResponse.getException());
-                throw inResponse.getException();
+                throw outResponse.getException();
             }
             String outSHA256 = outResponse.getSha256();
             //System.out.println("CloudManifestCopyTime: after putObject");
@@ -292,7 +293,7 @@ public class CloudManifestCopyVersion {
             ex.printStackTrace();
             throw new TException(ex);
         }
-    }
+    } 
     
     public void copyObject(String ark, CloudManifestCopyVersion.Stat stat)
         throws TException
@@ -467,6 +468,7 @@ public class CloudManifestCopyVersion {
         public long objCnt = 0;
         public long fileCopyCnt = 0;
         public long fileCopySize = 0;
+        public DateState start = new DateState();
         public Stat(
                 String id) 
         {
