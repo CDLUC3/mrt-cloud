@@ -46,6 +46,7 @@
   </build>
   
   <dependencies>
+
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
@@ -53,6 +54,18 @@
       <!--version>1.11.438 working memory management</version-->
       <!--version>1.11.527 memory problems storage</version-->
       <!--version>1.11.545 memory problems storage</version-->
+    </dependency>
+
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-core</artifactId>
+      <version>1.11.438</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>1.11.438</version>
     </dependency>
 
     <dependency>
@@ -71,6 +84,12 @@
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
       <version>1.7.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.1</version>
     </dependency>
 
     <dependency>
@@ -100,6 +119,12 @@
     <dependency>
       <groupId>org.cdlib.mrt</groupId>
       <artifactId>mrt-core</artifactId>
+      <version>2.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.cdlib.mrt</groupId>
+      <artifactId>mrt-json</artifactId>
       <version>2.0-SNAPSHOT</version>
     </dependency>
 
