@@ -46,19 +46,21 @@
   </build>
   
   <dependencies>
-
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk</artifactId>
+      <artifactId>aws-java-sdk-core</artifactId>
       <version>1.11.438</version>
-      <!--version>1.11.438 working memory management</version-->
-      <!--version>1.11.527 memory problems storage</version-->
-      <!--version>1.11.545 memory problems storage</version-->
     </dependency>
 
     <dependency>
       <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-core</artifactId>
+      <artifactId>aws-java-sdk-ec2</artifactId>
+      <version>1.11.438</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-iam</artifactId>
       <version>1.11.438</version>
     </dependency>
 
@@ -69,51 +71,16 @@
     </dependency>
 
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.9.7</version>
-    </dependency>
-
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.5</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.ant</groupId>
-      <artifactId>ant</artifactId>
-      <version>1.7.0</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.4.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-      <version>4.4.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpmime</artifactId>
-      <version>4.4.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-cloudconf</artifactId>
-      <version>1.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -130,12 +97,6 @@
 
     <dependency>
       <groupId>org.cdlib.mrt</groupId>
-      <artifactId>mrt-jena</artifactId>
-      <version>2.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.cdlib.mrt</groupId>
       <artifactId>mrt-openstackpub</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
@@ -145,22 +106,37 @@
       <artifactId>mrt-tools</artifactId>
       <version>2.0-SNAPSHOT</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.jdom</groupId>
-      <artifactId>jdom</artifactId>
-      <version>1.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
-    </dependency>
   </dependencies>
 
 </project>
 
+
+<!--
+removing unused/declared deps
+
+[WARNING] Unused declared dependencies found:
+[WARNING]    com.amazonaws:aws-java-sdk:jar:1.11.438:compile
+[WARNING]    com.fasterxml.jackson.core:jackson-core:jar:2.9.7:compile
+[WARNING]    org.apache.ant:ant:jar:1.7.0:compile
+[WARNING]    org.apache.httpcomponents:httpclient:jar:4.4.1:compile
+[WARNING]    org.apache.httpcomponents:httpcore:jar:4.4.1:compile
+[WARNING]    org.apache.httpcomponents:httpmime:jar:4.4.1:compile
+[WARNING]    org.cdlib.mrt:mrt-cloudconf:jar:1.0-SNAPSHOT:compile
+[WARNING]    org.cdlib.mrt:mrt-jena:jar:2.0-SNAPSHOT:compile
+[WARNING]    org.cdlib.mrt:mrt-openstackpub:jar:1.0-SNAPSHOT:compile
+[WARNING]    org.jdom:jdom:jar:1.1:compile
+[WARNING]    xalan:xalan:jar:2.7.1:compile
+
+had to keep and add some deps:
+
+[INFO] - maven-dependency-plugin:2.1:analyze (default-cli) @ mrt-s3srcpub -
+[WARNING] Unused declared dependencies found:
+             # added aws-java-sdk-iam, aws-java-sdk-ec2.  compile fails without, but they now show up as declared/unused. 
+[WARNING]    com.amazonaws:aws-java-sdk-ec2:jar:1.11.438:compile
+[WARNING]    com.amazonaws:aws-java-sdk-iam:jar:1.11.438:compile
+             # KEEP - compile fails otherwise.  but why doesn't it show up as a requirment when running mvn dependency:analyze?
+[WARNING]    org.cdlib.mrt:mrt-openstackpub:jar:1.0-SNAPSHOT:compile
+-->
 
 
 <!-- commented out dependencies -->
