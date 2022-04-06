@@ -435,6 +435,16 @@ public class StateHandler
                     + " - ok:" + ok + "\n"
                     + " - error:" + error + "\n";
         }
+        
+        public String dumpline(String header)
+        {
+            return header + ":"
+                    + " - bucket:" + bucket 
+                    + " - key:" + key
+                    + " - duration:" + duration
+                    + " - ok:" + ok
+                    + " - error:" + error;
+        }
 
         public String getError() {
             return error;

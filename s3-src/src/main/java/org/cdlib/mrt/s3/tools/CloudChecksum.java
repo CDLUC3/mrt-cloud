@@ -24,7 +24,7 @@ public class CloudChecksum {
     protected static final String NAME = "CloudChecksum";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
-    protected static int RETRY=3;
+    protected static int RETRY=5;
     protected int buffsize = 0;
     protected int maxsize = 32000000;
     protected ArrayList<Digest> digestList = new ArrayList();
@@ -174,31 +174,65 @@ public class CloudChecksum {
     public static void main(String[] args) {
         LoggerInf logger = new TFileLogger("jtest", 50, 50);
         try {
+            long NODE = 9502;
             String [] types = {
                 "md5",
                 "sha256"
             };
-            String jarBase = "jar:nodes-stage";
-            NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
-            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(5001);
-            CloudStoreInf service = accessNode.service;
-            String bucket = accessNode.container;
             String key = "ark:/28722/k23j3911v|1|system/mrt-object-map.ttl";
             String keyBig = "ark:/28722/k23x83k93|1|producer/artiraq.org/static/opencontext/kenantepe/full/Fieldphotos/2005/AreaF/F7L06135T19.JPG";
             String keyReallyBig = "ark:/99999/fk48k8jp86|1|producer/Asha_G.tar.gz";
-            CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, keyReallyBig);
+     
+            mainTest(types, NODE, key);
+            mainTest(types, NODE, keyBig);
+            mainTest(types, NODE, keyReallyBig
+            );
+
+         } catch (TException tex) {
+            tex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();;
+        }
+    }
+    
+    public static void mainTest(String [] types, long node, String testKey) 
+        throws TException
+    {
+        LoggerInf logger = new TFileLogger("jtest", 50, 50);
+        System.out.println("\n***mainTest***\n"
+                + " - node=" + node + "\n"
+                + " - testKey=" + testKey + "\n"
+        );
+        try {
+            String jarBase = "jar:nodes-stage";
+            NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
+            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(node);
+            CloudStoreInf service = accessNode.service;
+            String bucket = accessNode.container;
+            CloudChecksum cloudChecksum = CloudChecksum.getChecksums(types, service, bucket, testKey);
             System.out.println("begin:"
                     + " - metaObjectSize=" + cloudChecksum.getMetaObjectSize()
                     + " - metaSha256=" + cloudChecksum.getMetaSha256()
             );
             cloudChecksum.process();
             cloudChecksum.dump("the test");
-
-
             for (String type : types) {
                 String checksum = cloudChecksum.getChecksum(type);
                 System.out.println("getChecksum(" + type + "):" + checksum);
             }
+            String testChecksum = cloudChecksum.getMetaSha256();
+            if (testChecksum == null) {
+                testChecksum = cloudChecksum.getChecksum("sha256");
+                System.out.println("USING generated");
+            } else {
+                System.out.println("USING property");
+            }
+            CloudChecksumResult  result = cloudChecksum.validateSizeChecksum(testChecksum, "sha256", cloudChecksum.getMetaObjectSize(), logger);
+            System.out.println("***validateSizeChecksum:***\n"
+                    + " - checksumMatch:" + result.checksumMatch + "\n"
+                    + " - fileSizeMatch:" + result.fileSizeMatch + "\n"
+            );
+
 
          } catch (TException tex) {
             tex.printStackTrace();
@@ -291,7 +325,7 @@ public class CloudChecksum {
             } catch (Exception ex) {}
         }
     }
-    
+       
     protected InputStream getStream(long start, long stop, int retry)
         throws TException
     {
@@ -299,30 +333,33 @@ public class CloudChecksum {
         InputStream inputStream = null;
         CloudResponse streamResponse = null;
         Exception exi = null;
+        String errMsg = "";
         try {
-            for (int i=0; i < retry; i++) {
-                
+            for (int i=1; i <= retry; i++) {
                 streamResponse = new CloudResponse(bucket, key);
                 inputStream = service.getRangeStream(bucket, key, start, stop, streamResponse);
-               
                 if ((inputStream != null) && (streamResponse.getException() == null)) {
                     return inputStream;
                 }
                 exi = streamResponse.getException();
-                if (i < (retry-1)) {
-                    System.out.println(MESSAGE + "Data stream fail retry(" + i + "):"
-                        + " - service=" + service.getType()
-                        + " - bucket=" + bucket
-                        + " - key=" + key
-                        + " - start=" + start
-                        + " - stop=" + stop
-                        + " - Exception=" + exi
-                    );
-                    try {
-                        Thread.sleep(i * 1000);
-                    } catch (Exception exs) { }
-                    continue;
-                } 
+                int sleepMs = (3*i) * 1000;
+                errMsg = MESSAGE + "***Data stream fail retry(" + i + "):"
+                    + " - service=" + service.getType()
+                    + " - bucket=" + bucket
+                    + " - key=" + key
+                    + " - start=" + start
+                    + " - stop=" + stop
+                    + " - sleepMs=" + sleepMs
+                    + " - Exception=" + exi;
+                System.out.println(errMsg);
+                if (i==retry) break;
+                try {
+                    System.out.println(MESSAGE  + "sleep:" + sleepMs);
+                    Thread.sleep(sleepMs);
+                } catch (Exception exs) { }
+            }
+            if (exi != null) {
+                exi.printStackTrace();
             }
             throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "unable to extract data for:"
                     + " - service=" + service.getType()

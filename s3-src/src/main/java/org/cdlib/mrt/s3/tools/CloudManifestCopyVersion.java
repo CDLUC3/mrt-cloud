@@ -71,7 +71,7 @@ import org.cdlib.mrt.utility.StringUtil;
  */
 public class CloudManifestCopyVersion {
     
-    protected static final String NAME = "CloudManifestCopyTime";
+    protected static final String NAME = "CloudManifestCopyVersion";
     protected static final String MESSAGE = NAME + ": ";
     protected static boolean DEBUG = false;
     protected static int NEEDCOPYLOG = 7;
@@ -137,16 +137,20 @@ public class CloudManifestCopyVersion {
         }
     }
     
-    public boolean needCopy(CloudList.CloudEntry inEntry, Stat stat)
+    protected boolean needCopy(CloudList.CloudEntry inEntry, Stat stat)
         throws TException
     {
         CloudList.CloudEntry outEntry = null;
         try {
             // outManProp set to null if no output manifest exists at startup
+            /*
+            Output manifest not required to determine if item already exists
+            Equivalent to a Glacier audit
             if (outManProp == null) {
                 log(NEEDCOPYLOG, "needCopy outManProp null: true");
                 return true;
             }
+            */
             if (DEBUG) System.out.println(inEntry.dump("In-entrydump"));
             long startTestTime = DateUtil.getEpochUTCDate();
             String key = inEntry.getKey();
@@ -228,7 +232,7 @@ public class CloudManifestCopyVersion {
         }
     } 
     
-    public CloudResponse copy(CloudList.CloudEntry entry, Stat stat)
+    protected CloudResponse copy(CloudList.CloudEntry entry, Stat stat)
         throws TException
     {
         String inSHA256 = null;
@@ -295,6 +299,37 @@ public class CloudManifestCopyVersion {
         }
     } 
     
+    public CloudResponse copyRetry(CloudList.CloudEntry entry, Stat stat, int retryCnt)
+        throws TException
+    {
+        TException retEx = null;
+        for (int retry=1; retry <= retryCnt; retry++) {
+            try {
+                CloudResponse response = copy(entry, stat);
+                return response;
+
+            } catch (TException tex) {
+                retEx = tex;
+                String key = entry.getKey();
+                if (key == null) key = "";
+                key = StringEscapeUtils.unescapeXml(key);
+                String errMsg =  "copyRetry(" + retry + "):"
+                        + " - key:" + key
+                        + " - Exception:" + retEx;
+                log(3, errMsg);
+                System.out.println(errMsg);
+                tex.printStackTrace();
+            } 
+            long expSleep = 1000*(5*retry);
+            if (retry == retryCnt) break;
+            try {
+                System.out.println(MESSAGE  + "sleep:" + expSleep);
+                Thread.sleep (expSleep);
+            } catch (Exception slex) { }
+        }
+        throw retEx;
+    } 
+    
     public void copyObject(String ark, CloudManifestCopyVersion.Stat stat)
         throws TException
     {
@@ -314,7 +349,7 @@ public class CloudManifestCopyVersion {
                             + " - size=" + entry.size
                     );
                 if (needCopy(entry, stat)) {
-                    copy(entry, stat);
+                    copyRetry(entry, stat, 3);
                     stat.fileCopyCnt++;
                     stat.fileCopySize += entry.getSize();
                 }
