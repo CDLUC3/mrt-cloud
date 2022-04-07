@@ -76,6 +76,10 @@ import com.amazonaws.event.ProgressListener;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.retry.PredefinedBackoffStrategies.FullJitterBackoffStrategy;
+import com.amazonaws.retry.RetryPolicy;
+
+import com.amazonaws.retry.PredefinedRetryPolicies;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.Region;
@@ -298,6 +302,7 @@ public class AWSS3Cloud
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         clientConfiguration.setSignerOverride("AWSS3V4SignerType");
         clientConfiguration.withMaxErrorRetry (15)
+            .withRetryPolicy(getS3BaseRetryPolicy())
             .withConnectionTimeout (43200_000)
             .withSocketTimeout (43200_000)
             .withTcpKeepAlive (true);
@@ -322,6 +327,7 @@ public class AWSS3Cloud
 
         ClientConfiguration clientConfig = new ClientConfiguration()
             .withMaxErrorRetry (15)
+            .withRetryPolicy(getS3BaseRetryPolicy())
             //.withConnectionTimeout (10_000)
             //.withSocketTimeout (10_000)
             .withConnectionTimeout (600_000)
@@ -340,13 +346,21 @@ public class AWSS3Cloud
         
         return s3client;
     }    
-    
+    private static RetryPolicy getS3BaseRetryPolicy() {
+        return new RetryPolicy(
+                new PredefinedRetryPolicies.SDKDefaultRetryCondition(),
+                new FullJitterBackoffStrategy(500, 120000),
+                30,
+                true
+        );
+    }
     public static AmazonS3Client amazonS3ClientDefault( 
             String endPoint) 
     {
 
         ClientConfiguration clientConfig = new ClientConfiguration()
             .withMaxErrorRetry (15)
+            .withRetryPolicy(getS3BaseRetryPolicy())
             //.withConnectionTimeout (10_000)
             //.withSocketTimeout (10_000)
             .withConnectionTimeout (600_000)
@@ -1156,6 +1170,7 @@ public class AWSS3Cloud
             addProp(prop, "modified", isoDate);
             addProp(prop, "md5", metadata.getContentMD5());
             addProp(prop, "storageClass", metadata.getStorageClass());
+            addProp(prop, "maxErrRetry", "" + getMaxErrRetry());
             Date expireDate = metadata.getExpirationTime();
             if (expireDate != null) {
                 Long expireDateL = expireDate.getTime();
@@ -1222,6 +1237,59 @@ public class AWSS3Cloud
         }
         
         throw doException;
+    }
+    
+    public Integer getMaxErrRetry() 
+    {
+        try {
+            ClientConfiguration config = s3Client.getClientConfiguration();
+            RetryPolicy retryPolicy = config.getRetryPolicy();
+            RetryPolicy.BackoffStrategy backoffStrategy = retryPolicy.getBackoffStrategy();
+            return retryPolicy.getMaxErrorRetry();
+        } catch (Exception ex) {
+            return 0;
+        }
+    }
+    
+    public void dumpObjectMetadata (
+           ObjectMetadata objectMetadata)
+        throws Exception
+    {
+        int maxErrRetry = getMaxErrRetry();
+        System.out.println("maxErrRetry:" + maxErrRetry);
+        Map<String, Object> map = objectMetadata.getRawMetadata();
+        
+        Set<String> metaKeys = map.keySet();
+        for (String key : metaKeys) {
+            try {
+                Object value  = map.get(key);
+                if (value instanceof String) {
+                    System.out.println("metaKey:" + key + "=" + (String)value);
+                    
+                } else if (value instanceof Integer) {
+                    System.out.println("metaKey:" + key + "=" + (Integer)value);
+                    
+                } else {    
+                    System.out.println("metaKey:" + key);
+                }
+
+            } catch (Exception ex) {
+                System.out.println(ex);
+            }
+        }
+        
+        Map<String, String> mapUser = objectMetadata.getUserMetadata();
+        Set<String> userKeys = mapUser.keySet();
+        for (String userKey : userKeys) {
+            try {
+                String value = mapUser.get(userKey);
+                System.out.println("mapUser:" + userKey + "=" + value);
+
+            } catch (Exception ex) {
+                System.out.println(ex);
+            }
+        }
+        System.out.println("getPartCount:" + objectMetadata.getPartCount());
     }
     
     public Properties dumpMeta (

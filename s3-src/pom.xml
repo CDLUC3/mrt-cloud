@@ -10,20 +10,6 @@
     <name>UC3-mrtS3SrcPub</name>
     <url>http://uc3.cdlib.org</url>
     
-
-  <distributionManagement>
-    <repository>
-      <id>cdl-releases</id>
-      <name>CDL Snapshot Repository</name>
-      <url>http://builds.cdlib.org/repo/content/repositories/cdl-releases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>cdl-snapshots</id>
-      <name>CDL Snapshot Repository</name>
-      <url>http://builds.cdlib.org/repo/content/repositories/cdl-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
-
     <!-- force UTF-8 -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -86,7 +72,8 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.11.438</version>
+            <version>1.12.190</version>
+            <!--version>1.11.438</version-->
             <!--version>1.11.438 working memory management</version-->
             <!--version>1.11.527 memory problems storage</version-->
             <!--version>1.11.545 memory problems storage</version-->
@@ -94,22 +81,22 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.9.7</version>
+            <version>2.12.3</version> 
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>4.4.1</version>
+            <version>4.4.14</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
-            <version>4.4.1</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.4.1</version>
+            <version>4.5.13</version>
         </dependency>
         <!--
         <dependency>
