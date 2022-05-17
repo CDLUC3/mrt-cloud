@@ -20,8 +20,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.cdlib.mrt.cloud.CloudList.CloudEntry;
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.Identifier;
+import org.cdlib.mrt.s3.aws.AWSS3Cloud;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
@@ -76,9 +78,7 @@ public class CloudIT {
                 assertFalse(replicationAccessNode == null);
         }
 
-        @Test
-        public void connectToMinioDocker() throws HttpResponseException, IOException {
-                String url = String.format("http://localhost:%d", admin_port);
+        public String getContentForUrl(String url) throws HttpResponseException, IOException {
                 /*
                 When using java11 libraries, the following classes can be used...
                 HttpClient client = HttpClient.newHttpClient();
@@ -88,12 +88,17 @@ public class CloudIT {
                 HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
                 */
                 try (CloseableHttpClient client = HttpClients.createDefault()) {
-                    HttpGet request = new HttpGet(url);
-                    HttpResponse response = client.execute(request);
-                    String responseString = new BasicResponseHandler().handleResponse(response);
-                    assertFalse(responseString.isEmpty());
-              }
+                        HttpGet request = new HttpGet(url);
+                        HttpResponse response = client.execute(request);
+                        return new BasicResponseHandler().handleResponse(response);
+                }
+        }
 
+
+        @Test
+        public void connectToMinioDocker() throws HttpResponseException, IOException {
+                String resp = getContentForUrl(String.format("http://localhost:%d", admin_port));
+                assertFalse(resp.isEmpty());
         }
 
         @Test
@@ -111,17 +116,22 @@ public class CloudIT {
                 }
         }
 
-        public Identifier addObject(CloudStoreInf service, String bucket, String key, String content) throws IOException, TException {
+        public File createFile(String s) throws IOException {
                 Path p = Files.createTempFile("junit", "txt");                
-                Files.write(p, content.getBytes());
-                CloudResponse resp = service.putObject(
+                Files.write(p, s.getBytes());
+                return p.toFile();
+        }
+
+        public Identifier addObject(CloudStoreInf service, String bucket, String key, String content) throws IOException, TException {
+                CloudResponse resp = ((AWSS3Cloud)service).putObject(
                         bucket, 
                         key, 
-                        p.toFile()
+                        createFile(content)
                 );
                 assertEquals(ResponseStatus.ok, resp.getStatus());
                 assertEquals(content_md5, resp.getMd5());
                 assertEquals(content_sha256, resp.getSha256());
+
                 return resp.getObjectID();
         }
 
@@ -131,12 +141,16 @@ public class CloudIT {
                         key
                 );
                 assertEquals(ResponseStatus.ok, resp.getStatus());
+                CloudResponse r = service.getObjectList(bucket);
+                assertTrue(r.getCloudList().getList().isEmpty());
         }
 
-        public String stream2string(InputStream is) throws IOException {
+        public String stream2string(InputStream is) {
                 StringBuilder sb = new StringBuilder();
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
                         sb.append(br.readLine());
+                } catch(Exception e) {
+                        System.out.println(e.getMessage());
                 }
                 return sb.toString();
         }
@@ -158,6 +172,7 @@ public class CloudIT {
 
                         Properties prop = primaryAccessNode.service.getObjectMeta(primaryAccessNode.container, key);
                         assertEquals(Integer.toString(content.length()), prop.getProperty("size"));
+                        assertEquals(content_sha256, prop.getProperty("sha256"));
 
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
                 } catch(Exception e){
@@ -174,6 +189,54 @@ public class CloudIT {
                         assertEquals(content, stream2string(is));
 
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                } catch(Exception e){
+                        e.printStackTrace();
+                }
+        }
+
+        @Test
+        public void addDataToNodePresigned() throws TException {
+                try {
+                        addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
+
+                        CloudResponse resp = primaryAccessNode.service.getPreSigned(10, primaryAccessNode.container, key, "text/plain", "inline");
+                        String url = resp.getReturnURL().toString();
+                        assertFalse(url.isEmpty());
+                        String presp = getContentForUrl(url);
+                        assertEquals(content, presp);
+
+                        deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                } catch(Exception e){
+                        e.printStackTrace();
+                }
+        }
+
+        @Test
+        public void addManifest() throws TException {
+                try {
+                        Identifier objid = addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
+                        CloudResponse resp = primaryAccessNode.service.putManifest(
+                                primaryAccessNode.container, 
+                                objid, 
+                                createFile("manifest")
+                        );
+                        assertEquals(ResponseStatus.ok, resp.getStatus());
+
+                        CloudResponse r = new CloudResponse();
+                        InputStream is = primaryAccessNode.service.getManifest(
+                                primaryAccessNode.container, 
+                                objid, 
+                                r
+                        );
+                        assertEquals(ResponseStatus.ok, r.getStatus());                        
+                        assertEquals("manifest", stream2string(is));
+
+                        r = primaryAccessNode.service.getObjectList(primaryAccessNode.container);
+                        assertEquals(2, r.getCloudList().getList().size());
+
+                        primaryAccessNode.service.deleteManifest(primaryAccessNode.container, objid);
+                        deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+
                 } catch(Exception e){
                         e.printStackTrace();
                 }
