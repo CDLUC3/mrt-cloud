@@ -107,11 +107,31 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
                 <configuration>
-                  <!-- Includes Test* and *Test by default -->
-                  <!-- skips surefire tests without skipping failsafe tests.
+                    <!-- Includes Test* and *Test by default -->
+                    <!-- skips surefire tests without skipping failsafe tests.
                              Property value seems to magically default to false -->
-                  <skipTests>${skip.surefire.tests}</skipTests>
+                    <skipTests>${skip.surefire.tests}</skipTests>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.5</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
