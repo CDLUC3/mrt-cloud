@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.http.HttpResponse;
@@ -23,12 +24,15 @@ import org.apache.http.impl.client.HttpClients;
 import org.cdlib.mrt.cloud.CloudList.CloudEntry;
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.Identifier;
+import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.s3.aws.AWSS3Cloud;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.s3.service.CloudResponse.ResponseStatus;
 import org.cdlib.mrt.s3.service.NodeIO.AccessNode;
+import org.cdlib.mrt.s3.tools.CloudCloudCopy;
+import org.cdlib.mrt.s3.tools.CloudManifestCopyVersion;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFileLogger;
@@ -102,17 +106,34 @@ public class CloudIT {
         }
 
         @Test
-        public void testNodeState() throws TException {
+        public void testNodeState() {
                 try {
                         ArrayList<NodeIO.AccessNode> accessNodes = nodeIO.getAccessNodesList();  
                         assertEquals(2, accessNodes.size());
 
                         StateHandler.RetState retstate = primaryAccessNode.service.getState(primaryAccessNode.container);
                         assertTrue(retstate.getOk());
+                        assertTrue(retstate.getError() == null);
+
+                        assertEquals(primaryAccessNode.container, retstate.getBucket());
+
+                        System.out.println(retstate.dump("dump"));
+                        System.out.println(retstate.dumpline("dumpline"));
+                        System.out.println(retstate.getDuration());
+                        
+                        assertEquals(primaryAccessNode.container, retstate.getBucket());
+                        System.out.println(retstate.getKey());
                         retstate = replicationAccessNode.service.getState(replicationAccessNode.container);
                         assertTrue(retstate.getOk());
+
+                        //Round out test coverage
+                        retstate.setBucket("foo");
+                        retstate.setKey("bar");
+
+                        retstate = new StateHandler.RetState("foo", null, "error");
                 } catch(Exception e){
                         e.printStackTrace();
+                        fail(e.getMessage());
                 }
         }
 
@@ -141,10 +162,13 @@ public class CloudIT {
                         key
                 );
                 assertEquals(ResponseStatus.ok, resp.getStatus());
-                CloudResponse r = service.getObjectList(bucket);
-                assertTrue(r.getCloudList().getList().isEmpty());
         }
 
+        public void checkEmpty(CloudStoreInf service, String bucket) throws TException {
+                CloudResponse r = service.getObjectList(bucket);
+                assertTrue(r.getCloudList().getList().isEmpty());
+         }
+ 
         public String stream2string(InputStream is) {
                 StringBuilder sb = new StringBuilder();
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
@@ -156,17 +180,19 @@ public class CloudIT {
         }
 
         @Test
-        public void addDataToNode() throws TException {
+        public void addDataToNode() {
                 try {
                         addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
                 } catch(Exception e){
                         e.printStackTrace();
+                        fail(e.getMessage());
                 }
         }
 
         @Test
-        public void addDataToNodeCheckMetadata() throws TException {
+        public void addDataToNodeCheckMetadata() {
                 try {
                         addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
 
@@ -175,13 +201,15 @@ public class CloudIT {
                         assertEquals(content_sha256, prop.getProperty("sha256"));
 
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
                 } catch(Exception e){
                         e.printStackTrace();
+                        fail(e.getMessage());
                 }
         }
 
         @Test
-        public void addDataToNodeCheckContent() throws TException {
+        public void addDataToNodeCheckContent() {
                 try {
                         addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
 
@@ -189,13 +217,15 @@ public class CloudIT {
                         assertEquals(content, stream2string(is));
 
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
                 } catch(Exception e){
                         e.printStackTrace();
+                        fail(e.getMessage());
                 }
         }
 
         @Test
-        public void addDataToNodePresigned() throws TException {
+        public void addDataToNodePresigned() {
                 try {
                         addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
 
@@ -206,13 +236,15 @@ public class CloudIT {
                         assertEquals(content, presp);
 
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
                 } catch(Exception e){
                         e.printStackTrace();
+                        fail(e.getMessage());
                 }
         }
 
         @Test
-        public void addManifest() throws TException {
+        public void addManifest() {
                 try {
                         Identifier objid = addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
                         CloudResponse resp = primaryAccessNode.service.putManifest(
@@ -237,8 +269,95 @@ public class CloudIT {
                         primaryAccessNode.service.deleteManifest(primaryAccessNode.container, objid);
                         deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
 
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
                 } catch(Exception e){
                         e.printStackTrace();
+                        fail(e.getMessage());
+                }
+        }
+
+        @Test
+        public void addMultipleDataToNode() {
+                try {
+                        CloudStoreInf service = primaryAccessNode.service;
+                        String bucket = primaryAccessNode.container;
+
+                        addObject(service, bucket, "test1.txt", content);
+                        addObject(service, bucket, "test2.txt", content);
+                        addObject(service, bucket, "test3.txt", content);
+                        addObject(service, bucket, "test4.txt", content);
+
+                        CloudResponse r = service.getObjectList(bucket);
+                        assertEquals(4, r.getCloudList().getList().size());
+
+                        deleteObject(service, bucket, "test1.txt");
+                        deleteObject(service, bucket, "test2.txt");
+                        deleteObject(service, bucket, "test3.txt");
+                        deleteObject(service, bucket, "test4.txt");
+
+                        checkEmpty(service, bucket);
+                } catch(Exception e){
+                        e.printStackTrace();
+                        fail(e.getMessage());
+                }
+        }
+
+        @Test
+        public void checkDigest() {
+                try {
+                        addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
+                        CloudResponse r = primaryAccessNode.service.validateMd5(primaryAccessNode.container, key, content_md5);
+                        assertEquals(ResponseStatus.ok, r.getStatus());
+
+                        MessageDigest md = new MessageDigest(content_sha256, "sha256");
+                        r = primaryAccessNode.service.validateDigest(primaryAccessNode.container, key, md, content.length());
+                        assertEquals(ResponseStatus.ok, r.getStatus());
+                        assertNull(r.getErrMsg());
+
+                        md = new MessageDigest("0000000000000000000000000000000000000000000000000000000000000000", "sha256");
+                        r = primaryAccessNode.service.validateDigest(primaryAccessNode.container, key, md, content.length());
+                        assertNotNull(r.getErrMsg());
+ 
+                        deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
+                } catch(Exception e){
+                        e.printStackTrace();
+                        fail(e.getMessage());
+                }
+        }
+
+        List<CloudEntry> getCloudList(CloudStoreInf service, String bucket) throws TException {
+                CloudResponse r = service.getObjectList(bucket);
+                return r.getCloudList().getList();
+        }
+
+        @Test
+        public void copyFile() {
+                try {
+                        addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
+                        List<CloudEntry> list = getCloudList(primaryAccessNode.service, primaryAccessNode.container);
+                        assertEquals(1, list.size());
+                        List<CloudEntry> rlist = getCloudList(replicationAccessNode.service, replicationAccessNode.container);
+                        assertEquals(0, rlist.size());
+
+                        CloudCloudCopy ccc = new CloudCloudCopy(
+                                primaryAccessNode.service, 
+                                primaryAccessNode.container,
+                                replicationAccessNode.service,
+                                replicationAccessNode.container
+                        );
+                        ccc.copy(list.get(0));
+
+                        rlist = getCloudList(replicationAccessNode.service, replicationAccessNode.container);
+                        assertEquals(1, rlist.size());
+
+                        deleteObject(primaryAccessNode.service, primaryAccessNode.container, key);
+                        deleteObject(replicationAccessNode.service, replicationAccessNode.container, key);
+                        checkEmpty(primaryAccessNode.service, primaryAccessNode.container);
+                        checkEmpty(replicationAccessNode.service, replicationAccessNode.container);
+                } catch(Exception e){
+                        e.printStackTrace();
+                        fail(e.getMessage());
                 }
         }
 
