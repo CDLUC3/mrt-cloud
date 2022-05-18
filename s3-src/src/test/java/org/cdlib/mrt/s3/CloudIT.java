@@ -287,8 +287,26 @@ public class CloudIT {
                         addObject(service, bucket, "test3.txt", content);
                         addObject(service, bucket, "test4.txt", content);
 
-                        CloudResponse r = service.getObjectList(bucket);
-                        assertEquals(4, r.getCloudList().getList().size());
+                        List<CloudEntry> list = getCloudList(service, bucket);
+                        assertEquals(4, list.size());
+
+                        String key = list.get(0).getKey();
+                        assertEquals("test1.txt", key);
+
+                        list = getCloudListAfter(service, bucket, key);
+                        key = list.get(0).getKey();
+                        assertEquals("test2.txt", key);
+
+                        list = getCloudListAfter(service, bucket, key);
+                        key = list.get(0).getKey();
+                        assertEquals("test3.txt", key);
+
+                        list = getCloudListAfter(service, bucket, key);
+                        key = list.get(0).getKey();
+                        assertEquals("test4.txt", key);
+
+                        list = getCloudListAfter(service, bucket, key);
+                        assertTrue(list.isEmpty());
 
                         deleteObject(service, bucket, "test1.txt");
                         deleteObject(service, bucket, "test2.txt");
@@ -328,6 +346,11 @@ public class CloudIT {
 
         List<CloudEntry> getCloudList(CloudStoreInf service, String bucket) throws TException {
                 CloudResponse r = service.getObjectList(bucket);
+                return r.getCloudList().getList();
+        }
+
+        List<CloudEntry> getCloudListAfter(CloudStoreInf service, String bucket, String key) throws TException {
+                CloudResponse r = service.getObjectListAfter(bucket, key, 10);
                 return r.getCloudList().getList();
         }
 
