@@ -7,6 +7,13 @@ services: &services
       serviceType: aws
       accessMode: near-line
       region: us-west-2
+      
+  aws-near-east: &aws-near-east
+    type: aws-near
+    service-properties:
+      serviceType: aws
+      accessMode: near-line
+      region: us-east-1
 
   aws-std: &aws-std
     type: aws-std
@@ -80,6 +87,12 @@ nodes-tables:
         bucket: dryad-assetstore-merritt-west
         desc: "Merritt Dryad prod"
 
+      - # Dryad, AWS Glacier
+        identifier: 3641
+        <<: *aws-near-east
+        bucket: dryad-assetstore-merritt-east
+        desc: "Merritt Dryad Glacier prod"
+
       - # SDSC Minio, Mar 2020
         identifier: 9501
         <<: *minio-sdsc-new
@@ -122,6 +135,12 @@ nodes-tables:
         <<: *aws-std
         bucket: dryad-assetstore-merritt-stage
         desc: "Merritt Dryad stage"
+
+      - # Dryad, AWS Glacier
+        identifier: 3642
+        <<: *aws-near-east
+        bucket: dryad-assetstore-merritt-stage-east
+        desc: "Merritt Dryad Glacier stage"
 
       - # SDSC Minio
         identifier: 9502
