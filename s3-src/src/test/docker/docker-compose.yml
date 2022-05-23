@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  minio:
+    container_name: it-minio
+    image: ${ECR_REGISTRY}/mrt-minio-it:dev
+    ports:
+    - published: 9000
+      target: 9000
+    - published: 9001
+      target: 9001
