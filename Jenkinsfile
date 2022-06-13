@@ -62,7 +62,7 @@ pipeline {
         stage('Archive Resources') { // for display purposes
             steps {
                 script {
-                  new BuildFunctions().save_artifacts(
+                  new BuildFunctions().save_jars(
                     'mrt-cloud/s3-src/target/mrt-s3srcpub-1.0-SNAPSHOT.jar',
                     'mrt-cloud'
                   )
