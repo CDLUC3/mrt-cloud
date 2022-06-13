@@ -64,6 +64,7 @@ pipeline {
                 script {
                   new BuildFunctions().save_artifacts(
                     'mrt-cloud/s3-src/target/mrt-s3srcpub-1.0-SNAPSHOT.jar',
+                    'mrt-cloud'
                   )
                 }
             }
