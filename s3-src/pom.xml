@@ -175,14 +175,17 @@
             <artifactId>junit</artifactId>
             <version>4.5</version>
         </dependency>
+      
         <dependency>
             <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk</artifactId>
+            <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.12.190</version>
-            <!--version>1.11.438</version-->
-            <!--version>1.11.438 working memory management</version-->
-            <!--version>1.11.527 memory problems storage</version-->
-            <!--version>1.11.545 memory problems storage</version-->
+        </dependency>
+      
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-ssm</artifactId>
+            <version>1.12.190</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
