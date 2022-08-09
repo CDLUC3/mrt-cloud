@@ -178,10 +178,29 @@
       
         <dependency>
             <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-osgi</artifactId>
+            <version>1.12.190</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-iam</artifactId>
+            <version>1.12.190</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.12.190</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-kms</artifactId>
+            <version>1.12.190</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
             <version>1.12.190</version>
         </dependency>
-      
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ssm</artifactId>
