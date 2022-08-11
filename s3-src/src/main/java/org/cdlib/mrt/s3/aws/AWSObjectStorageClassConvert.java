@@ -14,24 +14,10 @@ package org.cdlib.mrt.s3.aws;
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.model.StorageClass;
-import org.cdlib.mrt.s3.tools.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Properties;
-import java.util.UUID;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
@@ -40,22 +26,12 @@ import org.cdlib.mrt.cloud.VersionMapUtil;
 import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.core.FileComponent;
 import org.cdlib.mrt.core.Identifier;
-import org.cdlib.mrt.openstack.utility.OpenStackCmdAbs;
-import org.cdlib.mrt.s3.service.CloudUtil;
-import org.cdlib.mrt.s3.pairtree.PairtreeCloud;
 import org.cdlib.mrt.s3.service.CloudResponse;
-import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.CloudUtil;
 import org.cdlib.mrt.utility.DateUtil;
-import org.cdlib.mrt.utility.FixityTests;
-import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.TFileLogger;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.utility.FileUtil;
-import org.cdlib.mrt.utility.MessageDigestType;
-import org.cdlib.mrt.utility.PropertiesUtil;
-import org.cdlib.mrt.utility.StringUtil;
 
 /**
  * This sample demonstrates how to make basic requests to Amazon S3 using
