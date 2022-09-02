@@ -12,8 +12,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compiler>1.8</java.compiler>
-        <itDockerRegistry>itDockerRegistry</itDockerRegistry>
-	<docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
+        <itDockerRegistry>it-docker-registry</itDockerRegistry>
+        <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
 	<skipTests>${env.SKIP_DOCKER_TEST}</skipTests>
     </properties>
     <profiles>
@@ -47,7 +47,7 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.20.1</version>
+                <version>0.40.2</version>
                 <executions>
                     <execution>
                         <id>prepare-it-server</id>
