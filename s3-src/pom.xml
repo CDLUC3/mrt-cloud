@@ -71,7 +71,7 @@
                             <images>
                                 <image>
                                     <name>${itDockerRegistry}/mrt-minio-it:dev</name>
-                                    <alias>it-server</alias>
+                                    <alias>it-minio</alias>
                                     <run>
                                         <ports>
                                             <port>minio-server.port:9000</port>
@@ -113,6 +113,7 @@
                     <environmentVariables>
                         <minio-server.port>${minio-server.port}</minio-server.port>
                         <minio-server.admin_port>${minio-server.admin_port}</minio-server.admin_port>
+                        <SSM_SKIP_RESOLUTION>Y</SSM_SKIP_RESOLUTION>
                     </environmentVariables>
                 </configuration>
             </plugin>
