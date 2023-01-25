@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.cdlib.mrt</groupId>
     <artifactId>mrt-s3srcpub</artifactId>
@@ -7,18 +9,18 @@
     <version>1.0-SNAPSHOT</version>
     <name>UC3-mrtS3SrcPub</name>
     <url>http://uc3.cdlib.org</url>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.cdlib.mrt</groupId>
-        <artifactId>mrt-reflectoring-bom</artifactId>
-        <version>1.0.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.cdlib.mrt</groupId>
+                <artifactId>mrt-reflectoring-bom</artifactId>
+                <version>1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <!-- force UTF-8 -->
     <properties>
@@ -26,7 +28,7 @@
         <java.compiler>1.8</java.compiler>
         <itDockerRegistry>it-docker-registry</itDockerRegistry>
         <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
-	<skipTests>${env.SKIP_DOCKER_TEST}</skipTests>
+        <skipTests>${env.SKIP_DOCKER_TEST}</skipTests>
     </properties>
     <profiles>
         <profile>
@@ -124,7 +126,8 @@
                 <configuration>
                     <!-- Includes Test* and *Test by default -->
                     <!-- skips surefire tests without skipping failsafe tests.
-                             Property value seems to magically default to false -->
+                             Property
+                    value seems to magically default to false -->
                     <skipTests>${skip.surefire.tests}</skipTests>
                 </configuration>
             </plugin>
@@ -157,19 +160,19 @@
             <artifactId>mrt-core</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-json</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-tools</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-openstackpub</artifactId>
@@ -184,7 +187,7 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
