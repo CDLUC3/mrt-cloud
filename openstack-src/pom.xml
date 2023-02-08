@@ -43,8 +43,7 @@
         </plugins>
     </build>
     <dependencies>
-
-
+        
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-core</artifactId>
@@ -55,10 +54,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
+        
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
         </dependency>
+        
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
