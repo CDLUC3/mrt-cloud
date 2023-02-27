@@ -55,15 +55,19 @@
             <artifactId>junit</artifactId>
         </dependency>
         
-        <!--dependency>
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
+            <!-- required although mvn dependency flags-->
+            <scope>compile</scope>
         </dependency>
         
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-        </dependency-->
+            <!-- required although mvn dependency flags-->
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 
