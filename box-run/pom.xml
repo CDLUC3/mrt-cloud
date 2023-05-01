@@ -53,7 +53,7 @@
                             <archive>
                             <manifest>
                                 <mainClass>
-                                    org.cdlib.mrt.box.action.DownloadBox
+                                    org.cdlib.mrt.box.action.DownloadBoxSkip
                                 </mainClass>
                             </manifest>
                             </archive>
