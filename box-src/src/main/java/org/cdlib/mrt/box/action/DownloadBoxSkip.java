@@ -82,7 +82,7 @@ import org.json.JSONObject;
 
 public class DownloadBoxSkip {
     
-    public enum LoadStatus {ok, match, fail, fail_fixity}
+    public enum LoadStatus {ok, match, fail, fail_fixity, skip}
    
     public static void main(String args[])
         throws TException
@@ -273,7 +273,9 @@ public class DownloadBoxSkip {
                             logger.logMessage("skipToName found:" + skipToName, 1, true);
                         } else {
                             skipCnt++;
-                            logger.logMessage("skip|" + itemName, 9, true);
+                            bumpStatus(LoadStatus.skip);
+                            logger.logMessage("skip|" + itemInfo.getName(),
+                                8, true);
                             continue;
                         }
                     }
@@ -281,8 +283,7 @@ public class DownloadBoxSkip {
                     BoxFile.Info fileInfo = boxFile.getInfo();
                     long start = System.currentTimeMillis();
                     LoadStatus status = downloadFile(boxFile, localPath);
-                    long tmpcnt = typeCnt.containsKey(status) ? typeCnt.get(status) : 0;
-                    typeCnt.put(status, tmpcnt + 1);
+                    bumpStatus(status);
                     long end = System.currentTimeMillis();
                     long durMs = end - start;
     
@@ -324,6 +325,11 @@ public class DownloadBoxSkip {
             ex.printStackTrace();
             
         }
+    }
+    
+    protected void bumpStatus(LoadStatus status) {
+        long tmpcnt = typeCnt.containsKey(status) ? typeCnt.get(status) : 0;
+        typeCnt.put(status, tmpcnt + 1);
     }
     
     public void dumpState()
