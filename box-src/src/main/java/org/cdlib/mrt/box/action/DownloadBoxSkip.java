@@ -272,7 +272,7 @@ public class DownloadBoxSkip {
                             logger.logMessage("skipToName found:" + skipToName, 1, true);
                         } else {
                             skipCnt++;
-                            logger.logMessage("skip " + localPath + " - name=" + itemName, 9, true);
+                            logger.logMessage("skip|" + itemName, 9, true);
                             continue;
                         }
                     }
