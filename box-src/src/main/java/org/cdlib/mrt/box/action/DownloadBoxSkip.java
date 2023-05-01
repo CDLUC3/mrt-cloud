@@ -267,7 +267,8 @@ public class DownloadBoxSkip {
                     String localPath = path;
                     String itemName = itemInfo.getName();
                     if (skip) {
-                        if (skipToName.equals(itemName)) {
+                        String fullSkip = localPath + itemName;
+                        if (fullSkip.contains(skipToName)) {
                             skip = false;
                             logger.logMessage("skipToName found:" + skipToName, 1, true);
                         } else {
