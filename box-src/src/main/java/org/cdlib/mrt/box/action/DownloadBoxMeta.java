@@ -33,55 +33,32 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package org.cdlib.mrt.box.action;
 
-import org.cdlib.mrt.box.utility.*;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CompleteMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadRequest;
-import com.amazonaws.services.s3.model.InitiateMultipartUploadResult;
-import com.amazonaws.services.s3.model.PartETag;
-import com.amazonaws.services.s3.model.UploadPartRequest;
-import com.amazonaws.services.s3.model.UploadPartResult;
 import com.box.sdk.BoxAPIConnection;
-import com.box.sdk.BoxConfig;
 import com.box.sdk.BoxFile;
 import com.box.sdk.BoxFolder;
 import com.box.sdk.BoxItem;
-import com.box.sdk.BoxSharedLink;
-import com.box.sdk.Metadata;
-import com.box.sdk.sharedlink.BoxSharedLinkRequest;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import org.cdlib.mrt.core.DateState;
-import org.cdlib.mrt.utility.FileUtil;
+import org.cdlib.mrt.tools.SSMConfigResolver;
 import org.cdlib.mrt.utility.FixityTests;
 import org.cdlib.mrt.utility.LoggerAbs;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.PropertiesUtil;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.StringUtil;
-import org.cdlib.mrt.utility.TFileLogger;
 import org.cdlib.mrt.box.action.BoxDownload.LoadStatus;
 import org.json.JSONObject;
 
 public class DownloadBoxMeta {
+    protected static final String NAME = "DownloadBoxMeta";
+    protected static final String MESSAGE = NAME + ": ";
    
     public static void main(String args[])
         throws TException
@@ -206,6 +183,37 @@ public class DownloadBoxMeta {
         }
     }
     
+    public static String setSSM(String value)
+        throws TException
+    {
+        SSMConfigResolver ssmResolver = new SSMConfigResolver();
+        try {
+        
+            if (value.startsWith("{!")) {
+                String resolveValue = ssmResolver.resolveConfigValue(value);
+                if (resolveValue.equals("SSMFAIL") || resolveValue.equals("none")) {
+                    throw new TException.INVALID_CONFIGURATION("Unable to locate SSM:" + value);
+                }
+                return resolveValue;
+
+            } else {
+                return value;
+            }
+           
+            
+        } catch (TException tex) {
+            System.out.println(MESSAGE + "Exception:" + tex);
+            tex.printStackTrace();
+            throw tex;
+            
+        } catch (Exception ex) {
+            System.out.println(MESSAGE + "Exception:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+        
+    }
+    
     private void verify()
         throws TException
     {
@@ -225,6 +233,8 @@ public class DownloadBoxMeta {
         throws Exception
     {
         addDir(downloadDirS + "");
+        privateAccess = setSSM(privateAccess);
+        
         logger = setLogger(downloadDirS);
         if (skipToName != null) skip=true;
     }

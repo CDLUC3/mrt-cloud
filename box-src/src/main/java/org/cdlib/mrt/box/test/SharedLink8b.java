@@ -31,7 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author dloy
  */
-package org.cdlib.mrt.box.action;
+package org.cdlib.mrt.box.test;
 
 import com.box.sdk.BoxAPIConnection;
 import com.box.sdk.BoxConfig;
@@ -51,7 +51,7 @@ import org.cdlib.mrt.utility.TFileLogger;
 import org.cdlib.mrt.core.DateState;
 
 import java.io.Reader;
-public class SharedLink {
+public class SharedLink8b {
    
    
     //private static String PRIMARY_ACCESS_TOKEN = "4WiptPRjD9mxEZb6Ngq3geJejjRSRwOG";
@@ -61,10 +61,9 @@ public class SharedLink {
     //private static String SHARED_FOLDER_LINK = "https://ucop.box.com/v/thisispubtest";
     //private static String SHARED_FOLDER_LINK = "https://ucop.app.box.com/v/ucnonprivate";
     //private static String SHARED_FOLDER_LINK = "https://ucop.box.com/s/a717dr53ersytrs3sqgqoq58tnis6fzy";
-    //private static String SHARED_FOLDER_LINK = "https://ucop.app.box.com/folder/202940033692?s=a717dr53ersytrs3sqgqoq58tnis6fzy";
     private static String SHARED_FOLDER_LINK = "https://ucop.app.box.com/folder/202940033692?s=a717dr53ersytrs3sqgqoq58tnis6fzy";
     private static String CONFPATH = "/home/loy/tasks/box/230310-extract/2384924_afe65ks1_config.json";
-    private static String PRIMARY_ACCESS_TOKEN  = "bSZXPImYloU7Gxxxxxxxx";
+    private static String ACCESS = "bSZXPImYloU7G8mxxxxxxxxxxx";
     public static void main(String args[])
     {
         BoxFile.Info boxFile = null;
@@ -76,7 +75,7 @@ public class SharedLink {
             BoxConfig boxConfig = BoxConfig.readFrom(reader);
             System.out.println(boxConfig.toString());
             BoxDeveloperEditionAPIConnection apiJWT = BoxDeveloperEditionAPIConnection.getAppEnterpriseConnection(boxConfig);
-            BoxAPIConnection apiPrivate = new BoxAPIConnection(PRIMARY_ACCESS_TOKEN );
+            BoxAPIConnection apiPrivate = new BoxAPIConnection(ACCESS);
            
             BoxAPIConnection api = apiPrivate; //apiJWT;
             BoxItem.Info boxItem = BoxFolder.getSharedItem(api, SHARED_FOLDER_LINK);
@@ -169,6 +168,7 @@ public class SharedLink {
                 BoxFile.Info fileInfo = (BoxFile.Info)itemInfo;
                 System.out.println("ID:" + fileInfo.getID());
                 System.out.println("name:" + fileInfo.getName());
+                System.out.println("version:" + fileInfo.getVersionNumber());
                 System.out.println("Sha1:" + fileInfo.getSha1());
                 System.out.println("Size:" + fileInfo.getSize());
                 System.out.println("Created:" + fileInfo.getCreatedAt());
