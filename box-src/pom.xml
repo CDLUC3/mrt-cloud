@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.cdlib.mrt</groupId>
+    <artifactId>mrt-boxpub</artifactId>
+    <packaging>jar</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <name>UC3-mrtBoxPub</name>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.cdlib.mrt</groupId>
+                <artifactId>mrt-reflectoring-bom</artifactId>
+                <version>1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- force UTF-8 -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.compiler>1.8</java.compiler>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>${java.compiler}</source>
+                    <target>${java.compiler}</target>
+                    <compilerArgument>${compilerArgument}</compilerArgument>
+                    <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
+                    <!--showDeprecation>true</showDeprecation-->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-core</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-json</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.cdlib.mrt</groupId>
+            <artifactId>mrt-tools</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.box</groupId>
+            <artifactId>box-java-sdk</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>
