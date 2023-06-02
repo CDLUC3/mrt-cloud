@@ -50,7 +50,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
+                <version>3.9.0</version>
                 <configuration>
                     <source>${java.compiler}</source>
                     <target>${java.compiler}</target>
@@ -213,6 +213,11 @@
             <artifactId>commons-lang3</artifactId>
         </dependency>
         
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
