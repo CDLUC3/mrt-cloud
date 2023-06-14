@@ -20,21 +20,22 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    
+    <parent>
+        <groupId>org.cdlib.mrt</groupId>
+        <artifactId>mrt-parent-properties</artifactId>
+        <version>1.0.0</version>
+    </parent>
 
-    <!-- force UTF-8 -->
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.compiler>1.8</java.compiler>
-    </properties>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.9.0</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>${java.compiler}</source>
-                    <target>${java.compiler}</target>
+                    <source>${maven.compiler.plugin.java}</source>
+                    <target>${maven.compiler.plugin.java}</target>
                     <compilerArgument>${compilerArgument}</compilerArgument>
                     <!--compilerArgument>-Xlint:unchecked</compilerArgument-->
                     <!--showDeprecation>true</showDeprecation-->
@@ -42,6 +43,7 @@
             </plugin>
         </plugins>
     </build>
+    
     <dependencies>
         
         <dependency>
@@ -67,11 +69,6 @@
             <artifactId>httpclient</artifactId>
             <!-- required although mvn dependency flags-->
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
         </dependency>
 
     </dependencies>
