@@ -4,7 +4,41 @@ This library is part of the [Merritt Preservation System](https://github.com/CDL
 
 ## Component Diagram
 
-[![Component Diagram](https://github.com/CDLUC3/mrt-doc/raw/main/diagrams/mrt-cloud.mmd.svg)](https://cdluc3.github.io/mrt-doc/diagrams/mrt-cloud)
+```mermaid
+%%{init: {'theme': 'neutral', 'securityLevel': 'loose', 'themeVariables': {'fontFamily': 'arial'}}}%%
+graph TD
+  REPLIC(Replication)
+  click REPLIC href "https://github.com/CDLUC3/mrt-replic" "source code"
+  AUDIT(AUDIT - Fixity Check)
+  click AUDIT href "https://github.com/CDLUC3/mrt-audit" "source code"
+  ST(Storage)
+  click ST href "https://github.com/CDLUC3/mrt-store" "source code"
+  MRTCLOUD(mrt-cloud library)
+  click MRTCLOUD href "https://github.com/CDLUC3/mrt-cloud" "source code"
+
+  subgraph flowchart
+    subgraph cloud_storage
+      CLDS3[/AWS S3/]
+      CLDSDSC[/SDSC Minio/]
+      CLDWAS[/Wasabi/]
+      CLDGLC[/Glacier/]
+    end
+
+    ST --> MRTCLOUD
+    AUDIT --> MRTCLOUD
+    REPLIC --> MRTCLOUD
+    MRTCLOUD --> CLDS3
+    MRTCLOUD --> CLDSDSC
+    MRTCLOUD --> CLDWAS
+    MRTCLOUD --> CLDGLC
+  end
+  style CLDS3 fill:#77913C
+  style CLDGLC fill:#77913C
+  style CLDSDSC fill:#77913C
+  style CLDWAS fill:#77913C
+
+  style MRTCLOUD stroke:red,stroke-width:4px
+```
 
 ## Purpose
 
