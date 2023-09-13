@@ -130,11 +130,17 @@ nodes-tables:
         bucket: cdl.sdsc.stg4101
         desc: "ONEShare stage"
 
-      - # Dryad, AWS Standard
+      - # Dryad, AWS Standard 
         identifier: 3042
         <<: *aws-std
         bucket: dryad-assetstore-merritt-stage
         desc: "Merritt Dryad stage"
+
+      - # Dryad, AWS Standard
+        identifier: 3043
+        <<: *aws-std
+        bucket: dryad-assetstore-merritt-dev
+        desc: "Merritt Dryad dev"
 
       - # Dryad, AWS Glacier
         identifier: 3642
