@@ -98,6 +98,8 @@ import org.cdlib.mrt.utility.PropertiesUtil;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.transfer.Transfer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 //import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.eraseProgressBar;
 //import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.printProgressBar;
 
@@ -109,11 +111,12 @@ public class AWSS3Cloud
     extends CloudStoreAbs
     implements CloudStoreInf
 {
-    private static final boolean DEBUG = false;
+    //private static final boolean DEBUG = false;
     private static final boolean ALPHANUMERIC = false;
     protected static final String NAME = "AWSS3Cloud";
     protected static final String MESSAGE = NAME + ": ";
     
+    private static final Logger log4j = LogManager.getLogger();
     public enum S3Type {aws, minio, wasabi};
     
     private AmazonS3Client s3Client = null;
@@ -157,7 +160,7 @@ public class AWSS3Cloud
         throws TException
     {
         
-        if (DEBUG) System.out.println("getMinio:"
+        log4j.trace("getMinio:"
                 + " - accessKey=" + accessKey
                 + " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint
@@ -182,7 +185,7 @@ public class AWSS3Cloud
         throws TException
     {
         
-        if (DEBUG) System.out.println("getWasabi:"
+        log4j.trace("getWasabi:"
                 + " - accessKey=" + accessKey
                 + " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint
@@ -257,7 +260,7 @@ public class AWSS3Cloud
             String endPoint,
             Regions regions) 
     {
-        if (DEBUG) System.out.println("amazonS3Client:"
+        log4j.trace("amazonS3Client:"
                 + " - accessKey=" + accessKey
                 + " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint
@@ -272,15 +275,8 @@ public class AWSS3Cloud
                         accessKey,
                         secretKey);
         
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-        clientConfiguration.withMaxErrorRetry (15)
-            .withRetryPolicy(getS3BaseRetryPolicy())
-            .withConnectionTimeout (43200_000)
-            .withSocketTimeout (43200_000)
-            .withTcpKeepAlive (true);
-        clientConfiguration.setUseThrottleRetries(true);
-
+ 
+        ClientConfiguration clientConfiguration = getClientConfiguration();
         AmazonS3Client s3Client = (AmazonS3Client)AmazonS3ClientBuilder
                 .standard()
                 .withEndpointConfiguration(
@@ -296,51 +292,24 @@ public class AWSS3Cloud
     }
     
     
-    public static AmazonS3Client amazonS3ClientDefault(Regions region) {
-
-        ClientConfiguration clientConfig = new ClientConfiguration()
-            .withMaxErrorRetry (15)
-            .withRetryPolicy(getS3BaseRetryPolicy())
-            //.withConnectionTimeout (10_000)
-            //.withSocketTimeout (10_000)
-            .withConnectionTimeout (600_000)
-            .withSocketTimeout (600_000)
-            .withTcpKeepAlive (true);
-        clientConfig.setUseThrottleRetries(true);
-        clientConfig.setProtocol(Protocol.HTTP);
+    public static AmazonS3Client amazonS3ClientDefault(Regions region) 
+    {
+        ClientConfiguration clientConfig = getClientConfiguration();
         InstanceProfileCredentialsProvider credentialProvider 
                 = InstanceProfileCredentialsProvider.getInstance();
         AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
-//                .withRegion("us-west-2")
                 .withRegion(region)
                 .withClientConfiguration(clientConfig)
                 .withCredentials(credentialProvider)
                 .build();
         
         return s3client;
-    }    
-    private static RetryPolicy getS3BaseRetryPolicy() {
-        return new RetryPolicy(
-                new PredefinedRetryPolicies.SDKDefaultRetryCondition(),
-                new FullJitterBackoffStrategy(500, 120000),
-                30,
-                true
-        );
     }
+    
     public static AmazonS3Client amazonS3ClientDefault( 
             String endPoint) 
     {
-
-        ClientConfiguration clientConfig = new ClientConfiguration()
-            .withMaxErrorRetry (15)
-            .withRetryPolicy(getS3BaseRetryPolicy())
-            //.withConnectionTimeout (10_000)
-            //.withSocketTimeout (10_000)
-            .withConnectionTimeout (600_000)
-            .withSocketTimeout (600_000)
-            .withTcpKeepAlive (true);
-        clientConfig.setUseThrottleRetries(true);
-        clientConfig.setProtocol(Protocol.HTTP);
+        ClientConfiguration clientConfig = getClientConfiguration();
         InstanceProfileCredentialsProvider credentialProvider 
                 = InstanceProfileCredentialsProvider.getInstance();
         AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
@@ -351,6 +320,52 @@ public class AWSS3Cloud
         
         return s3client;
     }
+    
+    protected static ClientConfiguration getClientConfiguration()
+    {
+        ClientConfiguration clientConfiguration = new ClientConfiguration();
+        // required after 1/3/2014 - may be current default
+        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+        
+        clientConfiguration.withMaxErrorRetry (15)
+            .withRetryPolicy(getS3BaseRetryPolicy())
+            .withConnectionTimeout (43200_000)
+            .withSocketTimeout (43200_000)
+            .withTcpKeepAlive (true);
+        // roll off retry policy if failures high
+        clientConfiguration.setUseThrottleRetries(true);
+        return clientConfiguration;
+    }
+    
+    protected static ClientConfiguration getClientConfigurationDefault()
+    {
+       ClientConfiguration clientConfiguration = new ClientConfiguration()
+            .withMaxErrorRetry (15)
+            .withRetryPolicy(getS3BaseRetryPolicy())
+            .withConnectionTimeout (600_000)
+            .withSocketTimeout (600_000)
+            .withTcpKeepAlive (true);
+        clientConfiguration.setUseThrottleRetries(true);
+        // do not use
+        clientConfiguration.setProtocol(Protocol.HTTP);
+        return clientConfiguration;
+    }
+    
+    /*
+    Provides a randomized retry time of 1/2 sec to 2min
+    */
+    private static RetryPolicy getS3BaseRetryPolicy() {
+        return new RetryPolicy(
+                // restricts failures to system type failures 500, 503
+                new PredefinedRetryPolicies.SDKDefaultRetryCondition(),
+                // randomized pause before reattempts
+                new FullJitterBackoffStrategy(500, 120000),
+                // retries
+                30,
+                true
+        );
+    }
+    
     public CloudResponse putObject(
             CloudResponse response,
             File inputFile)
@@ -363,7 +378,7 @@ public class AWSS3Cloud
             }
             String bucketName = response.getBucketName();
             key = response.getStorageKey();
-            if (DEBUG)System.out.println("FILE " 
+            log4j.trace("FILE " 
                     + " - size:" + inputFile.length()
                     + " - bucket:" + bucketName
                     + " - key:" + key
@@ -384,18 +399,18 @@ public class AWSS3Cloud
             if ((objectMeta != null) && (objectMeta.size() > 0)) {
                 String storeSha256= objectMeta.getProperty("sha256");
                 if ((storeSha256 != null) && fileSha256.equals(storeSha256))  {
-                    if (DEBUG) System.out.println("***File match:"
+                    log4j.trace("***File match:"
                             + " - bucket:" + bucketName
                             + " - key:" + key
-                            + " - sha256: "+ fileSha256
+                            + " - fileSha256: "+ fileSha256
                     );
                     //response.setFileMeta(cloudProp);
                     //System.out.println(PropertiesUtil.dumpProperties("&&&&&&skip", cloudProp));
                     response.setFromProp(objectMeta);
                     return response;
                 } else {
-                    CloudResponse deleteResponse = deleteObject(bucketName, key);
-                    System.out.println("***Existing file deleted- does not match:"
+                    // CloudResponse deleteResponse = deleteObject(bucketName, key);
+                    log4j.debug("***Existing file replaced - does not match:"
                             + " - bucket:" + bucketName
                             + " - key:" + key
                             + " - fileSha256: "+ fileSha256
@@ -430,7 +445,7 @@ public class AWSS3Cloud
                 );
             } catch( com.amazonaws.services.s3.model.AmazonS3Exception s3ex) {
                 if (s3ex.toString().contains("upload may have been aborted or completed")) {
-                    System.out.println(MESSAGE + "S3 upload error - continue processing:" + key);
+                    log4j.info(MESSAGE + "S3 upload error - continue processing:" + key);
                 }
             } finally {
                 tm.shutdownNow(false);
@@ -441,7 +456,7 @@ public class AWSS3Cloud
             for (int t=1; t<=5; t++) {
                 putObjectMeta = getObjectMeta(bucketName, key);
                 if (putObjectMeta.size() > 0) break;
-                System.out.println("***getObjectMeta fails - sleep:" + (t*2000)
+                log4j.info("***getObjectMeta fails - sleep:" + (t*2000)
                             + " - bucket:" + bucketName
                             + " - key:" + key
                 );
@@ -454,7 +469,7 @@ public class AWSS3Cloud
                 );
             }
             
-            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("putdump", cloudProp));
+            log4j.trace(PropertiesUtil.dumpProperties("putdump", cloudProp));
             String outSha256 = putObjectMeta.getProperty("sha256");
             if (outSha256 == null) {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "putObject no sha256 metadata:"
@@ -462,7 +477,7 @@ public class AWSS3Cloud
                             + " - key:" + key
                 );
             }
-            if (DEBUG) System.out.println("TransferManager"
+            log4j.trace("TransferManager"
                         + " - in:" + fileSha256
                         + " - out:" + outSha256
             );
@@ -481,7 +496,7 @@ public class AWSS3Cloud
             }
             long sizeS3 = Long.parseLong(sizeS);
             
-            if (DEBUG) System.out.println("Lengths"
+            log4j.trace("Lengths"
                         + " - inputFile.length:" + inputFile.length()
                         + " - sizeS3:" + sizeS3
             );
@@ -494,7 +509,7 @@ public class AWSS3Cloud
             response.setFromProp(putObjectMeta);
                         
         } catch (Exception ex) {
-            System.out.println("ex1");
+            log4j.error("ex:" + ex, ex);
             ex.printStackTrace();
             handleException(response, ex);
             
@@ -578,6 +593,10 @@ public class AWSS3Cloud
         try {
             String bucket = response.getBucketName();
             String key = response.getStorageKey();
+            log4j.trace("delete"
+                        + " - bucket:" + bucket
+                        + " - key:" + key
+            );
             s3Client.deleteObject(new DeleteObjectRequest(bucket, key));
             
         } catch (Exception ex) {
@@ -665,7 +684,7 @@ public class AWSS3Cloud
     {
      try {
             response.set(container, key);
-            if (DEBUG) System.out.println("awsGet"
+            log4j.trace("awsGet"
                     + " - container:" + container
                     + " - key:" + key
             );
@@ -695,29 +714,33 @@ public class AWSS3Cloud
                     throw response.getException();
                 }
                 FileUtil.stream2File(is, outFile);
-                if (DEBUG) System.out.println("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
+                log4j.trace("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
                 
             } else {
             ////////
             //TransferManager tm = new TransferManager();  
                 TransferManager tm = getTransferManager();
-                if (DEBUG) System.out.println("Start");
+                log4j.trace("Start");
                 GetObjectRequest gor = new GetObjectRequest(container, key);
                 Download download = tm.download(gor, outFile, 86400000L);
                 try {
                     download.waitForCompletion();
                 } catch(InterruptedException ex) {
-                    System.out.println("InterruptedException:" + ex.getMessage());
+                    log4j.info("InterruptedException:" + ex.getMessage());
                 } finally {
                     tm.shutdownNow(false);
                 }
-                if (DEBUG) System.out.print("Non-Minio file built(" + container + "):" + outFile.getCanonicalPath());
+                log4j.trace("Non-Minio file built(" + container + "):" + outFile.getCanonicalPath());
             }
             
         } catch (TException tex) {
             throw tex;
             
         } catch (Exception ex) {
+            log4j.warn("awsGet Exception:" + ex
+                        + " - bucket:" + container
+                        + " - key:" + key, ex);
+            ex.printStackTrace();
             throw new TException(ex) ;
         }
     }
@@ -733,14 +756,14 @@ public class AWSS3Cloud
         
         try {
             response.set(container, key);
-            System.out.println("awsRestore"
+            log4j.info("awsRestore"
                     + " - container:" + container
                     + " - key:" + key
             );
             Properties objectProp = getObjectMeta(container, key);
             // object found
             if (objectProp.size() > 0 ) {
-                System.out.println(PropertiesUtil.dumpProperties("awsRestore", objectProp));
+                log4j.info(PropertiesUtil.dumpProperties("awsRestore", objectProp));
                 String msg = "";
                 response.setFromProp(objectProp);
                 String storageClass = objectProp.getProperty("storageClass");
@@ -750,7 +773,7 @@ public class AWSS3Cloud
                 if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
                     //no previous restore
                     if (ongoingRestore == null) {
-                        System.out.println("values:\n"
+                        log4j.info("values:\n"
                             + " - bucket=" + container + "\n"
                             + " - key=" + key + "\n"
                         );
@@ -804,14 +827,14 @@ public class AWSS3Cloud
         
         try {
             response.set(container, key);
-            if (DEBUG) System.out.println("awsRestore"
+            log4j.trace("awsRestore"
                     + " - container:" + container
                     + " - key:" + key
             );
             Properties objectProp = getObjectMeta(container, key);
             // object found
             if (objectProp.size() > 0 ) {
-                logger.logMessage(PropertiesUtil.dumpProperties("awsRestore", objectProp), 10,true);
+                log4j.info(PropertiesUtil.dumpProperties("awsRestore", objectProp));
                 String msg = "";
                 response.setFromProp(objectProp);
                 String storageClass = objectProp.getProperty("storageClass");
@@ -821,7 +844,7 @@ public class AWSS3Cloud
                 if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
                     //no previous restore
                     if (ongoingRestore == null) {
-                        if (DEBUG) System.out.println("values:\n"
+                        log4j.trace("values:\n"
                             + " - bucket=" + container + "\n"
                             + " - key=" + key + "\n"
                         );
@@ -832,13 +855,13 @@ public class AWSS3Cloud
                     } else {
                         msg = "Requested item in Glacier - restore in process" ;
                     }
-                    logger.logMessage("awsRestore:(" + key + "):"+ msg, 5,true);
+                    log4j.info("awsRestore:(" + key + "):"+ msg);
                     return false;
                     
                                 // content found
                 } else {
                     msg = "no restore needed";
-                    logger.logMessage("awsRestore:(" + key + "):"+ msg, 5,true);
+                    log4j.info("awsRestore:(" + key + "):"+ msg);
                     return true;
                 }
                 
@@ -879,7 +902,7 @@ public class AWSS3Cloud
         
         try {
             response.set(bucket, key);
-            if (DEBUG) System.out.println("awsRestore"
+            log4j.trace("awsRestore"
                     + " - container:" + bucket
                     + " - key:" + key
             );
@@ -904,7 +927,7 @@ public class AWSS3Cloud
                 );
             }
             if (inputStorageClass == targetStorageClass) {
-                if (DEBUG) System.out.println("ConvertStorageClass: Input component same as target - not converted" 
+                log4j.trace("ConvertStorageClass: Input component same as target - not converted" 
                             + " - bucket=" + bucket
                             + " - key=" + key
                 );
@@ -926,7 +949,7 @@ public class AWSS3Cloud
                 String msg = "Warning retry(" + t + "):ConvertStorageClass: Conversion fails on StorageClass:" 
                         + " - bucket=" + bucket
                         + " - key=" + key;
-                System.out.println(msg);
+                log4j.warn(msg);
                 try {
                     Thread.sleep(t * 3000L);
                 } catch (Exception sex) { }
@@ -1008,7 +1031,7 @@ public class AWSS3Cloud
                     + " - bucket=" + bucket
                     + " - key=" + key
                     + " - ex=" + ex;
-                System.out.println(msg);
+                log4j.warn(msg);
                 try {
                     Thread.sleep(t * 3000L);
                 } catch (Exception sex) { }
@@ -1162,7 +1185,7 @@ public class AWSS3Cloud
             if (expiration != null) {
                 addProp(prop, "expiration", "" + expiration.getTime());
             }
-            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("getObjectMeta", prop));
+            log4j.trace(PropertiesUtil.dumpProperties("getObjectMeta", prop));
             return prop;
             
         } catch (Exception ex) {
@@ -1191,17 +1214,14 @@ public class AWSS3Cloud
 
             } catch (Exception ex) {
                 if (ex.toString().contains("404")) {
-                    if (DEBUG) System.out.println("404(" + retry + "):"+ ex);
+                    log4j.trace("404(" + retry + "):"+ ex);
                     throw ex;
                 }
                 String msg = "***getRetryObjectMeta Exception(" + retry + "):"
                     + " - bucketName:" + bucketName
                     + " - key:" + key
                     + " - ex:" + ex;
-                if (DEBUG) System.out.println(msg);
-                logger.logMessage(msg,
-                    1, true
-                );
+                log4j.debug(msg,ex);
                 doException = ex;
                 try {
                     Thread.sleep(500 * retry);
@@ -1229,7 +1249,7 @@ public class AWSS3Cloud
         throws Exception
     {
         int maxErrRetry = getMaxErrRetry();
-        System.out.println("maxErrRetry:" + maxErrRetry);
+        log4j.info("maxErrRetry:" + maxErrRetry);
         Map<String, Object> map = objectMetadata.getRawMetadata();
         
         Set<String> metaKeys = map.keySet();
@@ -1237,17 +1257,17 @@ public class AWSS3Cloud
             try {
                 Object value  = map.get(key);
                 if (value instanceof String) {
-                    System.out.println("metaKey:" + key + "=" + (String)value);
+                    log4j.info("metaKey:" + key + "=" + (String)value);
                     
                 } else if (value instanceof Integer) {
-                    System.out.println("metaKey:" + key + "=" + (Integer)value);
+                    log4j.info("metaKey:" + key + "=" + (Integer)value);
                     
                 } else {    
-                    System.out.println("metaKey:" + key);
+                    log4j.info("metaKey:" + key);
                 }
 
             } catch (Exception ex) {
-                System.out.println(ex);
+                log4j.info(ex);
             }
         }
         
@@ -1256,13 +1276,13 @@ public class AWSS3Cloud
         for (String userKey : userKeys) {
             try {
                 String value = mapUser.get(userKey);
-                System.out.println("mapUser:" + userKey + "=" + value);
+                log4j.info("mapUser:" + userKey + "=" + value);
 
             } catch (Exception ex) {
-                System.out.println(ex);
+                log4j.info(ex);
             }
         }
-        System.out.println("getPartCount:" + objectMetadata.getPartCount());
+        log4j.info("getPartCount:" + objectMetadata.getPartCount());
     }
     
     public Properties dumpMeta (
@@ -1278,7 +1298,7 @@ public class AWSS3Cloud
             Set<String> userKeys = userMeta.keySet();
             for (String userKey : userKeys) {
                 addProp(prop, "user|" + userKey, metadata.getUserMetaDataOf(userKey));
-                System.out.println("addProp:"
+                log4j.info("addProp:"
                         + " - userKey:" + userKey
                         + " - user value:" + metadata.getUserMetaDataOf(userKey)
                 );
@@ -1291,13 +1311,13 @@ public class AWSS3Cloud
                 if (rawData instanceof String) {
                     rawOut = (String)rawData;
                     addProp(prop, "raw|" + rawKey, rawOut);
-                    System.out.println("addProp:"
+                    log4j.info("addProp:"
                             + " - rawKey:" + rawKey
                             + " - rawOut:" + rawOut
                     );
                 }
             }
-            if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("getObjectMeta", prop));
+            log4j.debug(PropertiesUtil.dumpProperties("getObjectMeta", prop));
             return prop;
             
         } catch (Exception ex) {
@@ -1351,15 +1371,13 @@ public class AWSS3Cloud
             response.setInputStorageClass(storageClass);
             response.setMd5(metadata.getETag());
             response.setStorageSize(metadata.getContentLength());
-            if (DEBUG) {
-                System.out.println("ConvertInfo:"
+                log4j.trace("ConvertInfo:"
                         + " - bucket:" + response.getBucketName()
                         + " - key:" + response.getStorageKey()
                         + " - storageClass:" + response.getInputStorageClass()
                         + " - Md5:" + response.getMd5()
                         + " - size:" + response.getStorageSize()
                 );
-            }
             return response;
             
         } catch (Exception ex) {
@@ -1434,7 +1452,7 @@ public class AWSS3Cloud
     {
         try {
             int entryCnt = 0;
-            if (DEBUG) System.out.println("awsList:\n"
+            log4j.trace("awsList:\n"
                     + "bucket:" + bucket + "\n"
                     + "listPrefix:" + listPrefix + "\n"
                     + "bucket:" + bucket + "\n"
@@ -1491,7 +1509,7 @@ public class AWSS3Cloud
                     //System.out.printf(" - %s (size: %d)\n", summary.getKey(), summary.getSize());
                 }
                 String token = result.getNextContinuationToken();
-                if (DEBUG) System.out.println("Next Continuation Token: " + token + " - cnt=" + cnt);
+                log4j.trace("Next Continuation Token: " + token + " - cnt=" + cnt);
                 req.setContinuationToken(token);
             } while (result.isTruncated());
             
@@ -1662,6 +1680,7 @@ public class AWSS3Cloud
             if (exvalue.contains("Access Denied") || exvalue.contains("403")) {
                 throw new TException.USER_NOT_AUTHENTICATED("AWS fails authentication");
             } else {
+                log4j.warn("awsHandleException", exception);
                 throw new TException(exception);
             }
         }
@@ -1697,7 +1716,7 @@ public class AWSS3Cloud
         throws TException
     {
         String resourceUrl = s3Client.getResourceUrl(bucketName, key);
-        System.out.println("RESOURCEURL:" +  resourceUrl);
+        log4j.info("RESOURCEURL:" +  resourceUrl);
     }
     
     @Override
@@ -1764,12 +1783,10 @@ public class AWSS3Cloud
             String urlS = url.toString();
             if (urlS.startsWith("http:") && (s3Type == S3Type.aws)) {
                 urlS = "https" + urlS.substring(4);
-                if (DEBUG) {
-                    System.out.println("Presign http to https:"
+                log4j.trace("Presign http to https:"
                             + " - s3Type:" + s3Type
                             + " - url:" + urlS
                     );
-                }
             }
             url = new URL(urlS);
             response.setReturnURL(url);
@@ -1789,7 +1806,7 @@ public class AWSS3Cloud
         return response;
     }
 
-    
+                
     public InputStream getRangeStream(
             String bucketName,
             String key,
@@ -1838,18 +1855,16 @@ public class AWSS3Cloud
     {
         long sleepTime = inSleepSec * 1000;
         // print the transfer's human-readable description
-        if (DEBUG) System.out.println("showTransferProgress:" + key);
-        if (DEBUG) System.out.println(xfer.getDescription());
+        log4j.trace("showTransferProgress:" + key);
+        log4j.trace(xfer.getDescription());
         long remaining = fileLen;
         long saveProgress = 0;
         if (false || logger.getMessageMaxLevel() < 1) {
             logger.logMessage("showTransferProgress not used for " + key, 0, true);
             return;
         }
-        logger.logMessage("showTransferProgress used for " + key 
-                + " - inSleepSec:" + inSleepSec 
-                + " - getMessageMaxLevel:" + logger.getMessageMaxLevel()
-                , 0, true);
+        log4j.info("showTransferProgress used for " + key 
+                + " - inSleepSec:" + inSleepSec);
         do {
             
             try {
@@ -1863,12 +1878,10 @@ public class AWSS3Cloud
             long so_far = progress.getBytesTransferred();
             long total = progress.getTotalBytesToTransfer();
             double pct = progress.getPercentTransferred();
-            logger.logMessage("key:" + key
+            log4j.info("key:" + key
                     + " - so_far:" + so_far
                     + " - sleep:" + sleepTime
-                    + " - pct:" + pct, 
-                    0, true
-            );
+                    + " - pct:" + pct);
             remaining = fileLen - so_far;
             if (remaining  < (so_far - saveProgress)) {
                 sleepTime = 180000;
@@ -1877,7 +1890,7 @@ public class AWSS3Cloud
         } while (xfer.isDone() == false);
         // print the final state of the transfer.
         Transfer.TransferState xfer_state = xfer.getState();
-        logger.logMessage("showTransferProgress key:" + key + "- state:" + xfer_state, 0, true);
+        log4j.info("showTransferProgress key:" + key + "- state:" + xfer_state);
     }
     public S3Type getS3Type() {
         return s3Type;
