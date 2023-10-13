@@ -187,7 +187,7 @@ public class AWSS3Cloud
         
         log4j.trace("getWasabi:"
                 + " - accessKey=" + accessKey
-                + " - secretKey=" + secretKey
+                //+ " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint
                 + " - regionName=" + regionName
         );
@@ -262,7 +262,7 @@ public class AWSS3Cloud
     {
         log4j.trace("amazonS3Client:"
                 + " - accessKey=" + accessKey
-                + " - secretKey=" + secretKey
+                //+ " - secretKey=" + secretKey
                 + " - endPoint=" + endPoint
         );
         if (regions == null) {
@@ -706,9 +706,9 @@ public class AWSS3Cloud
                 );
             } 
             
-            // Minio has repeatedly failed using multipart TransferManager
-            // This change uses single stream only when minio
-            if (s3Type == S3Type.minio) {
+            // This change uses single stream only
+            // Both Minio (SDSC) and Wasabi failed using multipart TransferManager
+            if ((s3Type == S3Type.minio) || (s3Type == S3Type.wasabi)) {
                 InputStream is = getObjectStreaming(container, key, response);
                 if (response.getException() != null) {
                     throw response.getException();
