@@ -152,8 +152,6 @@ public class StateHandler
             }
 
             retState.setOk(true);
-            long duration = DateUtil.getEpochUTCDate() - epochDate;
-            retState.setDuration(duration);
             return retState;
             
         } catch (Exception ex) {
@@ -161,6 +159,10 @@ public class StateHandler
             error = "process exception:" + ex.toString();
             setError(MESSAGE + ex.toString());
             return retState;
+            
+        } finally {
+            long duration = DateUtil.getEpochUTCDate() - epochDate;
+            retState.setDuration(duration);
         }
     }
 
