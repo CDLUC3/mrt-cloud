@@ -458,7 +458,7 @@ public class AWSS3Cloud
                 putObjectMeta = getObjectMeta(bucketName, key);
                 if (putObjectMeta.size() > 0) break;
                 pow *= 2;
-                String msg ="***getObjectMeta fails - sleep:" + (pow*2000)
+                String msg ="***getObjectMeta fails(" + t + "): - sleep:" + (pow*2000)
                             + " - bucket:" + bucketName
                             + " - key:" + key
                 ;
