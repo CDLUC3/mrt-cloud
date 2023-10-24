@@ -453,14 +453,18 @@ public class AWSS3Cloud
             
             Properties putObjectMeta = null;
             //retries required because meta may not be available immediately
+            long pow = 1;
             for (int t=1; t<=5; t++) {
                 putObjectMeta = getObjectMeta(bucketName, key);
                 if (putObjectMeta.size() > 0) break;
-                log4j.info("***getObjectMeta fails - sleep:" + (t*2000)
+                pow *= 2;
+                String msg ="***getObjectMeta fails - sleep:" + (pow*2000)
                             + " - bucket:" + bucketName
                             + " - key:" + key
-                );
-                Thread.sleep(t*2000);
+                ;
+                log4j.info(msg);
+                System.out.println(msg);
+                Thread.sleep(pow*2000);
             }
             if (putObjectMeta.size() == 0) {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "putObject fails:"
@@ -509,7 +513,7 @@ public class AWSS3Cloud
             response.setFromProp(putObjectMeta);
                         
         } catch (Exception ex) {
-            log4j.error("ex:" + ex, ex);
+            log4j.error("putObject ex:" + ex, ex);
             ex.printStackTrace();
             handleException(response, ex);
             
