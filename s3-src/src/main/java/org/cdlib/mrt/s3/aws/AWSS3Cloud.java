@@ -446,6 +446,12 @@ public class AWSS3Cloud
             } catch( com.amazonaws.services.s3.model.AmazonS3Exception s3ex) {
                 if (s3ex.toString().contains("upload may have been aborted or completed")) {
                     log4j.info(MESSAGE + "S3 upload error - continue processing:" + key);
+                } else {
+                    int errstatus = s3ex.getStatusCode();
+                    log4j.error("TransferManager Exception:"
+                            + " - errstatus" + errstatus
+                            + " - " + s3ex, s3ex);
+                    throw new TException.GENERAL_EXCEPTION(s3ex);
                 }
             } finally {
                 tm.shutdownNow(false);
@@ -741,10 +747,13 @@ public class AWSS3Cloud
             throw tex;
             
         } catch (Exception ex) {
+            if (ex.toString().contains("404")) {
+                throw new TException.REQUESTED_ITEM_NOT_FOUND(ex.toString());
+            }
             log4j.warn("awsGet Exception:" + ex
                         + " - bucket:" + container
                         + " - key:" + key, ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex) ;
         }
     }

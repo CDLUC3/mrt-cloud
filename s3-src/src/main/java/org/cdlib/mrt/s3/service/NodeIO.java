@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.HashMap;   
 import java.util.Set;
 import java.util.Properties;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.s3.aws.AWSS3Cloud;
 import org.cdlib.mrt.s3.cloudhost.CloudhostAPI;
 import org.cdlib.mrt.s3.openstack.OpenstackCloud;
@@ -249,6 +252,7 @@ public class NodeIO
     protected HashMap<Long,AccessNode> accessNodes = new HashMap<>();
     protected String nodeName = null;
     protected LoggerInf logger = null;
+    private static final Logger log4j = LogManager.getLogger();
     //protected ConfigType configType = ConfigType.jar;
     
     //public enum ConfigType {jar, file, ssm, yaml};
@@ -334,8 +338,21 @@ public class NodeIO
     public static NodeIO getNodeIOConfig(String config, LoggerInf logger) 
         throws TException
     {
+        Level level = log4j.getLevel();
+        if (level == Level.TRACE) {
+            configCall();
+        }
         NodeIO nodeIO = NodeIOConf.getNodeIOConfig(config, logger);
         return nodeIO;
+    }
+    
+    public static void configCall()
+    {
+        try {
+            throw new Exception("configCall");
+        } catch (Exception ex) {
+            log4j.error("configCall", ex);
+        }
     }
     
     /**
