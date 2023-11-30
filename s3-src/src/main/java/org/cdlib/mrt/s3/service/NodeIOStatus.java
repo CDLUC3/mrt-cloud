@@ -23,7 +23,19 @@ public class NodeIOStatus {
     private final int timeout;
     
     private static final Logger log4j = LogManager.getLogger();
+    
     public static void main(String[] argv) {
+
+    	try {
+             main_status(argv);
+    
+        } catch (Exception ex) {
+                // TODO Auto-generated catch block
+                System.out.println("Exception:" + ex);
+                ex.printStackTrace();
+        }
+    }
+    public static void main_state_form(String[] argv) {
 
     	try {
             
@@ -33,7 +45,7 @@ public class NodeIOStatus {
             String yamlName = "yaml:";
             NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
             NodeIOStatus nodeStatus = new NodeIOStatus(10);
-            JSONObject stateNodeIO = nodeStatus.runStatus(nodeIO);
+            JSONObject stateNodeIO = nodeStatus.runNodeStatus(nodeIO);
             System.out.println(stateNodeIO.toString(2));
     
         } catch (Exception ex) {
@@ -42,10 +54,36 @@ public class NodeIOStatus {
                 ex.printStackTrace();
         }
     }
-     
-    public NodeIOStatus ()
+    
+    public static void main_status(String[] argv) {
+
+    	try {
+            
+            LoggerInf logger = new TFileLogger("test", 50, 50);
+            
+            //String yamlName = "jar:nodes-stagedry";
+            String yamlName = "yaml:";
+            NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+            JSONObject stateNodeIO = NodeIOStatus.runStatus(nodeIO);
+            System.out.println(stateNodeIO.toString(2));
+    
+        } catch (Exception ex) {
+                // TODO Auto-generated catch block
+                System.out.println("Exception:" + ex);
+                ex.printStackTrace();
+        }
+    }
+    
+    public static JSONObject runStatus(NodeIO nodeIO)
     {
-        this.timeout = DEFAULT_TIMEOUT;
+        NodeIOStatus nodeIOStatus = new NodeIOStatus(DEFAULT_TIMEOUT);
+        return nodeIOStatus.runNodeStatus(nodeIO);
+    }
+    
+    public static JSONObject runStatus(NodeIO nodeIO, int timeout)
+    {
+        NodeIOStatus nodeIOStatus = new NodeIOStatus(timeout);
+        return nodeIOStatus.runNodeStatus(nodeIO);
     }
      
     public NodeIOStatus (int timeout)
@@ -54,7 +92,7 @@ public class NodeIOStatus {
     }
 
     
-    public JSONObject runStatus(NodeIO nodeIO) 
+    public JSONObject runNodeStatus(NodeIO nodeIO) 
     {
     	try {
             JSONObject stateNodeIO = new JSONObject();
