@@ -97,7 +97,7 @@ public class NodeIOStatus {
     	try {
             JSONObject stateNodeIO = new JSONObject();
             JSONArray stateArray = new JSONArray();
-            stateNodeIO.put("NodesState", stateArray);
+            stateNodeIO.put("NodesStatus", stateArray);
             ArrayList<NodeIO.AccessNode> accessNodes = nodeIO.getAccessNodesList();
             for (NodeIO.AccessNode accessNode : accessNodes)
             {
