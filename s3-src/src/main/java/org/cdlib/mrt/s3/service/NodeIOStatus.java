@@ -95,10 +95,16 @@ public class NodeIOStatus {
     public JSONObject runNodeStatus(NodeIO nodeIO) 
     {
     	try {
+            long startTimeMs = System.currentTimeMillis();
             JSONObject stateNodeIO = new JSONObject();
             JSONArray stateArray = new JSONArray();
             stateNodeIO.put("NodesStatus", stateArray);
             ArrayList<NodeIO.AccessNode> accessNodes = nodeIO.getAccessNodesList();
+            log4j.debug("NodeIOStatus:"
+                    + " - numbe nodes:" + accessNodes.size()
+                    + " - timeout:" + timeout
+            );
+            int failCnt = 0;
             for (NodeIO.AccessNode accessNode : accessNodes)
             {
                 
@@ -114,9 +120,15 @@ public class NodeIOStatus {
                 nodeJson.put("durationMs", retstate.getDuration());
                 if (retstate.getError() != null) {
                     nodeJson.put("error", retstate.getError());
+                    failCnt++;
                 }
+                
                 stateArray.put(nodeJson);
             }
+            stateNodeIO.put("timeoutSec", timeout);
+            stateNodeIO.put("nodeCnt", accessNodes.size());
+            stateNodeIO.put("failCnt", failCnt);
+            stateNodeIO.put("statusTimeMs", System.currentTimeMillis() - startTimeMs);
             return stateNodeIO;
     
         } catch (Exception ex) {
@@ -190,7 +202,7 @@ public class NodeIOStatus {
                    CloudStoreInf service = accessNode.service;
                    String container = accessNode.container;
                    retstate = service.getState(container);
-                   if (false && (accessNode.nodeNumber == 2001)) { // test
+                   if (false && (accessNode.nodeNumber == 2002)) { // test
                        Thread.sleep(20000);
                    }
             } catch (Exception e) {
