@@ -202,3 +202,65 @@ nodes-tables:
         <<: *minio-docker
         bucket: my-bucket-repl
         desc: "docker minio 8888"
+
+  nodes-prod-post-dryad:
+      - # AWS Standard
+        identifier: 5001
+        <<: *aws-std
+        bucket: uc3-s3mrt5001-prd
+        desc: "AWS standard prod"
+
+      - # AWS Glacier
+        identifier: 6001
+        <<: *aws-near
+        bucket: uc3-s3mrt6001-prd
+        desc: "AWS glacier prod"
+
+      - # Merritt Cloudhost - on AWS
+        identifier: 7001
+        <<: *aws-std
+        bucket: uc3-s3mrt1001-prd
+        desc: "###ArchiveNode"
+
+      - # SDSC Minio, Mar 2020
+        identifier: 9501
+        <<: *minio-sdsc-new
+        bucket: cdl.sdsc.prod
+        desc: "sdsc minio prod"
+
+      - # Wasabi
+        identifier: 2001
+        <<: *wasabi-east
+        bucket: uc3-wasabi-useast-2.prod
+        desc: "wasabi s3 prod"
+
+  nodes-stage-post-dryad:
+      - # AWS Standard
+        identifier: 5001
+        <<: *aws-std
+        bucket: uc3-s3mrt5001-stg
+        desc: "AWS standard stage"
+
+      - # AWS Glacier
+        identifier: 6001
+        <<: *aws-near
+        bucket: uc3-s3mrt6001-stg
+        desc: "AWS glacier stage"
+
+      - # Merritt Cloudhost - on AWS
+        identifier: 7001
+        <<: *aws-std
+        bucket: uc3-s3mrt1001-stg
+        desc: "###ArchiveNode"
+
+      - # SDSC Minio
+        identifier: 9502
+        <<: *minio-sdsc-new
+        bucket: cdl.sdsc.stage
+        desc: "sdsc minio stage"
+
+      - # Wasabi
+        identifier: 2002
+        <<: *wasabi-east
+        bucket: uc3-wasabi-useast-2.stage
+        desc: "wasabi s3"
