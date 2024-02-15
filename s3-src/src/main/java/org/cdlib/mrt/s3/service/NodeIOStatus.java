@@ -141,16 +141,24 @@ public class NodeIOStatus {
     
     protected StateHandler.RetState doTask(NodeIO.AccessNode accessNode)
     {
+        CloudStoreInf service = accessNode.service;
+        String container = accessNode.container;
+        long nodeNumber = accessNode.nodeNumber;
+        return getStatusTimeout(service, container, nodeNumber, timeout);
+    }
+    
+    public static StateHandler.RetState getStatusTimeout(CloudStoreInf service, String container, long nodeNumber, int localTimeOut)
+    {
         
         ExecutorService executor = Executors.newSingleThreadExecutor();
         long startTask = System.currentTimeMillis();
         Exception executerError = null;
         try {
-            Task task = new Task(accessNode);
+            Task task = new Task(service, container, nodeNumber);
             executor.submit(task);
             log4j.debug("Shutdown executor");
             executor.shutdown();
-            executor.awaitTermination(timeout, TimeUnit.SECONDS);
+            executor.awaitTermination(localTimeOut, TimeUnit.SECONDS);
             StateHandler.RetState retStat = task.getRetstate();
             return retStat;
             
@@ -168,14 +176,15 @@ public class NodeIOStatus {
            
            if (!executor.isTerminated()) {
               long endTask = System.currentTimeMillis() - startTask;
-              StateHandler.RetState errStat = new StateHandler.RetState(accessNode.container, null, "" + executerError);
+              StateHandler.RetState errStat = new StateHandler.RetState(container, null, "" + executerError);
               errStat.setDuration(endTask);
+              errStat.setOk(false);
               errStat.setError("forced termination");
               executor.shutdownNow();
               if (false) log4j.info("Forced termination:"
-                    + " - node=" + accessNode.nodeNumber
-                    + " - container=" + accessNode.container
-                    + " - timeout=" + timeout
+                    + " - node=" + nodeNumber
+                    + " - container=" + container
+                    + " - timeout=" + localTimeOut
               );
               return errStat;
            }
@@ -184,25 +193,34 @@ public class NodeIOStatus {
         }
     }
     
-    static class Task implements Runnable 
+    public static class Task implements Runnable 
     {
-        private final NodeIO.AccessNode accessNode;
         private Exception ex = null;
         private StateHandler.RetState retstate = null;
+        private CloudStoreInf service = null;
+        private String container = null;
+        private long nodeNumber = 0;
 
         public Task (NodeIO.AccessNode accessNode)
         {
-            this.accessNode = accessNode;
+            this.service = accessNode.service;
+            this.container = accessNode.container;
+            this.nodeNumber = accessNode.nodeNumber;
+        }
+
+        public Task (CloudStoreInf service, String container, long nodeNumber)
+        {
+            this.service = service;
+            this.container = container;
+            this.nodeNumber = nodeNumber;
         }
 
         public void run() 
         {
 
             try {
-                   CloudStoreInf service = accessNode.service;
-                   String container = accessNode.container;
                    retstate = service.getState(container);
-                   if (false && (accessNode.nodeNumber == 2002)) { // test
+                   if (false && (nodeNumber == 2002)) { // test
                        Thread.sleep(20000);
                    }
             } catch (Exception e) {
