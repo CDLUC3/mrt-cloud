@@ -9,6 +9,14 @@
     <version>1.0-SNAPSHOT</version>
     <name>UC3-mrtOpenstackPub</name>
 
+    <distributionManagement>
+      <repository>
+        <id>cdlib-uc3-mrt-uc3-mrt-java</id>
+        <name>cdlib-uc3-mrt-uc3-mrt-java</name>
+        <url>https://cdlib-uc3-mrt-671846987296.d.codeartifact.us-west-2.amazonaws.com/maven/uc3-mrt-java/</url>
+      </repository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
