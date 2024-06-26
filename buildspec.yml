@@ -17,9 +17,9 @@ phases:
     commands:
       # - mvn -ntp clean install -Ddocker.skip -DskipITs -Dmaven.test.skip=true
       - mvn -ntp clean install
-      - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=cloud-conf/target/mrt-cloudconf-1.0-SNAPSHOT.jar
-      - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=openstack-src/target/mrt-openstackpub-1.0-SNAPSHOT.jar
-      - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=s3-src/target/mrt-s3srcpub-1.0-SNAPSHOT.jar
+      - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=cloud-conf/target/mrt-cloudconf-*.jar
+      - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=openstack-src/target/mrt-openstackpub-*.jar
+      - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=s3-src/target/mrt-s3srcpub-*.jar
   post_build:
     commands:
       #- aws s3 rm s3://${S3CFBUCKET}/api --recursive
