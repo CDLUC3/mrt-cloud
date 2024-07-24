@@ -45,6 +45,16 @@ services: &services
       endPoint: "http://{!ENV: MRT_MINIO_HOST !DEFAULT: my-minio-localhost-alias}:{!ENV: MRT_MINIO_PORT !DEFAULT: 8088}"
       accessKey: minioadmin
       secretKey: minioadmin
+      
+  sdsc-s3: &sdsc-s3
+    type: sdsc-s3
+    service-properties:
+      serviceType: sdsc-s3
+      endPoint: https://uss-s3.sdsc.edu:443
+      #accessKey: "{!SSM: cloud/nodes/sdsc-s3-accessKey !DEFAULT: 000000050012f3304cf6}"
+      #secretKey: "{!SSM: cloud/nodes/sdsc-s3-secretKey !DEFAULT: xdWhD/VoOzLUq4Nn6z3RQ99cEok27PiVMDYPJnog}"
+      accessKey: "{!SSM: cloud/nodes/sdsc-s3-accessKey !DEFAULT: SSMFAIL}"
+      secretKey: "{!SSM: cloud/nodes/sdsc-s3-secretKey !DEFAULT: SSMFAIL}"
 
   wasabi-east: &wasabi-east
     type: wasabi-east
@@ -75,23 +85,11 @@ nodes-tables:
         bucket: uc3-s3mrt1001-prd
         desc: "###ArchiveNode"
 
-      - # UNM Remote Storage
-        identifier: 4001
-        <<: *aws-std
-        bucket: dryad-assetstore-merritt-west
-        desc: "ONEShare"
-
-      - # Dryad, AWS Standard
-        identifier: 3041
-        <<: *aws-std
-        bucket: dryad-assetstore-merritt-west
-        desc: "Merritt Dryad prod"
-
-      - # Dryad, AWS Glacier
-        identifier: 3641
-        <<: *aws-near-east
-        bucket: dryad-assetstore-merritt-east
-        desc: "Merritt Dryad Glacier prod"
+      - # SDSC backup
+        identifier: 7501
+        <<: *sdsc-s3
+        bucket: cdl-sdsc-backup-prod
+        desc: "sdsc s3 backup prod"
 
       - # SDSC Minio, Mar 2020
         identifier: 9501
@@ -124,29 +122,11 @@ nodes-tables:
         bucket: uc3-s3mrt1001-stg
         desc: "###ArchiveNode"
 
-      - # UNM Remote Storage
-        identifier: 4101
-        <<: *minio-sdsc-new
-        bucket: cdl.sdsc.stg4101
-        desc: "ONEShare stage"
-
-      - # Dryad, AWS Standard 
-        identifier: 3042
-        <<: *aws-std
-        bucket: dryad-assetstore-merritt-stage
-        desc: "Merritt Dryad stage"
-
-      - # Dryad, AWS Standard
-        identifier: 3043
-        <<: *aws-std
-        bucket: dryad-assetstore-merritt-dev
-        desc: "Merritt Dryad dev"
-
-      - # Dryad, AWS Glacier
-        identifier: 3642
-        <<: *aws-near-east
-        bucket: dryad-assetstore-merritt-stage-east
-        desc: "Merritt Dryad Glacier stage"
+      - # SDSC backup
+        identifier: 7502
+        <<: *sdsc-s3
+        bucket: cdl-sdsc-backup-stg
+        desc: "sdsc backup stage"
 
       - # SDSC Minio
         identifier: 9502
@@ -222,6 +202,12 @@ nodes-tables:
         bucket: uc3-s3mrt1001-prd
         desc: "###ArchiveNode"
 
+      - # SDSC backup
+        identifier: 7501
+        <<: *sdsc-s3
+        bucket: cdl-sdsc-backup-prod
+        desc: "sdsc s3 backup prod"
+
       - # SDSC Minio, Mar 2020
         identifier: 9501
         <<: *minio-sdsc-new
@@ -252,6 +238,12 @@ nodes-tables:
         <<: *aws-std
         bucket: uc3-s3mrt1001-stg
         desc: "###ArchiveNode"
+
+      - # SDSC backup
+        identifier: 7502
+        <<: *sdsc-s3
+        bucket: cdl-sdsc-backup-stg
+        desc: "sdsc backup stage"
 
       - # SDSC Minio
         identifier: 9502

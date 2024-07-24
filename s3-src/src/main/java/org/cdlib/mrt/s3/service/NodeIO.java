@@ -297,6 +297,14 @@ public class NodeIO
         nodeIO.printNodes("nodes-stage dump");
     } 
     
+    public static void main_backup(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String nodeTable = "nodes-sdsc-backup";
+        NodeIO nodeIO = new NodeIO(nodeTable, logger) ;
+        nodeIO.printNodes("nodes-stage dump");
+    } 
+    
     public static void testmain(String[] args) throws Exception {
 
         URL aURL = new URL("http://example.com:80/docs/books%30%40/tutorial"
@@ -680,6 +688,18 @@ public class NodeIO
                 service = AWSS3Cloud.getAWSS3Region(storageClassS, regionS, logger);
                 
             } else if (serviceType.equals("minio")) {
+                String accessKey = cloudProp.getProperty("accessKey");
+                String secretKey = cloudProp.getProperty("secretKey");
+                String endPoint = cloudProp.getProperty("endPoint");
+                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                        + " - accessKey=" + accessKey
+                        + " - secretKey=" + secretKey
+                        + " - endPoint=" + endPoint
+                );
+                service = AWSS3Cloud.getMinio(
+                        accessKey, secretKey, endPoint, logger);
+                
+            } else if (serviceType.equals("sdsc-s3")) {
                 String accessKey = cloudProp.getProperty("accessKey");
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");

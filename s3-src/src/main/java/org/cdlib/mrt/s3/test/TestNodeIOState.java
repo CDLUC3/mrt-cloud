@@ -23,6 +23,12 @@ public class TestNodeIOState {
             
             //String yamlName = "jar:nodes-stagedry";
             String yamlName = "yaml:";
+            //String yamlName = "jar:nodes-remote";
+            //String yamlName = "jar:nodes-stagedef";
+            //String yamlName = "jar:nodes-proddef";
+            //String yamlName = "jar:nodes-stagenodry";
+            //String yamlName = "jar:nodes-sdsc-temp";
+            //String yamlName = "jar:nodes-sdsc-backup";
             NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
             ArrayList<NodeIO.AccessNode> accessNodes = nodeIO.getAccessNodesList();
             for (NodeIO.AccessNode accessNode : accessNodes)
