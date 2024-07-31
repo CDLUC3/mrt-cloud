@@ -23,7 +23,7 @@ phases:
       - mvn -ntp javadoc:javadoc
       - rm -rf api/mrt-cloud
       - mkdir -p api/mrt-cloud/java
-      - cp -r target/site/apidocs/* api/mrt-cloud/java
+      - cp -r */target/site/apidocs/* api/mrt-cloud/java
       - echo aws s3 cp --recursive api s3://${S3CFBUCKET}/api 
       - aws s3 cp --recursive api s3://${S3CFBUCKET}/api
       - aws cloudfront create-invalidation --distribution-id ${CFDISTRIBUTIONID} --paths /* --region us-east-1
