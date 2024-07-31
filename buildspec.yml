@@ -20,6 +20,13 @@ phases:
       - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=$(ls cloud-conf/target/mrt-cloudconf-*.jar)
       - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=$(ls openstack-src/target/mrt-openstackpub-*.jar)
       - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=$(ls s3-src/target/mrt-s3srcpub-*.jar)
+      - mvn -ntp javadoc:javadoc
+      - rm -rf api/mrt-cloud
+      - mkdir -p api/mrt-cloud/java
+      - cp -r target/site/apidocs/* api/mrt-cloud/java
+      - echo aws s3 cp --recursive api s3://${S3CFBUCKET}/api 
+      - aws s3 cp --recursive api s3://${S3CFBUCKET}/api
+      - aws cloudfront create-invalidation --distribution-id ${CFDISTRIBUTIONID} --paths /* --region us-east-1
   post_build:
     commands:
       #- aws s3 rm s3://${S3CFBUCKET}/api --recursive
