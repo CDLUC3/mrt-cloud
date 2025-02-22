@@ -42,7 +42,7 @@ import java.util.Properties;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cdlib.mrt.s3v2.aws.AWSS3V2Cloud;
+import org.cdlib.mrt.s3.aws.AWSS3Cloud;
 import org.cdlib.mrt.s3.cloudhost.CloudhostAPI;
 import org.cdlib.mrt.s3.openstack.OpenstackCloud;
 import org.cdlib.mrt.s3.pairtree.PairtreeCloud;
@@ -246,7 +246,7 @@ public class NodeIO
     
     protected static final String NAME = "NodeIO";
     protected static final String MESSAGE = NAME + ": ";
-    private static boolean DEBUG = true; //false;
+    private static boolean DEBUG = false;
     private static boolean DEBUG_ACCESS = false;
     
     protected HashMap<Long,AccessNode> accessNodes = new HashMap<>();
@@ -685,7 +685,7 @@ public class NodeIO
                 if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
                 String regionS = cloudProp.getProperty("region");
                 accessMode = cloudProp.getProperty("accessMode");
-                service = AWSS3V2Cloud.getAWS(logger);
+                service = AWSS3Cloud.getAWSS3Region(storageClassS, regionS, logger);
                 
             } else if (serviceType.equals("minio")) {
                 String accessKey = cloudProp.getProperty("accessKey");
@@ -696,7 +696,8 @@ public class NodeIO
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
                 );
-                service = AWSS3V2Cloud.getMinio(accessKey, secretKey, endPoint, logger);
+                service = AWSS3Cloud.getMinio(
+                        accessKey, secretKey, endPoint, logger);
                 
             } else if (serviceType.equals("sdsc-s3")) {
                 String accessKey = cloudProp.getProperty("accessKey");
@@ -707,7 +708,7 @@ public class NodeIO
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
                 );
-                service = AWSS3V2Cloud.getSDSC(
+                service = AWSS3Cloud.getMinio(
                         accessKey, secretKey, endPoint, logger);
                 
             } else if (serviceType.equals("wasabi")) {
@@ -721,7 +722,8 @@ public class NodeIO
                         + " - endPoint=" + endPoint
                         + " - regionName=" + regionName
                 );
-                service = AWSS3V2Cloud.getWasabi(accessKey, secretKey, endPoint, logger);
+                service = AWSS3Cloud.getWasabi(
+                        accessKey, secretKey, endPoint, regionName, logger);
                 
             } else if (serviceType.equals("pairtree")) {
                 service = PairtreeCloud.getPairtreeCloud(true, logger);

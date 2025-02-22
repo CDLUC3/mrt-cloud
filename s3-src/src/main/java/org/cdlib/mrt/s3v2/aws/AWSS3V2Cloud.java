@@ -27,7 +27,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
-package org.cdlib.mrt.s3.aws;
+package org.cdlib.mrt.s3v2.aws;
 //import org.cdlib.mrt.s3.service.*;
 
 
@@ -37,15 +37,9 @@ import org.cdlib.mrt.s3.service.*;
 import org.cdlib.mrt.core.Identifier;
 import java.io.File;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.net.URL;
-import java.util.List;
-
-
-import org.cdlib.mrt.cloud.CloudList;
+import java.util.LinkedHashMap;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
@@ -53,53 +47,21 @@ import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.s3.service.CloudStoreAbs;
 import org.cdlib.mrt.s3.service.CloudUtil;
 import org.cdlib.mrt.s3.service.CloudResponse;
-import org.cdlib.mrt.utility.FileUtil;
-import org.cdlib.mrt.utility.DeleteOnCloseFileInputStream;
 
-import com.amazonaws.HttpMethod;
-import com.amazonaws.Protocol;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.retry.PredefinedBackoffStrategies.FullJitterBackoffStrategy;
-import com.amazonaws.retry.RetryPolicy;
 
-import com.amazonaws.retry.PredefinedRetryPolicies;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferProgress;
-import com.amazonaws.services.s3.transfer.Download;
-import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
-import com.amazonaws.services.s3.model.StorageClass;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.amazonaws.services.s3.model.RestoreObjectRequest;
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-
+import org.cdlib.mrt.s3v2.action.*;
 import org.cdlib.mrt.cloud.object.StateHandler;
-import org.cdlib.mrt.core.DateState;
-import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.utility.PropertiesUtil;
-import com.amazonaws.services.s3.model.ListObjectsV2Request;
-import com.amazonaws.services.s3.model.ListObjectsV2Result;
-import com.amazonaws.services.s3.transfer.Transfer;
+
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.StorageClass;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+//import static org.cdlib.mrt.s3.service.CloudStoreAbs.dumpException;
 //import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.eraseProgressBar;
 //import static org.cdlib.mrt.s3test.tasks.d190716_partial_result.UploadProgress.printProgressBar;
 
@@ -107,262 +69,68 @@ import org.apache.logging.log4j.Logger;
  * Specific SDSC Storage Cloud handling
  * @author dloy
  */
-public class AWSS3Cloud
+public class AWSS3V2Cloud
     extends CloudStoreAbs
     implements CloudStoreInf
 {
     //private static final boolean DEBUG = false;
     private static final boolean ALPHANUMERIC = false;
-    protected static final String NAME = "AWSS3Cloud";
+    protected static final String NAME = "AWSS3V2Cloud";
     protected static final String MESSAGE = NAME + ": ";
+    
+    private static final Logger log4j = LogManager.getLogger();
     public enum S3Type {aws, minio, wasabi};
     
-    private AmazonS3Client s3Client = null;
+    private V2Client v2Client = null;
+    private S3Client s3Client = null;
+    private S3AsyncClient s3AsyncClient = null;
+    private S3Presigner s3Presigner = null;
     private StorageClass storageClass = null;
     private String endPoint = null;
     private S3Type s3Type = S3Type.aws;
 
-    public static AWSS3Cloud getAWSS3Region(
-            String storageClass,
-            String regionS,
-            LoggerInf logger)
+    protected AWSS3V2Cloud(V2Client v2Client, LoggerInf log)
         throws TException
     {
-        Regions region = Regions.fromName(regionS);
-        AWSS3Cloud cloud =  new AWSS3Cloud(region, logger);
-        if (storageClass != null) {
-            cloud.setStorageClass(storageClass);
-        }
+        super(log);
+        this.v2Client = v2Client;
+        this.s3Client = v2Client.s3Client();
+        this.s3AsyncClient = v2Client.s3AsyncClient();
+        this.s3Presigner = v2Client.s3Presigner();
+    }
+    
+    public static AWSS3V2Cloud getAWS(LoggerInf log)
+        throws TException
+    {  
+        V2Client v2ClientTemp = V2Client.getAWS();
+        AWSS3V2Cloud cloud = new AWSS3V2Cloud(v2ClientTemp, log);
         return cloud;
     }
     
-    // Depricated older storage method
-    public static AWSS3Cloud getAWSS3(
-            String storageClass,
-            LoggerInf logger)
+    public static AWSS3V2Cloud getMinio(String accessKey, String secretKey, String endpoint, LoggerInf log)
         throws TException
     {
-        Regions region = Regions.US_WEST_2;
-        AWSS3Cloud cloud =  new AWSS3Cloud(region, logger);
-        if (storageClass != null) {
-            cloud.setStorageClass(storageClass);
-        }
-        return cloud;
-    }
-     
-    public static AWSS3Cloud getMinio(
-            String accessKey,
-            String secretKey, 
-            String endPoint, 
-            LoggerInf logger)
-        throws TException
-    {
-        
-        log4j.trace("getMinio:"
-                + " - accessKey=" + accessKey
-                + " - secretKey=" + secretKey
-                + " - endPoint=" + endPoint
-        );
-        AmazonS3Client s3Client = amazonS3Client(
-            accessKey,
-            secretKey, 
-            endPoint,
-            null);
-        AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
-        cloud.setS3Type(S3Type.minio);
+        V2Client minioClient = V2Client.getMinio(accessKey, secretKey, endpoint);
+        AWSS3V2Cloud cloud = new AWSS3V2Cloud(minioClient, log);
         return cloud;
     }
     
-    
-    public static AWSS3Cloud getWasabi(
-            String accessKey,
-            String secretKey, 
-            String endPoint, 
-            String regionName,
-            LoggerInf logger)
+    public static AWSS3V2Cloud getSDSC(String accessKey, String secretKey, String endpoint, LoggerInf log)
         throws TException
     {
-        
-        log4j.trace("getWasabi:"
-                + " - accessKey=" + accessKey
-                //+ " - secretKey=" + secretKey
-                + " - endPoint=" + endPoint
-                + " - regionName=" + regionName
-        );
-        
-        Regions region = Regions.fromName(regionName);
-        AmazonS3Client s3Client = amazonS3Client(
-            accessKey,
-            secretKey, 
-            endPoint,
-            region);
-        AWSS3Cloud cloud =  new AWSS3Cloud(s3Client, endPoint, logger);
-        cloud.setS3Type(S3Type.wasabi);
+        V2Client minioClient = V2Client.getSDSC(accessKey, secretKey, endpoint);
+        AWSS3V2Cloud cloud = new AWSS3V2Cloud(minioClient, log);
         return cloud;
     }
     
-    protected AWSS3Cloud(
-            AmazonS3Client s3Client,
-            String endPoint,
-            LoggerInf logger)
+    public static AWSS3V2Cloud getWasabi(String accessKey, String secretKey, String endpoint, LoggerInf log)
         throws TException
     {
-        super(logger);
-        this.endPoint = endPoint;
-        this.s3Client =  s3Client;
-    } 
-    
-    public static AWSS3Cloud getAWSS3(
-            LoggerInf logger)
-        throws TException
-    {
-        Regions region = Regions.US_WEST_2;
-        return new AWSS3Cloud(region, logger);
+        V2Client minioClient = V2Client.getWasabi(accessKey, secretKey, endpoint);
+        AWSS3V2Cloud cloud = new AWSS3V2Cloud(minioClient, log);
+        return cloud;
     }
     
-    protected AWSS3Cloud(
-            Regions region,
-            LoggerInf logger)
-        throws TException
-    {
-        super(logger);
-        s3Client =  amazonS3ClientDefault(region);
-    }
-    
-    public static AWSS3Cloud getDefault(
-            String endPoint,
-            LoggerInf logger)
-        throws TException
-    {
-        return new AWSS3Cloud(endPoint, logger);
-    }
-    
-    protected AWSS3Cloud( 
-            String endPoint,
-            LoggerInf logger)
-        throws TException
-    {
-        super(logger);
-        s3Client =  amazonS3ClientDefault(endPoint);
-    }   
-    
-    public TransferManager getTransferManager() 
-    {
-        TransferManager transferManager = TransferManagerBuilder.standard().withS3Client(s3Client).build();
-        return transferManager;
-    }
-    
-    public static AmazonS3Client amazonS3Client(
-            String accessKey,
-            String secretKey, 
-            String endPoint,
-            Regions regions) 
-    {
-        log4j.trace("amazonS3Client:"
-                + " - accessKey=" + accessKey
-                //+ " - secretKey=" + secretKey
-                + " - endPoint=" + endPoint
-        );
-        if (regions == null) {
-            regions = Regions.DEFAULT_REGION;
-        }
-        //********************************
-        //AWSCredentials credentials = new BasicAWSCredentials("YOUR-ACCESSKEYID", "YOUR-SECRETACCESSKEY");
-        AWSCredentials credentials =
-                new BasicAWSCredentials(
-                        accessKey,
-                        secretKey);
-        
- 
-        ClientConfiguration clientConfiguration = getClientConfiguration();
-        AmazonS3Client s3Client = (AmazonS3Client)AmazonS3ClientBuilder
-                .standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(
-                        endPoint,
-                        regions.getName()))
-        
-                .withPathStyleAccessEnabled(true)
-                .withClientConfiguration(clientConfiguration)
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .build();
-        return s3Client;
-    }
-    
-    
-    public static AmazonS3Client amazonS3ClientDefault(Regions region) 
-    {
-        ClientConfiguration clientConfig = getClientConfiguration();
-        InstanceProfileCredentialsProvider credentialProvider 
-                = InstanceProfileCredentialsProvider.getInstance();
-        AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
-                .withRegion(region)
-                .withClientConfiguration(clientConfig)
-                .withCredentials(credentialProvider)
-                .build();
-        
-        return s3client;
-    }
-    
-    public static AmazonS3Client amazonS3ClientDefault( 
-            String endPoint) 
-    {
-        ClientConfiguration clientConfig = getClientConfiguration();
-        InstanceProfileCredentialsProvider credentialProvider 
-                = InstanceProfileCredentialsProvider.getInstance();
-        AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
-                .withRegion(endPoint)
-                .withClientConfiguration(clientConfig)
-                .withCredentials(credentialProvider)
-                .build();
-        
-        return s3client;
-    }
-    
-    protected static ClientConfiguration getClientConfiguration()
-    {
-        ClientConfiguration clientConfiguration = new ClientConfiguration();
-        // required after 1/3/2014 - may be current default
-        clientConfiguration.setSignerOverride("AWSS3V4SignerType");
-        
-        clientConfiguration.withMaxErrorRetry (15)
-            .withRetryPolicy(getS3BaseRetryPolicy())
-            .withConnectionTimeout (43200_000)
-            .withSocketTimeout (43200_000)
-            .withTcpKeepAlive (true);
-        // roll off retry policy if failures high
-        clientConfiguration.setUseThrottleRetries(true);
-        return clientConfiguration;
-    }
-    
-    protected static ClientConfiguration getClientConfigurationDefault()
-    {
-       ClientConfiguration clientConfiguration = new ClientConfiguration()
-            .withMaxErrorRetry (15)
-            .withRetryPolicy(getS3BaseRetryPolicy())
-            .withConnectionTimeout (600_000)
-            .withSocketTimeout (600_000)
-            .withTcpKeepAlive (true);
-        clientConfiguration.setUseThrottleRetries(true);
-        // do not use
-        clientConfiguration.setProtocol(Protocol.HTTP);
-        return clientConfiguration;
-    }
-    
-    /*
-    Provides a randomized retry time of 1/2 sec to 2min
-    */
-    private static RetryPolicy getS3BaseRetryPolicy() {
-        return new RetryPolicy(
-                // restricts failures to system type failures 500, 503
-                new PredefinedRetryPolicies.SDKDefaultRetryCondition(),
-                // randomized pause before reattempts
-                new FullJitterBackoffStrategy(500, 120000),
-                // retries
-                30,
-                true
-        );
-    }
     
     public CloudResponse putObject(
             CloudResponse response,
@@ -381,7 +149,7 @@ public class AWSS3Cloud
                     + " - bucket:" + bucketName
                     + " - key:" + key
             );
-            Properties objectMeta = getObjectMeta(bucketName, key);
+            Properties objectMeta = GetObjectMeta.getObjectMeta(s3Client, bucketName, key);
             /*
             if (objectMeta == null) {
                 CloudResponse exResponse = new CloudResponse(bucketName, key);
@@ -407,7 +175,7 @@ public class AWSS3Cloud
                     response.setFromProp(objectMeta);
                     return response;
                 } else {
-                    // CloudResponse deleteResponse = deleteObject(bucketName, key);
+                    CloudResponse deleteResponse = deleteObject(bucketName, key);
                     log4j.debug("***Existing file replaced - does not match:"
                             + " - bucket:" + bucketName
                             + " - key:" + key
@@ -417,49 +185,21 @@ public class AWSS3Cloud
                 }
             }
             
-            ObjectMetadata om = new ObjectMetadata();
-            om.addUserMetadata("sha256", fileSha256);
-            PutObjectRequest putObjectRequest = new PutObjectRequest(
-            		                 bucketName, key, inputFile)
-                    .withMetadata(om);
+            LinkedHashMap<String, String> metadata = new LinkedHashMap();
+            metadata.put("sha256", fileSha256);
             
-            if (storageClass != null ) {
-                putObjectRequest.withStorageClass(storageClass);
-            }
-
-            TransferManager tm = getTransferManager();
-            Upload upload = tm.upload(putObjectRequest);
-            try {
-                long fileLen = inputFile.length();
-                if (fileLen > 10_000_000_000L) {
-                    showTransferProgress(upload, key,1800, fileLen);
-                }
-                upload.waitForCompletion();
-            
-            } catch(InterruptedException ex) {
-                throw new TException.REMOTE_IO_SERVICE_EXCEPTION("AWS service exception:" + ex
-                            + " - bucket:" + bucketName
-                            + " - key:" + key
-                );
-            } catch( com.amazonaws.services.s3.model.AmazonS3Exception s3ex) {
-                if (s3ex.toString().contains("upload may have been aborted or completed")) {
-                    log4j.info(MESSAGE + "S3 upload error - continue processing:" + key);
-                } else {
-                    int errstatus = s3ex.getStatusCode();
-                    log4j.error("TransferManager Exception:"
-                            + " - errstatus" + errstatus
-                            + " - " + s3ex, s3ex);
-                    throw new TException.GENERAL_EXCEPTION(s3ex);
-                }
-            } finally {
-                tm.shutdownNow(false);
-            }
+            MultiPartUpload.uploadFileParts(
+                s3Client,
+                bucketName,
+                key, 
+                inputFile.getAbsolutePath(),
+                metadata);
             
             Properties putObjectMeta = null;
             //retries required because meta may not be available immediately
             long pow = 1;
             for (int t=1; t<=5; t++) {
-                putObjectMeta = getObjectMeta(bucketName, key);
+                putObjectMeta = GetObjectMeta.getObjectMeta(s3Client, bucketName, key);;
                 if (putObjectMeta.size() > 0) break;
                 pow *= 2;
                 String msg ="***getObjectMeta fails(" + t + "): - sleep:" + (pow*2000)
@@ -477,7 +217,7 @@ public class AWSS3Cloud
                 );
             }
             
-            log4j.trace(PropertiesUtil.dumpProperties("putdump", putObjectMeta));
+            log4j.trace(PropertiesUtil.dumpProperties("putdump", cloudProp));
             String outSha256 = putObjectMeta.getProperty("sha256");
             if (outSha256 == null) {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "putObject no sha256 metadata:"
@@ -605,7 +345,7 @@ public class AWSS3Cloud
                         + " - bucket:" + bucket
                         + " - key:" + key
             );
-            s3Client.deleteObject(new DeleteObjectRequest(bucket, key));
+            DeleteObjectData.deleteS3Object(s3Client, bucket, key);
             
         } catch (Exception ex) {
             handleException(response, ex);
@@ -670,18 +410,6 @@ public class AWSS3Cloud
         
     }
     
-    public void setResponse(ObjectMetadata metadata, CloudResponse response)
-        throws TException
-    {
-        String contentType = metadata.getContentType();
-        String eTag = metadata.getETag();
-        long length = metadata.getContentLength();
-        response.setMd5(eTag);
-        response.setStorageSize(length);
-        response.setMimeType(contentType);
-        
-    }
-    
     
     public void awsGet(
             String container,
@@ -697,6 +425,13 @@ public class AWSS3Cloud
                     + " - key:" + key
             );
             Properties objectProp = getObjectMeta(container, key);
+            if (objectProp == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Unable to access service for metadata:"
+                        + " - bucket:" + container
+                        + " - key:" + key
+                );
+            };
+            
             if (objectProp.size() > 0 ) {
                 response.setFromProp(objectProp);
                 String storageClass = objectProp.getProperty("storageClass");
@@ -717,29 +452,67 @@ public class AWSS3Cloud
             // This change uses single stream only
             // Both Minio (SDSC) and Wasabi failed using multipart TransferManager
             if ((s3Type == S3Type.minio) || (s3Type == S3Type.wasabi)) {
-                InputStream is = getObjectStreaming(container, key, response);
-                if (response.getException() != null) {
-                    throw response.getException();
-                }
-                FileUtil.stream2File(is, outFile);
+                GetObject.getObjectSync(s3Client, container, key, outFile.getCanonicalPath());
                 log4j.trace("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
                 
             } else {
-            ////////
-            //TransferManager tm = new TransferManager();  
-                TransferManager tm = getTransferManager();
-                log4j.trace("Start");
-                GetObjectRequest gor = new GetObjectRequest(container, key);
-                Download download = tm.download(gor, outFile, 86400000L);
-                try {
-                    download.waitForCompletion();
-                } catch(InterruptedException ex) {
-                    log4j.info("InterruptedException:" + ex.getMessage());
-                } finally {
-                    tm.shutdownNow(false);
-                }
+                GetObject.downloadObjectTransfer(s3AsyncClient, container, key, outFile.getCanonicalPath());
                 log4j.trace("Non-Minio file built(" + container + "):" + outFile.getCanonicalPath());
             }
+            
+        } catch (TException tex) {
+            throw tex;
+            
+        } catch (Exception ex) {
+            if (ex.toString().contains("404")) {
+                throw new TException.REQUESTED_ITEM_NOT_FOUND(ex.toString());
+            }
+            log4j.warn("awsGet Exception:" + ex
+                        + " - bucket:" + container
+                        + " - key:" + key, ex);
+            //ex.printStackTrace();
+            throw new TException(ex) ;
+        }
+    }    
+    public InputStream awsGetInputStream(
+            String container,
+            String key,
+            CloudResponse response)
+        throws TException
+    {
+     try {
+            response.set(container, key);
+            log4j.trace("awsGet"
+                    + " - container:" + container
+                    + " - key:" + key
+            );
+            Properties objectProp = getObjectMeta(container, key);
+            if (objectProp == null) {
+                throw new TException.EXTERNAL_SERVICE_UNAVAILABLE("Unable to access service for metadata:"
+                        + " - bucket:" + container
+                        + " - key:" + key
+                );
+            };
+            
+            if (objectProp.size() > 0 ) {
+                response.setFromProp(objectProp);
+                String storageClass = objectProp.getProperty("storageClass");
+                String expirationS = objectProp.getProperty("expiration");
+                if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
+                    throw new TException.REQUEST_ITEM_EXISTS("Requested item in Glacier:" 
+                            + " - bucket=" + container
+                            + " - key=" + key
+                    );
+                }
+            } else {
+                throw new TException.REQUESTED_ITEM_NOT_FOUND("Item not found:"
+                            + " - bucket=" + container
+                            + " - key=" + key
+                );
+            } 
+            
+            InputStream is = GetObject.getObjectSyncInputStream (s3Client, container, key);
+            return is;
             
         } catch (TException tex) {
             throw tex;
@@ -792,19 +565,32 @@ public class AWSS3Cloud
                         RestoreObjectRequest requestRestore = new RestoreObjectRequest(container, key, 2);
                         s3Client.restoreObject(requestRestore);
                         */ 
-                        RestoreObjectRequest requestRestore = new RestoreObjectRequest(container, key, 2);
-                        s3Client.restoreObjectV2(requestRestore);
-                        //s3Client.restoreObject(container, key, 2);
-                        msg = "Requested item in Glacier - restore issued" ;
-                        
-                    // restore processing
-                    } else {
-                        msg = "Requested item in Glacier - restore in process" ;
+//                        RestoreObjectRequest requestRestore = new RestoreObjectRequest(container, key, 2);
+//                        s3Client.restoreObjectV2(requestRestore);
+                        RestoreObject.RestoreStat restoreStat = RestoreObject.restoreS3Object(s3Client, container, key, expirationS);
+                        switch(restoreStat) {
+                            case start:
+                                msg = "Requested item in Glacier - restore issued" ;
+                                throw new TException.NEARLINE_RESTORE_IN_PROCESS(msg + ":" 
+                                    + " - bucket=" + container
+                                    + " - key=" + key
+                                );
+                                
+                            case inprocess:
+                                msg = "Requested item in Glacier - restore in process" ;
+                                throw new TException.NEARLINE_RESTORE_IN_PROCESS(msg + ":" 
+                                    + " - bucket=" + container
+                                    + " - key=" + key
+                                );
+                                
+                            case notfound:
+                                msg = "Requested item in Glacier - not found" ;
+                                throw new TException.REQUESTED_ITEM_NOT_FOUND("Item not found:"
+                                    + " - bucket=" + container
+                                    + " - key=" + key
+                                );
+                        }
                     }
-                    throw new TException.NEARLINE_RESTORE_IN_PROCESS(msg + ":" 
-                            + " - bucket=" + container
-                            + " - key=" + key
-                    );
                     
                 // content found
                 } else {
@@ -829,71 +615,27 @@ public class AWSS3Cloud
         }
     }
     
-    public boolean awsRestore(
-            String container,
+    /**
+     * Convert from one AWS storage class to another
+     * @param bucket AWS bucket
+     * @param key AWS key
+     * @param targetStorageClass resulting storage class for conversion
+     * @param response Broad response information
+     * @return true=complete
+     * @throws TException 
+     */
+    public boolean convertStorageClass(
+            String bucket,
             String key,
+            StorageClass targetStorageClass,
             CloudResponse response)
         throws TException
     {
-        
-        try {
-            response.set(container, key);
-            log4j.trace("awsRestore"
-                    + " - container:" + container
-                    + " - key:" + key
-            );
-            Properties objectProp = getObjectMeta(container, key);
-            // object found
-            if (objectProp.size() > 0 ) {
-                log4j.info(PropertiesUtil.dumpProperties("awsRestore", objectProp));
-                String msg = "";
-                response.setFromProp(objectProp);
-                String storageClass = objectProp.getProperty("storageClass");
-                String ongoingRestore = objectProp.getProperty("ongoingRestore");
-                String expirationS = objectProp.getProperty("expiration");
-                // current content in GLACIER
-                if ((storageClass != null) && storageClass.equals("GLACIER") && (expirationS == null)) {
-                    //no previous restore
-                    if (ongoingRestore == null) {
-                        log4j.trace("values:\n"
-                            + " - bucket=" + container + "\n"
-                            + " - key=" + key + "\n"
-                        );
-                        s3Client.restoreObject(container, key, 2);
-                        msg = "Requested item in Glacier - restore issued" ;
-                        
-                    // restore processing
-                    } else {
-                        msg = "Requested item in Glacier - restore in process" ;
-                    }
-                    log4j.info("awsRestore:(" + key + "):"+ msg);
-                    return false;
-                    
-                                // content found
-                } else {
-                    msg = "no restore needed";
-                    log4j.info("awsRestore:(" + key + "):"+ msg);
-                    return true;
-                }
-                
-            // no content found
-            } else {
-                throw new TException.REQUESTED_ITEM_NOT_FOUND("Item not found:"
-                            + " - bucket=" + container
-                            + " - key=" + key
-                );
-            }
-            
-        } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new TException(ex) ;
-        }
+        response.set(bucket, key);
+        response.setTargetStorageClassRSC(targetStorageClass.toString());;
+        return awsConvertStorageClass(bucket, key, targetStorageClass, response);
     }
-   
+    
     /**
      * Convert from one AWS storage class to another
      * @param bucket AWS bucket
@@ -1022,6 +764,7 @@ public class AWSS3Cloud
         }
     }
     
+    
     public void retryAWSConvertStorageClass(
             String bucket,
             String key,
@@ -1032,10 +775,7 @@ public class AWSS3Cloud
         for (int t=1; t<=5; t++) {
             runEx = null;
             try {
-                CopyObjectRequest copyObjectRequest= 
-                    new CopyObjectRequest(bucket, key, bucket, key)
-                    .withStorageClass(targetStorageClass);
-                s3Client.copyObject(copyObjectRequest);
+                CopyObject.copyObject(s3AsyncClient, bucket, key, bucket, key, targetStorageClass);
                 return;
                 
             } catch (Exception ex) {
@@ -1108,29 +848,9 @@ public class AWSS3Cloud
     {
         try {
             response.set(bucketName, key);
-            File tmpFile = FileUtil.getTempFile("clouttemp", ".txt");
-            awsGet(bucketName, key, tmpFile, response);
-            DeleteOnCloseFileInputStream is = new DeleteOnCloseFileInputStream(tmpFile);
-            return is;
-            
-        } catch (Exception ex) {
-            handleException(response, ex);
-            return null;
-        }
-    }
-    
-    public InputStream getObjectStreaming(
-            String bucketName,
-            String key,
-            CloudResponse response)
-        throws TException
-    {
-        try {
-            response.set(bucketName, key);
-            //AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider());        
-            S3Object object = s3Client.getObject(
-                  new GetObjectRequest(bucketName, key));
-            return object.getObjectContent();
+            //AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider()); 
+            InputStream stream = GetObject.getObjectSyncInputStream (s3Client, bucketName, key);
+            return stream;
             // Process the objectData stream.
             //objectData.close();
             
@@ -1138,6 +858,20 @@ public class AWSS3Cloud
             handleException(response, ex);
             return null;
         }
+    }
+    
+    
+    @Override
+    public InputStream getObjectStreaming(
+            String bucketName,
+            String key,
+            CloudResponse response)
+        throws TException
+    {
+        return getObject(
+            bucketName,
+            key,
+            response);
     }
     
     @Override
@@ -1160,187 +894,31 @@ public class AWSS3Cloud
     public Properties getObjectMeta (
             String bucketName,
             String key)
-        throws TException
     {
-        Properties prop = new Properties();
-        try {
-            ObjectMetadata metadata = getRetryObjectMeta (bucketName,key, 10);
-            /*
-            GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
-            ObjectMetadata metadata = s3Client.getObjectMetadata(request);
-            */
-            addProp(prop, "sha256", metadata.getUserMetaDataOf("sha256"));
-            addProp(prop, "size", "" + metadata.getContentLength());
-            addProp(prop, "bucket", bucketName);
-            addProp(prop, "key", key);
-            addProp(prop, "etag", metadata.getETag());
-            Date date = metadata.getLastModified();
-            String isoDate = DateUtil.getIsoDate(date);
-            addProp(prop, "modified", isoDate);
-            addProp(prop, "md5", metadata.getContentMD5());
-            addProp(prop, "storageClass", metadata.getStorageClass());
-            addProp(prop, "maxErrRetry", "" + getMaxErrRetry());
-            Date expireDate = metadata.getExpirationTime();
-            if (expireDate != null) {
-                Long expireDateL = expireDate.getTime();
-                addProp(prop, "expires", "" + expireDateL);
-                Long current = new Date().getTime();
-                if (current < expireDateL) {
-                    addProp(prop, "expRemain", "" + (expireDateL - current));
-                }
-            }
-            Boolean restoreFlag = metadata.getOngoingRestore();
-            if ((restoreFlag != null) && restoreFlag) {
-                addProp(prop, "ongoingRestore", "true");
-            }
-            Date expiration = metadata.getRestoreExpirationTime();
-            //if (expiration == null) System.out.println("expiration is null");
-            if (expiration != null) {
-                addProp(prop, "expiration", "" + expiration.getTime());
-            }
-            log4j.trace(PropertiesUtil.dumpProperties("getObjectMeta", prop));
-            return prop;
-            
-        } catch (Exception ex) {
-            if (ex.toString().contains("404")) {
-                return new Properties();
-            }
-            CloudResponse response = new CloudResponse(bucketName, key);
-            awsHandleException(response, ex);
-            return null;
-        }
+        return getRetryObjectMeta (bucketName,key, 10);
     }
     
-    public ObjectMetadata getRetryObjectMeta (
+    public Properties getRetryObjectMeta (
             String bucketName,
             String key,
             int retryCnt)
-        throws Exception
     {
         
-        Exception doException = null;
-        for (int retry=0; retry<retryCnt; retry++) {
-            try {
-                GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
-                ObjectMetadata metadata = s3Client.getObjectMetadata(request);
-                return metadata;
-
-            } catch (Exception ex) {
-                if (ex.toString().contains("404")) {
-                    log4j.trace("404(" + retry + "):"+ ex);
-                    throw ex;
-                }
-                String msg = "***getRetryObjectMeta Exception(" + retry + "):"
-                    + " - bucketName:" + bucketName
-                    + " - key:" + key
-                    + " - ex:" + ex;
-                log4j.debug(msg,ex);
-                doException = ex;
-                try {
-                    Thread.sleep(500 * retry);
-                } catch (Exception tex) { }
-            }
-        }
         
-        throw doException;
-    }
-    
-    public Integer getMaxErrRetry() 
-    {
-        try {
-            ClientConfiguration config = s3Client.getClientConfiguration();
-            RetryPolicy retryPolicy = config.getRetryPolicy();
-            RetryPolicy.BackoffStrategy backoffStrategy = retryPolicy.getBackoffStrategy();
-            return retryPolicy.getMaxErrorRetry();
-        } catch (Exception ex) {
-            return 0;
-        }
-    }
-    
-    public void dumpObjectMetadata (
-           ObjectMetadata objectMetadata)
-        throws Exception
-    {
-        int maxErrRetry = getMaxErrRetry();
-        log4j.info("maxErrRetry:" + maxErrRetry);
-        Map<String, Object> map = objectMetadata.getRawMetadata();
-        
-        Set<String> metaKeys = map.keySet();
-        for (String key : metaKeys) {
-            try {
-                Object value  = map.get(key);
-                if (value instanceof String) {
-                    log4j.info("metaKey:" + key + "=" + (String)value);
-                    
-                } else if (value instanceof Integer) {
-                    log4j.info("metaKey:" + key + "=" + (Integer)value);
-                    
-                } else {    
-                    log4j.info("metaKey:" + key);
-                }
-
-            } catch (Exception ex) {
-                log4j.info(ex);
-            }
-        }
-        
-        Map<String, String> mapUser = objectMetadata.getUserMetadata();
-        Set<String> userKeys = mapUser.keySet();
-        for (String userKey : userKeys) {
-            try {
-                String value = mapUser.get(userKey);
-                log4j.info("mapUser:" + userKey + "=" + value);
-
-            } catch (Exception ex) {
-                log4j.info(ex);
-            }
-        }
-        log4j.info("getPartCount:" + objectMetadata.getPartCount());
-    }
-    
-    public Properties dumpMeta (
-            String bucketName,
-            String key)
-        throws TException
-    {
-        Properties prop = new Properties();
-        try {
-            GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
-            ObjectMetadata metadata = s3Client.getObjectMetadata(request);
-            Map<String, String> userMeta = metadata.getUserMetadata();
-            Set<String> userKeys = userMeta.keySet();
-            for (String userKey : userKeys) {
-                addProp(prop, "user|" + userKey, metadata.getUserMetaDataOf(userKey));
-                log4j.info("addProp:"
-                        + " - userKey:" + userKey
-                        + " - user value:" + metadata.getUserMetaDataOf(userKey)
-                );
-            }
-            Map<String, Object> rawMeta = metadata.getRawMetadata();
-            Set<String> rawKeys = rawMeta.keySet();
-            for (String rawKey : rawKeys) {
-                Object rawData = rawMeta.get(rawKey);
-                String rawOut="";
-                if (rawData instanceof String) {
-                    rawOut = (String)rawData;
-                    addProp(prop, "raw|" + rawKey, rawOut);
-                    log4j.info("addProp:"
-                            + " - rawKey:" + rawKey
-                            + " - rawOut:" + rawOut
-                    );
+        for (int retry=1; retry<=retryCnt; retry++) {
+            Properties prop = GetObjectMeta.getObjectMeta(s3Client, bucketName, key);
+            if (prop != null) {
+                return prop;
+            } else {
+                if (retry < retryCnt) {
+                    try {
+                        Thread.sleep(500 * retry);
+                    } catch (Exception tex) { }
                 }
             }
-            log4j.debug(PropertiesUtil.dumpProperties("getObjectMeta", prop));
-            return prop;
-            
-        } catch (Exception ex) {
-            if (ex.toString().contains("404")) {
-                return new Properties();
-            }
-            CloudResponse response = new CloudResponse(bucketName, key);
-            awsHandleException(response, ex);
-            return null;
         }
+        
+        return null;
     }
   
     public StorageClass getStorageClass (
@@ -1348,21 +926,7 @@ public class AWSS3Cloud
             String key)
         throws TException
     {
-        StorageClass storageClass = null;
-        try {
-            GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
-            ObjectMetadata metadata = s3Client.getObjectMetadata(request);
-            String storageClassS = metadata.getStorageClass();
-            if (storageClassS == null) {
-                storageClass = StorageClass.Standard;
-            } else {
-                storageClass = StorageClass.fromValue(storageClassS);
-            }
-            return storageClass;
-            
-        } catch (Exception ex) {
-            return null;
-        }
+        return GetObjectMeta.getStorageClass(s3Client, bucketName, key);
     }
   
     public CloudResponse getCloudResponse (
@@ -1371,7 +935,7 @@ public class AWSS3Cloud
         throws TException
     {
         
-        Properties prop = getObjectMeta(bucketName, key);
+        Properties prop = GetObjectMeta.getObjectMeta(s3Client, bucketName, key);
         if ((prop == null) || prop.isEmpty()) {
             return null;
         }
@@ -1451,20 +1015,7 @@ public class AWSS3Cloud
                     + "listPrefix:" + listPrefix + "\n"
                     + "bucket:" + bucket + "\n"
             );
-            ObjectListing list = s3Client.listObjects( bucket, listPrefix);
-
-            do {
-                List<S3ObjectSummary> summaries = list.getObjectSummaries();
-                //System.out.println("sum size:" + summaries.size());
-                for (S3ObjectSummary summary : summaries) {
-                    entryCnt++;
-                    if (maxEntries <= 0) {}
-                    else if (entryCnt >= maxEntries) return;
-                    response.addObject(setSummary(summary));
-                }
-                list = s3Client.listNextBatchOfObjects(list);
-
-            } while (list.isTruncated());
+            GetObjectList.awsListPrefix(s3Client, bucket, listPrefix, maxEntries, response);
             
         } catch (Exception ex) {
             handleException(response, ex);
@@ -1481,37 +1032,8 @@ public class AWSS3Cloud
         throws TException 
     {
         try {
-
-            //System.out.println("Listing objects");
-
-            // maxKeys is set to 2 to demonstrate the use of
-            // ListObjectsV2Result.getNextContinuationToken()
-            ListObjectsV2Request req = new ListObjectsV2Request()
-                    .withBucketName(bucketName)
-                    .withStartAfter(startAfter)
-                    .withMaxKeys(maxKeys)
-                    ;
-            ListObjectsV2Result result;
-            int cnt = 0;
-            doBreak:
-            do {
-                result = s3Client.listObjectsV2(req);
-                for (S3ObjectSummary summary : result.getObjectSummaries()) {
-                    response.addObject(setSummary(summary));
-                    cnt++;
-                    if (cnt >= maxKeys) break doBreak;
-                    //System.out.printf(" - %s (size: %d)\n", summary.getKey(), summary.getSize());
-                }
-                String token = result.getNextContinuationToken();
-                log4j.trace("Next Continuation Token: " + token + " - cnt=" + cnt);
-                req.setContinuationToken(token);
-            } while (result.isTruncated());
+            GetObjectList.awsListAfter(s3Client, bucketName, startAfter, maxKeys, response);
             
-            
-        } catch (AmazonServiceException e) {
-            // The call was transmitted successfully, but Amazon S3 couldn't process 
-            // it, so it returned an error response.
-            throw new TException(e);
             
         } catch (Exception ex) {
             throw new TException(ex);
@@ -1649,21 +1171,6 @@ public class AWSS3Cloud
     {
         return ALPHANUMERIC;
     }
-    
-    
-    public CloudList.CloudEntry setSummary(S3ObjectSummary summary) 
-    {
-        CloudList.CloudEntry entry = new CloudList.CloudEntry();
-        entry.setEtag(summary.getETag());
-        entry.setContainer(summary.getBucketName());
-        entry.setSize(summary.getSize());
-        DateState dateModified = new DateState(summary.getLastModified());
-        entry.lastModified = dateModified.getIsoDate();
-        entry.setStorageClass(summary.getStorageClass());
-        String key = summary.getKey();
-        entry.setKey(key);
-        return entry;
-    }
 
 
     public void awsHandleException(CloudResponse response, Exception exception)
@@ -1702,15 +1209,6 @@ public class AWSS3Cloud
             return isAliveTest(endPoint);
         }
         return null;
-    }
-    
-    public void displayResourceUrl (
-            String bucketName,
-            String key)
-        throws TException
-    {
-        String resourceUrl = s3Client.getResourceUrl(bucketName, key);
-        log4j.info("RESOURCEURL:" +  resourceUrl);
     }
     
     @Override
@@ -1755,38 +1253,35 @@ public class AWSS3Cloud
             // Set the presigned URL to expire after one hour.
             java.util.Date expiration = new java.util.Date();
             long expTimeMillis = expiration.getTime();
-            expTimeMillis += 1000 * 60 * expirationMinutes;
+            expTimeMillis = 1000 * 60 * expirationMinutes;
             expiration.setTime(expTimeMillis);
+            System.out.println("***getPreSigned"
+                    + " - bucketName:" + bucketName
+                    + " - key:" + key
+                    + " - expTimeMillis:" + expTimeMillis
+                    + " - contentType:" + contentType
+                    + " - contentDisp:" + contentDisp
+            );
+            String urlS = GetObjectPresign.getObjectPresign(s3Presigner, bucketName, key, expTimeMillis, contentType, contentDisp);
+            System.out.println("***getPreSigned"
+                    + " - urlS:" + urlS
+            );
             
-            GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                new GeneratePresignedUrlRequest(bucketName, key)
-                            .withMethod(HttpMethod.GET)
-                            .withExpiration(expiration);
-            if (!StringUtil.isAllBlank(contentType) || !StringUtil.isAllBlank(contentDisp)) {
-                ResponseHeaderOverrides headerOverrides = new ResponseHeaderOverrides();
-                if (!StringUtil.isAllBlank(contentType)) {
-                    headerOverrides.setContentType(contentType);
-                }
-                if (!StringUtil.isAllBlank(contentDisp)) {
-                    headerOverrides.setContentDisposition(contentDisp);
-                }
-                generatePresignedUrlRequest.setResponseHeaders(headerOverrides);
-            }
-            
-            URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
-            String urlS = url.toString();
-            if (urlS.startsWith("http:") && (s3Type == S3Type.aws)) {
+            //if (urlS.startsWith("http:") && (s3Type == S3Type.aws)) {
+            if (false && urlS.startsWith("http:")) {
                 urlS = "https" + urlS.substring(4);
                 log4j.trace("Presign http to https:"
                             + " - s3Type:" + s3Type
                             + " - url:" + urlS
                     );
             }
-            url = new URL(urlS);
+            URL url = new URL(urlS);
             response.setReturnURL(url);
             response.setStatus(CloudResponse.ResponseStatus.ok);
             
         } catch (Exception ex) {
+            System.out.println("getPreSigned exception:" +ex);
+            ex.printStackTrace();
             String exc = "Exception bucketName:" + bucketName + " - key=" + key;
             if (ex.toString().contains("404")) {
                 Exception returnException = new TException.REQUESTED_ITEM_NOT_FOUND(exc);
@@ -1812,19 +1307,14 @@ public class AWSS3Cloud
         try {
             response.set(bucketName, key);
             //AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider()); 
-            GetObjectRequest getObjectRequest =
-                    new GetObjectRequest(bucketName, key);
-            getObjectRequest.setRange(start, stop);
-            S3Object object = s3Client.getObject(getObjectRequest);
-            return object.getObjectContent();
-            // Process the objectData stream.
-            //objectData.close();
+            InputStream inputStream = GetObjectRange.getObjectRange(s3Client, bucketName, key, start, start);
+            return inputStream;
             
         } catch (Exception ex) {
             handleException(response, ex);
             return null;
         }
-    }
+    }  
     
     @Override    
     public CloudStoreInf.CloudAPI getType()
@@ -1832,60 +1322,10 @@ public class AWSS3Cloud
         return CloudStoreInf.CloudAPI.AWS_S3;
     }
 
-    public AmazonS3Client getS3Client() {
-        return s3Client;
-    }
-
     public LoggerInf getLogger() {
         return logger;
     }
 
-    public void setS3Client(AmazonS3Client s3Client) {
-        this.s3Client = s3Client;
-    }
-
-    // Prints progress while waiting for the transfer to finish.
-    public void showTransferProgress(Transfer xfer, String key, long inSleepSec, long fileLen)
-    {
-        long sleepTime = inSleepSec * 1000;
-        // print the transfer's human-readable description
-        log4j.trace("showTransferProgress:" + key);
-        log4j.trace(xfer.getDescription());
-        long remaining = fileLen;
-        long saveProgress = 0;
-        if (false || logger.getMessageMaxLevel() < 1) {
-            logger.logMessage("showTransferProgress not used for " + key, 0, true);
-            return;
-        }
-        log4j.info("showTransferProgress used for " + key 
-                + " - inSleepSec:" + inSleepSec);
-        do {
-            
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                return;
-            }
-            // Note: so_far and total aren't used, they're just for
-            // documentation purposes.
-            TransferProgress progress = xfer.getProgress();
-            long so_far = progress.getBytesTransferred();
-            long total = progress.getTotalBytesToTransfer();
-            double pct = progress.getPercentTransferred();
-            log4j.info("key:" + key
-                    + " - so_far:" + so_far
-                    + " - sleep:" + sleepTime
-                    + " - pct:" + pct);
-            remaining = fileLen - so_far;
-            if (remaining  < (so_far - saveProgress)) {
-                sleepTime = 180000;
-            }
-            saveProgress = so_far;
-        } while (xfer.isDone() == false);
-        // print the final state of the transfer.
-        Transfer.TransferState xfer_state = xfer.getState();
-        log4j.info("showTransferProgress key:" + key + "- state:" + xfer_state);
-    }
     public S3Type getS3Type() {
         return s3Type;
     }

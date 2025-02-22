@@ -28,13 +28,14 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 package org.cdlib.mrt.s3.service;
-import com.amazonaws.services.s3.model.Owner;
-import com.amazonaws.services.s3.model.StorageClass;
+//import com.amazonaws.services.s3.model.Owner;
+//import com.amazonaws.services.s3.model.StorageClass;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.CloudProperties;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.MessageDigest;
 import org.cdlib.mrt.utility.StringUtil;
+import org.cdlib.mrt.s3.service.CloudUtil;
 
 //import org.jets3t.service.model.StorageObject;
 import java.net.URL;
@@ -59,6 +60,11 @@ public class CloudResponse
 {
     private static final boolean DEBUG = false;
     public enum ResponseStatus{ok, fail, missing, dark, unknown};
+    public enum ResponseStorageClass{standard, offline, reduced, other, infrequent};
+    public enum S3StorageClass{
+        Standard, ReducedRedundancy, Glacier, StandardInfrequentAccess, OneZoneInfrequentAccess, 
+        IntelligentTiering, DeepArchive, Outposts, GlacierInstantRetrieval, Other};
+   
     private int httpStatus = 0;
     private ResponseStatus status = ResponseStatus.ok;
     private CloudList cloudList = new CloudList();
@@ -73,14 +79,22 @@ public class CloudResponse
     private String errMsg = null;
     private String md5 = null;
     private String sha256 = null;
-    private String storageClass = null;
+    private String storageClassString = null;
     private String mimeType = null;
     private long storageSize = 0;
     private boolean match = false;
     private CloudProperties fileMeta = new CloudProperties();
-    private StorageClass inputStorageClass = null;
-    private StorageClass targetStorageClass = null;
+    private ResponseStorageClass storageClassType = null;
+    private S3StorageClass storageClassS3 = null;
+    //private StorageClass inputStorageClass = null;
+    //private StorageClass targetStorageClass = null;
+    private ResponseStorageClass inputStorageClassRSC = null;
+    private ResponseStorageClass targetStorageClassRSC = null;
     private boolean storageClassConverted = false;
+    private Properties metaProp = null;
+    private DateState modified = null;
+    private Boolean onGoingRestore = null;
+    private String glacierRestore = null;
     
     public static CloudResponse get(
             String bucketName,
@@ -110,6 +124,13 @@ public class CloudResponse
         return response;
     }
     
+    public static CloudResponse get(
+            Properties metaProp)
+    {
+        CloudResponse response = new CloudResponse(metaProp);
+        return response;
+    }
+    
     public CloudResponse() {} 
     
     public CloudResponse(
@@ -126,6 +147,13 @@ public class CloudResponse
             String storageKey)
     {
         set(bucketName, storageKey);
+    }
+    
+    public CloudResponse(
+            Properties metaProp)
+    {
+        this.metaProp = metaProp;
+        setFromProp(metaProp);
     }
     
     public void set(
@@ -367,6 +395,40 @@ public class CloudResponse
         this.mimeType = mimeType;
     }
     
+    public void dumpVar(String header)
+    {
+        System.out.println(PropertiesUtil.dumpProperties(header, metaProp));
+        String objectDisp = (objectID != null) ? objectID.getValue() : "null";
+        String modifiedDisp = (modified != null) ? modified.getIsoZDate() : "null";
+        System.out.println(header + "\n"
+            + " - httpStatus:" + httpStatus + "\n"
+            + " - exception:" + exception + "\n"
+            + " - returnURL:" + returnURL + "\n"
+            + " - bucketName:" + bucketName + "\n"
+            + " - objectID:" + objectDisp + "\n"
+            + " - versionID:" + versionID + "\n"
+            + " - fileID:" + fileID + "\n"
+            + " - storageKey:" + storageKey + "\n"
+            + " - errMsg:" + errMsg + "\n"
+            + " - md5:" + md5 + "\n"
+            + " - sha256:" + sha256 + "\n"
+            + " - storageClassString:" + storageClassString + "\n"
+            + " - mimeType:" + mimeType + "\n"
+            + " - storageSize:" + storageSize + "\n"
+            + " - match:" + match + "\n"
+            + " - storageClassType:" + storageClassType + "\n"
+                    
+            + " - storageClassS3:" + storageClassS3 + "\n"
+            + " - inputStorageClassRSC:" + inputStorageClassRSC + "\n"
+            + " - targetStorageClassRSC:" + targetStorageClassRSC + "\n"
+            + " - storageClassConverted:" + storageClassConverted + "\n"
+            + " - modified:" + modifiedDisp + "\n"
+            + " - onGoingRestore:" + onGoingRestore + "\n"
+            + " - glacierRestore:" + glacierRestore + "\n"
+        );
+    }
+    
+    
     public String dump(String header) {
         StringBuffer buf = new StringBuffer();
         buf.append("CloudResponse **" + header + "**");
@@ -410,7 +472,7 @@ public class CloudResponse
         if (getFileMetaProperty("mimetype") != null) setMimeType(getFileMetaProperty("mimetype"));
         if (getFileMetaProperty("sha256") != null) setSha256(getFileMetaProperty("sha256"));
         if (getFileMetaProperty("bucket") != null) setBucketName(getFileMetaProperty("bucket"));
-        if (getFileMetaProperty("storageClass") != null) setStorageClass(getFileMetaProperty("storageClass"));
+        if (getFileMetaProperty("storageClass") != null) setStorageClassString(getFileMetaProperty("storageClass"));
         String key = getStorageKey();
         if (StringUtil.isNotEmpty(key)) {
             try {
@@ -424,6 +486,7 @@ public class CloudResponse
     
     public void setFromProp(Properties prop)
     {
+        this.metaProp = prop;
         if (prop.getProperty("size") != null) setStorageSize(prop.getProperty("size"));
         if (prop.getProperty("key") != null) setStorageKey(prop.getProperty("key"));
         if (prop.getProperty("digest") != null) setMd5(prop.getProperty("digest"));
@@ -431,7 +494,14 @@ public class CloudResponse
         if (prop.getProperty("mimetype") != null) setMimeType(prop.getProperty("mimetype"));
         if (prop.getProperty("sha256") != null) setSha256(prop.getProperty("sha256"));
         if (prop.getProperty("bucket") != null) setBucketName(prop.getProperty("bucket"));
-        if (prop.getProperty("storageClass") != null) setStorageClass(prop.getProperty("storageClass"));
+        String storageClass = prop.getProperty("storageClass");
+        if (storageClass == null) {
+            storageClass = "Standard";
+        }
+        setStorageClassString(storageClass);
+        storageClassS3 = getS3StorageClass(storageClass);
+        storageClassType = getResponseStorageClass(storageClass);
+        
         String key = getStorageKey();
         if (StringUtil.isNotEmpty(key)) {
             try {
@@ -441,6 +511,22 @@ public class CloudResponse
                 setFileID(elements.fileID);
             } catch (Exception ex) { }
         }
+        glacierRestore = prop.getProperty("glacierRestore");
+        if (glacierRestore != null) {
+            String onGoingRestoreS = prop.getProperty("ongoingRestore");
+            if (onGoingRestoreS != null) {
+                onGoingRestore = Boolean.parseBoolean(onGoingRestoreS);
+            }
+        }
+        String modifiedS = prop.getProperty("modified");
+        modified = new DateState(modifiedS);
+    }
+    
+    public boolean setCloudResponse(Properties prop)
+    {
+        if ((prop == null) || prop.isEmpty()) return false;
+        setFromProp(prop);
+        return true;
     }
     
     public static CloudList.CloudEntry getCloudEntry(Properties metaProp) 
@@ -485,28 +571,12 @@ public class CloudResponse
         this.sha256 = sha256;
     }
 
-    public String getStorageClass() {
-        return storageClass;
+    public String getStorageClassString() {
+        return storageClassString;
     }
 
-    public void setStorageClass(String storageClass) {
-        this.storageClass = storageClass;
-    }
-
-    public StorageClass getInputStorageClass() {
-        return inputStorageClass;
-    }
-
-    public void setInputStorageClass(StorageClass inputStorageClass) {
-        this.inputStorageClass = inputStorageClass;
-    }
-
-    public StorageClass getTargetStorageClass() {
-        return targetStorageClass;
-    }
-
-    public void setTargetStorageClass(StorageClass targetStorageClass) {
-        this.targetStorageClass = targetStorageClass;
+    public void setStorageClassString(String storageClass) {
+        this.storageClassString = storageClass;
     }
 
     public boolean isStorageClassConverted() {
@@ -523,6 +593,188 @@ public class CloudResponse
 
     public void setReturnURL(URL returnURL) {
         this.returnURL = returnURL;
+    }
+
+    public void setStorageClassType(String storageClassString) {
+        this.storageClassType = getResponseStorageClass(storageClassString);
+    }
+    
+    public ResponseStorageClass getInputStorageClassRSC() {
+        return inputStorageClassRSC;
+    }
+
+    public void setInputStorageClassRSC(ResponseStorageClass inputStorageClassRSC) {
+        this.inputStorageClassRSC = inputStorageClassRSC;
+    }
+
+    public ResponseStorageClass getTargetStorageClassRSC() {
+        return targetStorageClassRSC;
+    }
+
+    public void setTargetStorageClassRSC(ResponseStorageClass targetStorageClassRSC) {
+        this.targetStorageClassRSC = targetStorageClassRSC;
+    }
+
+    public void setInputStorageClassRSC(String inputStorageClassS) {
+        this.inputStorageClassRSC = getResponseStorageClass(inputStorageClassS);
+    }
+
+    public void setTargetStorageClassRSC(String  targetStorageClassS) {
+        this.targetStorageClassRSC = getResponseStorageClass(targetStorageClassS);
+    }
+    
+    public static ResponseStorageClass getResponseStorageClass(String stringStorageClass)
+    {
+        ResponseStorageClass rsc = null;
+        if (stringStorageClass == null) return null;
+        switch (stringStorageClass) {
+            case "Standard":
+                rsc=ResponseStorageClass.standard;
+                break;
+                
+            case "STANDARD":
+                rsc=ResponseStorageClass.standard;
+                break;
+                
+            case "Glacier":
+                rsc=ResponseStorageClass.offline;
+                break;
+                
+            case "GLACIER":
+                rsc=ResponseStorageClass.offline;
+                break;
+                
+            case "DeepArchive":
+                rsc=ResponseStorageClass.offline;
+                break;
+                
+            case "DEEP_ARCHIVE":
+                rsc=ResponseStorageClass.offline;
+                break;
+                
+            case "ReducedRedundancy":
+                rsc=ResponseStorageClass.reduced;
+                break;
+                
+            case "REDUCED_REDUNDANCY":
+                rsc=ResponseStorageClass.reduced;
+                break;
+                
+            case "StandardInfrequentAccess":
+                rsc=ResponseStorageClass.infrequent;
+                break;
+                
+            case "STANDARD_IA":
+                rsc=ResponseStorageClass.infrequent;
+                break;
+                
+            case "GlacierInstantRetrieval":
+                rsc=ResponseStorageClass.infrequent;
+                break;
+                
+            case "GLACIER_IR":
+                rsc=ResponseStorageClass.infrequent;
+                break;
+                
+            case "OneZoneInfrequentAccess":
+                rsc=ResponseStorageClass.infrequent;
+                break;
+                
+            case "ONEZONE_IA":
+                rsc=ResponseStorageClass.infrequent;
+                break;
+                
+            default:
+                rsc=ResponseStorageClass.other;
+                break;
+        }
+        return rsc;
+    }
+    
+    
+    
+    public static S3StorageClass getS3StorageClass(String stringStorageClass)
+    {
+        S3StorageClass s3sc = null;
+        if (stringStorageClass == null) return null;
+        switch (stringStorageClass) {
+            case "Standard":
+                s3sc = S3StorageClass.Standard;
+                break;
+                
+            case "STANDARD":
+                s3sc = S3StorageClass.Standard;
+                break;
+                
+            case "Glacier":
+                s3sc = S3StorageClass.Glacier;
+                break;
+                
+            case "GLACIER":
+                s3sc = S3StorageClass.Glacier;
+                break;
+                
+            case "DeepArchive":
+                s3sc = S3StorageClass.DeepArchive;
+                break;
+                
+            case "DEEP_ARCHIVE":
+                s3sc = S3StorageClass.DeepArchive;
+                break;
+                
+            case "ReducedRedundancy":
+                s3sc = S3StorageClass.ReducedRedundancy;
+                break;
+                
+            case "REDUCED_REDUNDANCY":
+                s3sc = S3StorageClass.ReducedRedundancy;
+                break;
+                
+            case "StandardInfrequentAccess":
+                s3sc = S3StorageClass.StandardInfrequentAccess;
+                break;
+                
+            case "STANDARD_IA":
+                s3sc = S3StorageClass.StandardInfrequentAccess;
+                break;
+                
+            case "GlacierInstantRetrieval":
+                s3sc = S3StorageClass.GlacierInstantRetrieval;
+                break;
+                
+            case "GLACIER_IR":
+                s3sc = S3StorageClass.GlacierInstantRetrieval;
+                break;
+                
+            case "OneZoneInfrequentAccess":
+                s3sc = S3StorageClass.OneZoneInfrequentAccess;
+                break;
+                
+            case "ONEZONE_IA":
+                s3sc = S3StorageClass.OneZoneInfrequentAccess;
+                break;
+                
+            default:
+                s3sc = S3StorageClass.Other;
+                break;
+        }
+        return s3sc;
+    }
+
+    public ResponseStorageClass getStorageClassType() {
+        return storageClassType;
+    }
+
+    public void setStorageClassType(ResponseStorageClass storageClassType) {
+        this.storageClassType = storageClassType;
+    }
+
+    public S3StorageClass getStorageClassS3() {
+        return storageClassS3;
+    }
+
+    public void setStorageClassS3(S3StorageClass storageClassS3) {
+        this.storageClassS3 = storageClassS3;
     }
 }
 

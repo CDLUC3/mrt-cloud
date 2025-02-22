@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -17,25 +16,24 @@ import java.util.Properties;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpResponseException;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.cdlib.mrt.cloud.CloudList.CloudEntry;
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.core.MessageDigest;
-import org.cdlib.mrt.s3.aws.AWSS3Cloud;
+import org.cdlib.mrt.s3v2.aws.AWSS3V2Cloud;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.NodeIO;
 import org.cdlib.mrt.s3.service.CloudResponse.ResponseStatus;
-import org.cdlib.mrt.s3.service.NodeIO.AccessNode;
 import org.cdlib.mrt.s3.tools.CloudCloudCopy;
-import org.cdlib.mrt.s3.tools.CloudManifestCopyVersion;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.utility.TFileLogger;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
+import java.io.IOException;
 
 public class CloudIT {
         private int port = 9000;
@@ -61,7 +59,8 @@ public class CloudIT {
         public static final String key ="abc.txt";
         public static final String content = "abc";
         //macos: echo "abc" > abc.txt; md5 abc.txt
-        public static final String content_md5 = "900150983cd24fb0d6963f7d28e17f72";
+        //public static final String content_md5 = "900150983cd24fb0d6963f7d28e17f72";
+        public static final String content_md5 = "\"af5da9f45af7a300e3aded972f8ff687-1\"";
         //macos: echo "abc" > abc.txt; shasum -a 256 abc.txt
         public static final String content_sha256 = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
 
@@ -144,7 +143,7 @@ public class CloudIT {
         }
 
         public Identifier addObject(CloudStoreInf service, String bucket, String key, String content) throws IOException, TException {
-                CloudResponse resp = ((AWSS3Cloud)service).putObject(
+                CloudResponse resp = ((AWSS3V2Cloud)service).putObject(
                         bucket, 
                         key, 
                         createFile(content)
@@ -228,7 +227,7 @@ public class CloudIT {
         public void addDataToNodePresigned() {
                 try {
                         addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
-
+   
                         CloudResponse resp = primaryAccessNode.service.getPreSigned(10, primaryAccessNode.container, key, "text/plain", "inline");
                         String url = resp.getReturnURL().toString();
                         assertFalse(url.isEmpty());
