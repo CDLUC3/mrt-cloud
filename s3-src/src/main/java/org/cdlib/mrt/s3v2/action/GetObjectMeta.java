@@ -95,20 +95,7 @@ public class GetObjectMeta {
                 .build();
 
             HeadObjectResponse headResponse  = s3.headObject(headObjectRequest);
-            String responsesha256 = headResponse.checksumSHA256();
-            Map<String, String> meta  = headResponse.metadata();
-            Set<String> keys = meta.keySet();
-            for (String key : keys) {
-                String value = meta.get(key);
-                System.out.println(key+ "=" + value);
-            }
-            log4j.trace("responsesha256=" + responsesha256);
-            
-            Long size = headResponse.contentLength();
-            log4j.trace("size=" + size);
-            
-            String mimeType = headResponse.contentType();
-            log4j.trace("mimeType=" + mimeType);
+            if (false) dumpHeadMapResponse(headResponse);
             return headResponse;
             
 
@@ -128,6 +115,8 @@ public class GetObjectMeta {
             HeadObjectResponse headResponse = getHeadResponse(s3, bucketName, key);
             
             Map<String, String> metaMap  = headResponse.metadata();
+            
+            
             /*
             GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
             ObjectMetadata metadata = s3Client.getObjectMetadata(request);
@@ -141,17 +130,14 @@ public class GetObjectMeta {
             addProp(prop, "bucket", bucketName);
             addProp(prop, "key", key);
             String etag = headResponse.eTag();
-            System.out.println("before etag:" + etag);
             
-            //etag = etag.replace("\"","");
-            //System.out.println("after   etag:" + etag);
             addProp(prop, "etag", etag);
             Instant instantDate = headResponse.lastModified();
             Date date = Date.from(instantDate);
             String isoDate = DateUtil.getIsoDate(date);
             addProp(prop, "modified", isoDate);
             
-            addProp(prop, "md5", headResponse.eTag());
+            //addProp(prop, "md5", headResponse.eTag());
             String storageClassS = headResponse.storageClassAsString();
             if (storageClassS == null) storageClassS = StorageClass.STANDARD.toString();
             log4j.trace("***assigned storageClass:" + storageClassS);
@@ -187,6 +173,29 @@ public class GetObjectMeta {
         }
     }
     
+    protected static void dumpHeadMapResponse( HeadObjectResponse headResponse)
+    {
+        Map<String, String> metaMap  = headResponse.metadata(); 
+        Set<String> keyset = metaMap.keySet();
+        for (String metaKey : keyset) {
+            String value = metaMap.get(metaKey);
+            System.out.println(metaKey + "*=*" + value);
+        }
+
+        System.out.println("HeadObjectResponse\n"
+            + " - contentLength:" + headResponse.contentLength() + "\n"
+            + " - checksumCRC32:" + headResponse.checksumCRC32() + "\n"
+            + " - checksumCRC32C:" + headResponse.checksumCRC32C() + "\n"
+            + " - checksumSHA1:" + headResponse.checksumSHA1() + "\n"
+            + " - checksumSHA256:" + headResponse.checksumSHA256() + "\n"
+            + " - missingMeta:" + headResponse.missingMeta() + "\n"
+            + " - contentType:" + headResponse.contentType() + "\n"
+            + " - eTag:" + headResponse.eTag()+ "\n"
+            + " - contentEncoding:" + headResponse.contentEncoding() + "\n"
+            + " - contentLanguage:" + headResponse.contentLanguage() + "\n"
+        );
+            
+    }   
     protected static void addProp(Properties prop, String key, String value)
     {
         if (value == null) return;

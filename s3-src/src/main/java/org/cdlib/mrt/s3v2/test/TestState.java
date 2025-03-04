@@ -64,8 +64,8 @@ public class TestState {
     {
         //test_wasabi(keyBig, sha256Big, fileBig, downloadBig);
         //test_aws(keyBig, sha256Big, fileBig, downloadBig);
-        //test_minio(keyBig, sha256Big, fileBig, downloadBig);
-        test_sdsc(keyBig, sha256Big, fileBig, downloadBig);
+        test_minio(keyBig, sha256Big, fileBig, downloadBig);
+        //test_sdsc(keyBig, sha256Big, fileBig, downloadBig);
         //test_minio_delete( keySmall );
         
         // test_temp_delete( keySmall );
@@ -281,6 +281,32 @@ public class TestState {
         
         PutObjectData.uploadFileAsync(
             s3AsyncClient, 
+            bucketName,
+            key,
+            filePath, 
+            metadata) ;
+        
+        Properties prop = getMeta(
+            "after uploadFileAsync",
+            s3Client, 
+            bucketName,
+            key);
+    }
+    
+    protected static void doUploadSync(
+            V2Client v2client,
+            String bucketName,
+            String key,
+            String filePath,
+            String sha256)
+    {
+        S3Client s3Client = v2client.s3Client();
+        S3AsyncClient s3AsyncClient = v2client.s3AsyncClient();
+        LinkedHashMap<String, String> metadata = new LinkedHashMap();
+        metadata.put("sha256", sha256);
+        
+        PutObjectData.putS3Object(
+            s3Client, 
             bucketName,
             key,
             filePath, 
@@ -518,7 +544,9 @@ public class TestState {
         try {
             System.out.println("***test_state");
             doDelete(v2client,bucketName,key);
-            doUploadMultipart(v2client, bucketName, key, upFilePath, sha256);
+            //doUploadMultipart(v2client, bucketName, key, upFilePath, sha256);
+            //doUpload(v2client, bucketName, key, upFilePath, sha256);
+            doUploadSync(v2client, bucketName, key, upFilePath, sha256);
             File downFile = new File(downFilePath);
             if (downFile.exists()) {
                 downFile.delete();

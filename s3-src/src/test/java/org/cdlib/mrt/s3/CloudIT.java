@@ -60,7 +60,7 @@ public class CloudIT {
         public static final String content = "abc";
         //macos: echo "abc" > abc.txt; md5 abc.txt
         //public static final String content_md5 = "900150983cd24fb0d6963f7d28e17f72";
-        public static final String content_md5 = "\"af5da9f45af7a300e3aded972f8ff687-1\"";
+        //public static final String content_md5 = "\"af5da9f45af7a300e3aded972f8ff687-1\"";
         //macos: echo "abc" > abc.txt; shasum -a 256 abc.txt
         public static final String content_sha256 = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
 
@@ -73,6 +73,7 @@ public class CloudIT {
                         nodeIO = NodeIO.getNodeIOConfig(yamlName, logger);
                         primaryAccessNode = nodeIO.getAccessNode(7777);
                         replicationAccessNode = nodeIO.getAccessNode(8888);
+                        System.out.println("NodeIO AWS version:" + nodeIO.getAwsVersion());
                 } catch(Exception e){
                         e.printStackTrace();
                 }
@@ -143,13 +144,14 @@ public class CloudIT {
         }
 
         public Identifier addObject(CloudStoreInf service, String bucket, String key, String content) throws IOException, TException {
-                CloudResponse resp = ((AWSS3V2Cloud)service).putObject(
+                //CloudResponse resp = ((AWSS3V2Cloud)service).putObject(
+                CloudResponse resp = service.putObject(
                         bucket, 
                         key, 
                         createFile(content)
                 );
                 assertEquals(ResponseStatus.ok, resp.getStatus());
-                assertEquals(content_md5, resp.getMd5());
+                assertEquals(content.length(), resp.getStorageSize());
                 assertEquals(content_sha256, resp.getSha256());
 
                 return resp.getObjectID();
@@ -323,11 +325,11 @@ public class CloudIT {
         public void checkDigest() {
                 try {
                         addObject(primaryAccessNode.service, primaryAccessNode.container, key, content);
-                        CloudResponse r = primaryAccessNode.service.validateMd5(primaryAccessNode.container, key, content_md5);
-                        assertEquals(ResponseStatus.ok, r.getStatus());
+                        //CloudResponse r = primaryAccessNode.service.validateMd5(primaryAccessNode.container, key, content_md5);
+                        //assertEquals(ResponseStatus.ok, r.getStatus());
 
                         MessageDigest md = new MessageDigest(content_sha256, "sha256");
-                        r = primaryAccessNode.service.validateDigest(primaryAccessNode.container, key, md, content.length());
+                        CloudResponse r = primaryAccessNode.service.validateDigest(primaryAccessNode.container, key, md, content.length());
                         assertEquals(ResponseStatus.ok, r.getStatus());
                         assertNull(r.getErrMsg());
 

@@ -70,6 +70,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
 public class PutObjectData {
     protected static final Logger logger = LogManager.getLogger(); 
+    private static final Logger log4j = LogManager.getLogger();
     
     final static Long MB = 1024L * 1024 * 1024;
     
@@ -98,7 +99,7 @@ public class PutObjectData {
                 .build();
 
             s3.putObject(putOb, RequestBody.fromFile(new File(objectPath)));
-            System.out.println("Successfully placed " + objectKey + " into bucket " + bucketName);
+            log4j.debug("Successfully placed " + objectKey + " into bucket " + bucketName);
 
         } catch (S3Exception e) {
             System.err.println(e.getMessage());

@@ -351,5 +351,10 @@ public class V2Client {
     public Region getRegion() {
         return region;
     }
+
+    public S3Type getS3Type() {
+        return s3Type;
+    }
+    
 }
 

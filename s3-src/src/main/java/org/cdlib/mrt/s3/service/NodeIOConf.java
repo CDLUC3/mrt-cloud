@@ -29,7 +29,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 
 package org.cdlib.mrt.s3.service;
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;      
 import java.util.List;      
@@ -37,10 +36,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static org.cdlib.mrt.s3.service.NodeIO.MESSAGE;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.tools.SSMConfigResolver;
 import org.cdlib.mrt.tools.YamlParser;
-import org.cdlib.mrt.utility.FileUtil;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TException;
@@ -57,6 +56,7 @@ public class NodeIOConf
     private static boolean DEBUG_ACCESS = false;
     private static Pattern pConfig = Pattern.compile("(jar|yaml):[\\s]*([^\\s]*)[\\s]*");
     private static Pattern p2Config = Pattern.compile("([^\\s]*):[\\s]*([^\\s]*)[\\s]*");
+    private static final Logger log4j = LogManager.getLogger();
     
     protected String nodeName = null;
     protected LoggerInf logger = null;
@@ -170,6 +170,7 @@ public class NodeIOConf
         throws TException
     {
         
+        Integer awsVersion = null;
         try {
             NodeIO.AccessNode test = new NodeIO.AccessNode();
             String propName = "yaml/cloudConfig.yml";
@@ -194,7 +195,7 @@ public class NodeIOConf
             String jsonout = yamlParser.dumpJson();
 
             JSONObject jsonBase = new JSONObject(jsonout);
-            if (DEBUG) System.out.println("***jsonBase\n" + jsonBase.toString());
+            if (false) System.out.println("***jsonBase\n" + jsonBase.toString(2));
             
             String nodeTable = null;
             try {
@@ -207,6 +208,17 @@ public class NodeIOConf
                 throw new TException.INVALID_OR_MISSING_PARM("Yaml envName missing");
             }
             
+            String awsVersionS = null;
+            try {
+                awsVersionS = jsonBase.getString("aws-s3-version");
+                log4j.debug("***awsVersionS:" + awsVersionS);
+                awsVersion = Integer.parseInt(awsVersionS);
+            } catch (Exception ex) {
+                awsVersion = null;
+            }
+            if (awsVersion == null) {
+                throw new TException.INVALID_OR_MISSING_PARM(jsonBase.toString(2));
+            }
             JSONObject nodestables = jsonBase.getJSONObject("nodes-tables");
             JSONArray envTables = nodestables.getJSONArray(envName);
             for (int i=0; i<envTables.length(); i++) {
@@ -216,7 +228,7 @@ public class NodeIOConf
                 defNodes.add(defNode);
                         
             }
-            NodeIO nodeIO = new NodeIO(defNodes, logger);
+            NodeIO nodeIO = new NodeIO(awsVersion, defNodes, logger);
             
             nodeIO.setNodeName("yaml:");
             return nodeIO;

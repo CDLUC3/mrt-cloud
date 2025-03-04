@@ -78,11 +78,11 @@ public class GetObjectRange {
             Long startByte, Long endByte ) 
         throws TException
     {
-System.out.println("***getObjectRange:"
+logger.debug("***getObjectRange:"
         + " - keyName=" + keyName
         + " - bucketName=" + bucketName
         + " - startByte=" + startByte
-        + " - bucketName=" + endByte
+        + " - endByte=" + endByte
 );
         if (endByte < startByte) {
             throw new TException.INVALID_OR_MISSING_PARM("getObjectRange endByte < startBybe:"

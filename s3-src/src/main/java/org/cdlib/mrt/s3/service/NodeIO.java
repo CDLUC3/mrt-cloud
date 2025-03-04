@@ -253,6 +253,8 @@ public class NodeIO
     protected String nodeName = null;
     protected LoggerInf logger = null;
     private static final Logger log4j = LogManager.getLogger();
+    private Integer awsVersion = null;
+    
     //protected ConfigType configType = ConfigType.jar;
     
     //public enum ConfigType {jar, file, ssm, yaml};
@@ -370,7 +372,7 @@ public class NodeIO
      * @param logger
      * @throws TException 
      */
-    public NodeIO(List<DefNode> defNodes, LoggerInf logger)
+    public NodeIO(Integer awsVersion, List<DefNode> defNodes, LoggerInf logger)
             throws TException
     {
         try {
@@ -378,6 +380,7 @@ public class NodeIO
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "log missing");
             }
             this.logger = logger;
+            this.awsVersion = awsVersion;
             for (DefNode defNode : defNodes) {
                 addMapEntry(defNode);
             }
@@ -504,6 +507,10 @@ public class NodeIO
         throws TException
     {
         try {
+            System.out.println(PropertiesUtil.dumpProperties("addMap", cloudProp));
+            String awsS3VersionS = cloudProp.getProperty("aws-s3-version");
+            this.awsVersion = getAwsVersion(awsS3VersionS);
+            System.out.println("addMap awsVersion=" + awsVersion);
             for(int i=1; true; i++) {
                 String line = cloudProp.getProperty("node." + i);
                 if (line == null) break;
@@ -600,7 +607,7 @@ public class NodeIO
             if (cloudProp == null) {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - Unable to locate:" +  propName);
             }
-            AccessNode copyNode = getAccessNode(nodeNumber, container, description, cloudProp, logger);
+            AccessNode copyNode = getAccessNode(awsVersion, nodeNumber, container, description, cloudProp, logger);
             if (DEBUG) System.out.println(copyNode.dump("copyNode"));
             accessNodes.put(nodeNumber, copyNode);
             
@@ -643,7 +650,7 @@ public class NodeIO
     {
         try {
             
-            AccessNode copyNode = getAccessNode(nodeNumber, container, nodeDescription, cloudProp, logger);
+            AccessNode copyNode = getAccessNode(awsVersion, nodeNumber, container, nodeDescription, cloudProp, logger);
             if (DEBUG) System.out.println(copyNode.dump("copyNode"));
             accessNodes.put(nodeNumber, copyNode);
             return copyNode;
@@ -660,104 +667,23 @@ public class NodeIO
         
     }
     
-    public static AccessNode getAccessNode(Long nodeNumber, String container, String nodeDescription, Properties cloudProp, LoggerInf logger) 
+    public static AccessNode getAccessNodexxx( Long nodeNumber, String container, String nodeDescription, Properties cloudProp, LoggerInf logger) 
         throws TException
     {
-        CloudStoreInf service = null;
-        if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
-                + " - nodeNumber=" + nodeNumber
-                + " - container=" + container
-        );
-        String accessMode = null;
-        try {
-            if (cloudProp == null) {
-                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - CloudProp not supplied");
-            }
-            String serviceType = cloudProp.getProperty("serviceType");
-            if (StringUtil.isAllBlank(serviceType)) {
-                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - serviceType property required but not found");
-            }
-            if (serviceType.equals("swift")) {
-                service = OpenstackCloud.getOpenstackCloud(cloudProp, logger);
-                
-            } else if (serviceType.equals("aws")) {
-                String storageClassS = cloudProp.getProperty("storageClass");
-                if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
-                String regionS = cloudProp.getProperty("region");
-                accessMode = cloudProp.getProperty("accessMode");
-                service = AWSS3V2Cloud.getAWS(logger);
-                
-            } else if (serviceType.equals("minio")) {
-                String accessKey = cloudProp.getProperty("accessKey");
-                String secretKey = cloudProp.getProperty("secretKey");
-                String endPoint = cloudProp.getProperty("endPoint");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
-                        + " - accessKey=" + accessKey
-                        + " - secretKey=" + secretKey
-                        + " - endPoint=" + endPoint
-                );
-                service = AWSS3V2Cloud.getMinio(accessKey, secretKey, endPoint, logger);
-                
-            } else if (serviceType.equals("sdsc-s3")) {
-                String accessKey = cloudProp.getProperty("accessKey");
-                String secretKey = cloudProp.getProperty("secretKey");
-                String endPoint = cloudProp.getProperty("endPoint");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
-                        + " - accessKey=" + accessKey
-                        + " - secretKey=" + secretKey
-                        + " - endPoint=" + endPoint
-                );
-                service = AWSS3V2Cloud.getSDSC(
-                        accessKey, secretKey, endPoint, logger);
-                
-            } else if (serviceType.equals("wasabi")) {
-                String accessKey = cloudProp.getProperty("accessKey");
-                String secretKey = cloudProp.getProperty("secretKey");
-                String endPoint = cloudProp.getProperty("endPoint");
-                String regionName = cloudProp.getProperty("regionName");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
-                        + " - accessKey=" + accessKey
-                        + " - secretKey=" + secretKey
-                        + " - endPoint=" + endPoint
-                        + " - regionName=" + regionName
-                );
-                service = AWSS3V2Cloud.getWasabi(accessKey, secretKey, endPoint, logger);
-                
-            } else if (serviceType.equals("pairtree")) {
-                service = PairtreeCloud.getPairtreeCloud(true, logger);
-                container = cloudProp.getProperty("base");
-                
-            } else if (serviceType.equals("store")) {
-                String urlS = cloudProp.getProperty("url");
-                Integer node = null;
-                String nodeS = cloudProp.getProperty("node");
-                if (nodeS != null) {
-                    node = Integer.parseInt(nodeS);
-                    container = "" + node;
-                }
-                service = StoreCloud.getStoreCloud(urlS, node, logger);
-                
-            } else if (serviceType.equals("cloudhost")) {
-                String urlS = cloudProp.getProperty("base");
-                service = CloudhostAPI.getCloudhostAPI(urlS, logger);
-                
-            } else {
-                throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - serviceType not found for :" +  serviceType);
-            }
-            AccessNode copyNode = new AccessNode(serviceType, accessMode, service, nodeNumber, container, nodeDescription);
-            return copyNode;
-            
-            
-        } catch (TException tex) {
-            tex.printStackTrace();
-            throw tex;
-            
-        } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
-            throw new TException(ex);
-        }
-        
+        return MerrittService.getAccessNode(1, nodeNumber, container, nodeDescription, cloudProp, logger);  
+    }
+    
+    public static AccessNode getAccessNode(String awsVersionS, Long nodeNumber, String container, String nodeDescription, Properties cloudProp, LoggerInf logger) 
+        throws TException
+    {
+        Integer awsVersion = getAwsVersion(awsVersionS);
+        return getAccessNode(awsVersion, nodeNumber, container, nodeDescription, cloudProp, logger);
+    }
+    
+    public static AccessNode getAccessNode(Integer awsVersion, Long nodeNumber, String container, String nodeDescription, Properties cloudProp, LoggerInf logger) 
+        throws TException
+    {
+        return MerrittService.getAccessNode(awsVersion, nodeNumber, container, nodeDescription, cloudProp, logger);  
     }
     
     public AccessNode getAccessNode(long nodeNumber) 
@@ -903,6 +829,23 @@ public class NodeIO
             throw new TException(ex);
         }
         
+    }
+
+    public Integer getAwsVersion() {
+        return this.awsVersion;
+    }
+    
+    public void setAwsVersion(Integer awsVersion) {
+        this.awsVersion = awsVersion;
+    }
+    
+    public static Integer getAwsVersion(String awsVersionS) {
+        if (awsVersionS == null) return 0;
+        try {
+            return Integer.parseInt(awsVersionS);
+        } catch (Exception ex) {
+            return 0;
+        }
     }
     
     public Collection<AccessNode> getCollection() {

@@ -187,14 +187,23 @@ public class AWSS3V2Cloud
             
             LinkedHashMap<String, String> metadata = new LinkedHashMap();
             metadata.put("sha256", fileSha256);
-            
-            MultiPartUpload.uploadFileParts(
-                s3Client,
-                bucketName,
-                key, 
-                inputFile.getAbsolutePath(),
-                metadata);
-            
+            log4j.debug("***v2Client:" + v2Client.getS3Type());
+            if (v2Client.getS3Type() == V2Client.S3Type.minio) {
+                PutObjectData.putS3Object(
+                    s3Client,
+                    bucketName,
+                    key, 
+                    inputFile.getAbsolutePath(),
+                    metadata);
+                
+            } else {
+                MultiPartUpload.uploadFileParts(
+                    s3Client,
+                    bucketName,
+                    key, 
+                    inputFile.getAbsolutePath(),
+                    metadata);
+            }
             Properties putObjectMeta = null;
             //retries required because meta may not be available immediately
             long pow = 1;
@@ -1307,7 +1316,7 @@ public class AWSS3V2Cloud
         try {
             response.set(bucketName, key);
             //AmazonS3 s3Client = new AmazonS3Client(new ProfileCredentialsProvider()); 
-            InputStream inputStream = GetObjectRange.getObjectRange(s3Client, bucketName, key, start, start);
+            InputStream inputStream = GetObjectRange.getObjectRange(s3Client, bucketName, key, start, stop);
             return inputStream;
             
         } catch (Exception ex) {

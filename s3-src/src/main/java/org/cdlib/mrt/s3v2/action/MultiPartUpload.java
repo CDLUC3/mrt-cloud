@@ -136,6 +136,7 @@ public class MultiPartUpload {
                 .build());
 
             logger.debug("add completedParts:" + position);
+            //System.out.println("add completedParts:" + position);
                 buffer.clear();
                 position += bytesRead;
                 partNumber++;

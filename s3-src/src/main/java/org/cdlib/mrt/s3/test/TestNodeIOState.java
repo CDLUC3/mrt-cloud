@@ -29,14 +29,17 @@ public class TestNodeIOState {
             //String yamlName = "jar:nodes-stagenodry";
             //String yamlName = "jar:nodes-sdsc-temp";
             //String yamlName = "jar:nodes-sdsc-backup";
+            
+            //String yamlName = "jar:nodes-stagedef";
             NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+            System.out.println("***awsVersion=" + nodeIO.getAwsVersion());
             ArrayList<NodeIO.AccessNode> accessNodes = nodeIO.getAccessNodesList();
             for (NodeIO.AccessNode accessNode : accessNodes)
             {
                 CloudStoreInf service = accessNode.service;
                 String container = accessNode.container;
                 StateHandler.RetState retstate = service.getState(container);
-                System.out.println(retstate.dumpline("Node:" + accessNode.nodeNumber) + " - mode:" + accessNode.accessMode
+                System.out.println(retstate.dumpline("\nNode:" + accessNode.nodeNumber) + " - mode:" + accessNode.accessMode
                 );
             }
             
