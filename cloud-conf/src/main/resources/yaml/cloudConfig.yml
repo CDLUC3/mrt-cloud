@@ -1,5 +1,6 @@
 ---
 node-table: "{!ENV: NODE_TABLE}"
+aws-s3-version: "{!SSM: cloud/nodes/aws-s3-version !DEFAULT: 2}"
 services: &services
   aws-near: &aws-near
     type: aws-near
@@ -64,7 +65,7 @@ services: &services
       accessKey: "{!SSM: cloud/nodes/wasabi-accessKey !DEFAULT: SSMFAIL}"
       secretKey: "{!SSM: cloud/nodes/wasabi-secretKey !DEFAULT: SSMFAIL}"
       regionName: us-east-2
-
+      
 nodes-tables:
   nodes-prod:
       - # AWS Standard
