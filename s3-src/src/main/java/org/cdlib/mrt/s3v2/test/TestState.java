@@ -15,8 +15,12 @@ import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.Tag;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import java.net.URI;
 import java.io.File;
+import java.net.URL;
 import java.util.Date;
 import java.time.Instant;
 
@@ -62,10 +66,30 @@ public class TestState {
     public static void main(String[] args) 
             throws TException
     {
-        //test_wasabi(keyBig, sha256Big, fileBig, downloadBig);
+        //test_minio_sync(keySmall, sha256Small, fileSmall, downloadSmall);
+        //test_minio_sync(keyBig, sha256Big, fileBig, downloadBig);
+        //if (true) return;
+        test_aws(keySmall, sha256Small, fileSmall, downloadSmall);
+        test_sdsc(keySmall, sha256Small, fileSmall, downloadSmall);
+        test_glacier(keySmall, sha256Small, fileSmall, downloadSmall);
+        test_wasabi(keySmall, sha256Small, fileSmall, downloadSmall);
+        test_minio_sync(keySmall, sha256Small, fileSmall, downloadSmall);
+        
         //test_aws(keyBig, sha256Big, fileBig, downloadBig);
-        test_minio(keyBig, sha256Big, fileBig, downloadBig);
         //test_sdsc(keyBig, sha256Big, fileBig, downloadBig);
+        //test_glacier(keyBig, sha256Big, fileBig, downloadBig);
+        //test_wasabi(keyBig, sha256Big, fileBig, downloadBig);
+        //test_minio_sync(keyBig, sha256Big, fileBig, downloadBig);
+        
+        //test_minio_sync(keyBig, sha256Big, fileBig, downloadBig);
+        //test_minio_sync(keySmall, sha256Small, fileSmall, downloadSmall);
+        //test_minio(keySmall, sha256Small, fileSmall, downloadSmall);
+        //(keySmall, sha256Small, fileSmall, downloadSmall);
+        //test_wasabi(keyBig, sha256Big, fileBig, downloadBig);
+        //test_aws_fail(keyBig, sha256Big, fileBig, downloadBig);
+        //test_aws(keyBig, sha256Big, fileBig, downloadBig);
+        //test_sdsc(keyBig, sha256Big, fileBig, downloadBig);
+        //test_glacier(keyBig, sha256Big, fileBig, downloadBig);
         //test_minio_delete( keySmall );
         
         // test_temp_delete( keySmall );
@@ -111,7 +135,7 @@ public class TestState {
         
         V2Client v2client = getClientWasabi();
         String bucketName = "uc3-wasabi-useast-2.stage";
-        test_state( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        testState( v2client, bucketName, key, sha256, upFilePath, downFilePth);
     }
     
     public static void test_aws(String key, String sha256, String upFilePath, String downFilePth)
@@ -120,7 +144,31 @@ public class TestState {
         System.out.println("***test_aws***");
         String bucketName = "uc3-s3mrt1001-stg";
         V2Client v2client = getClientAWS();
-        test_state( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        testState(v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateSync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testState( v2client, bucketName, key, sha256, upFilePath, downFilePth);  // works aws
+    }
+    
+    public static void test_aws_fail(String key, String sha256, String upFilePath, String downFilePth)
+            throws TException
+    { 
+        System.out.println("***test_aws***");
+        String bucketName = "uc3-s3mrt1001-stg";
+        V2Client v2client = getClientAWS();
+        testStateAsync(v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateSync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testState( v2client, bucketName, key, sha256, upFilePath, downFilePth);  // works aws
+    }
+    
+    public static void test_glacier(String key, String sha256, String upFilePath, String downFilePth)
+            throws TException
+    { 
+        System.out.println("***test_glacier***");
+        String bucketName = "uc3-s3mrt6001-stg";
+        V2Client v2client = getClientAWS();
+        testState(v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateSync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testState( v2client, bucketName, key, sha256, upFilePath, downFilePth);  // works aws
     }
     
     public static void test_minio(String key, String sha256, String upFilePath, String downFilePth)
@@ -129,7 +177,20 @@ public class TestState {
         System.out.println("***test_minio***");
         String bucketName = "cdl.sdsc.stage";
         V2Client v2client = getClientMinio();
-        test_state( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        testState( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateSync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateAsync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+    }
+    
+    public static void test_minio_sync(String key, String sha256, String upFilePath, String downFilePth)
+            throws TException
+    { 
+        System.out.println("***test_minio_sync***");
+        String bucketName = "cdl.sdsc.stage";
+        V2Client v2client = getClientMinio();
+        testStateSync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateSync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
+        //testStateAsync( v2client, bucketName, key, sha256, upFilePath, downFilePth);
     }
     
     public static void test_sdsc(String key, String sha256, String upFilePath, String downFilePth)
@@ -138,50 +199,7 @@ public class TestState {
         System.out.println("***test_sdsc***");
         String bucketName = "cdl-sdsc-backup-stg";
         V2Client v2client = getClientSDSC();
-        test_state( v2client, bucketName, key, sha256, upFilePath, downFilePth);
-    }
-    
-
-    /**
-     * Lists the tags associated with an Amazon S3 object.
-     *
-     * @param s3 the S3Client object used to interact with the Amazon S3 service
-     * @param bucketName the name of the S3 bucket that contains the object
-     * @param keyName the key (name) of the S3 object
-     */
-    public static HeadObjectResponse getHeadResponse(S3Client s3, String bucketName, String keyName) 
-            throws TException
-    {
-        try {
-            HeadObjectRequest headObjectRequest = HeadObjectRequest
-                .builder()
-                .key(keyName)
-                .bucket(bucketName)
-                .build();
-
-            HeadObjectResponse headResponse  = s3.headObject(headObjectRequest);
-            String responsesha256 = headResponse.checksumSHA256();
-            Map<String, String> meta  = headResponse.metadata();
-            Set<String> keys = meta.keySet();
-            for (String key : keys) {
-                String value = meta.get(key);
-                System.out.println(key+ "=" + value);
-            }
-            System.out.println("responsesha256=" + responsesha256);
-            
-            Long size = headResponse.contentLength();
-            System.out.println("size=" + size);
-            
-            String mimeType = headResponse.contentType();
-            System.out.println("mimeType=" + mimeType);
-            return headResponse;
-            
-
-        } catch (S3Exception e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            System.exit(1);
-            throw new TException(e);
-        }
+        testState( v2client, bucketName, key, sha256, upFilePath, downFilePth);
     }
 
     
@@ -205,61 +223,6 @@ public class TestState {
         return prop;
     }
     
-    public static Properties getObjectMeta (
-            S3Client s3, 
-            String bucketName,
-            String key)
-        throws TException
-    {
-        Properties prop = new Properties();
-        try {
-            HeadObjectResponse headResponse = getHeadResponse(s3, bucketName, key);
-            
-            Map<String, String> metaMap  = headResponse.metadata();
-            /*
-            GetObjectMetadataRequest request = new GetObjectMetadataRequest(bucketName, key);
-            ObjectMetadata metadata = s3Client.getObjectMetadata(request);
-            */
-            String sha256 = metaMap.get(key);
-            addProp(prop, "sha256", sha256);
-            Long contentLength = headResponse.contentLength();
-            addProp(prop, "size", "" + contentLength);
-            addProp(prop, "bucket", bucketName);
-            addProp(prop, "key", key);
-            String etag = headResponse.eTag();
-            addProp(prop, "etag", etag);
-            Instant instantDate = headResponse.lastModified();
-            Date date = Date.from(instantDate);
-            String isoDate = DateUtil.getIsoDate(date);
-            addProp(prop, "modified", isoDate);
-            
-            addProp(prop, "md5", headResponse.eTag());
-            String storageClass = headResponse.storageClassAsString();
-            addProp(prop, "storageClass", storageClass);
-            
-            //addProp(prop, "maxErrRetry", "" + getMaxErrRetry());
-            String expiration = headResponse.expiresString();
-            addProp(prop, "expires", expiration);
-            
-            if (storageClass.contains("GLACIER") && (expiration != null)) {
-                if (expiration.contains("ongoing-request=\"false\"")) {
-                    addProp(prop, "glacierRestore", "complete");
-                } else if (expiration.contains("ongoing-request=\"true\"")) {
-                    addProp(prop, "glacierRestore", "ongoing");
-                    addProp(prop, "ongoingRestore", "true");
-                }
-            }
-            return prop;
-            
-        } catch (Exception ex) {
-            if (ex.toString().contains("404")) {
-                return new Properties();
-            }
-            //CloudResponse response = new CloudResponse(bucketName, key);
-            //awsHandleException(response, ex);
-            return null;
-        }
-    }
     
     protected static void addProp(Properties prop, String key, String value)
     {
@@ -267,7 +230,7 @@ public class TestState {
         prop.setProperty(key, value);
     }
     
-    protected static void doUpload(
+    protected static void doUploadAsync(
             V2Client v2client,
             String bucketName,
             String key,
@@ -279,7 +242,7 @@ public class TestState {
         LinkedHashMap<String, String> metadata = new LinkedHashMap();
         metadata.put("sha256", sha256);
         
-        PutObjectData.uploadFileAsync(
+        PutObjectData.uploadFileParts(
             s3AsyncClient, 
             bucketName,
             key,
@@ -350,6 +313,7 @@ public class TestState {
             metadata);
         
         Properties prop = getMeta("doUploadMultipart", s3Client, bucketName, key);
+        System.out.println(PropertiesUtil.dumpProperties("doUploadMultipart", prop));
     }
     
     protected static void doPutObject(
@@ -484,7 +448,7 @@ public class TestState {
         
         for (String type : types) {
             String checksum = checksums.getChecksum(type);
-            System.out.println("getChecksum(" + type + "):" + checksum);
+            System.out.println("doGetObjectAsync complete getChecksum(" + type + "):" + checksum);
         }
 
         return prop;
@@ -531,8 +495,69 @@ public class TestState {
             bucketName,
             key);
     }
+
+
+    public static void doPresign (
+            V2Client v2client, 
+            String bucketName,
+            String key)
+        throws TException
+    {
+        try {
+            S3Presigner s3Presigner = v2client.s3Presigner();
+            String contentType="text/plain";
+            String contentDisp="attachment; filename=\"6g.txt\"";
+            // Set the presigned URL to expire after one hour.
+            java.util.Date expiration = new java.util.Date();
+            long expirationMinutes = 30L;
+            long expTimeMillis = 1000 * 60 * expirationMinutes;
+            expiration.setTime(expTimeMillis);
+            System.out.println("***getPreSigned"
+                    + " - bucketName:" + bucketName
+                    + " - key:" + key
+                    + " - expTimeMillis:" + expTimeMillis
+                    + " - contentType:" + contentType
+                    + " - contentDisp:" + contentDisp
+            );
+            String urlS = GetObjectPresign.getObjectPresign(s3Presigner, bucketName, key, expTimeMillis, contentType, contentDisp);
+            System.out.println("---presign:" + urlS);
+            
+        } catch (Exception ex) {
+            System.out.println("getPreSigned exception:" +ex);
+            ex.printStackTrace();
+            String exc = "Exception bucketName:" + bucketName + " - key=" + key;
+            System.out.println("Presign exception:" + exc);
+        }
+    }
     
-    public static void test_state(
+    public static void testStateAsync(
+            V2Client v2client, 
+            String bucketName,
+            String key, 
+            String sha256, 
+            String upFilePath, 
+            String downFilePath)
+        throws TException
+    { 
+        try {
+            System.out.println("***testStateAsync");
+            doDelete(v2client,bucketName,key);
+            //doUploadMultipart(v2client, bucketName, key, upFilePath, sha256);
+            //doUpload(v2client, bucketName, key, upFilePath, sha256);
+            doUploadAsync(v2client, bucketName, key, upFilePath, sha256);
+            File downFile = new File(downFilePath);
+            if (downFile.exists()) {
+                downFile.delete();
+            }
+            doGetObjectAsync(v2client, bucketName, key, downFilePath, sha256);
+            doDelete(v2client,bucketName,key);
+        } catch (Exception e) {
+            System.out.println("Exception:" + e);
+            e.printStackTrace();
+            throw new TException(e);
+        }
+    }    
+    public static void testState(
             V2Client v2client, 
             String bucketName,
             String key, 
@@ -546,12 +571,42 @@ public class TestState {
             doDelete(v2client,bucketName,key);
             //doUploadMultipart(v2client, bucketName, key, upFilePath, sha256);
             //doUpload(v2client, bucketName, key, upFilePath, sha256);
-            doUploadSync(v2client, bucketName, key, upFilePath, sha256);
+            doUploadMultipart(v2client, bucketName, key, upFilePath, sha256);
             File downFile = new File(downFilePath);
             if (downFile.exists()) {
                 downFile.delete();
             }
             doGetObjectAsync(v2client, bucketName, key, downFilePath, sha256);
+            doPresign(v2client, bucketName, key);
+            doDelete(v2client,bucketName,key);
+        } catch (Exception e) {
+            System.out.println("Exception:" + e);
+            e.printStackTrace();
+            throw new TException(e);
+        }
+    }   
+    public static void testStateSync(
+            V2Client v2client, 
+            String bucketName,
+            String key, 
+            String sha256, 
+            String upFilePath, 
+            String downFilePath)
+        throws TException
+    { 
+        try {
+            System.out.println("***testStateSync");
+            
+            doDelete(v2client,bucketName,key);
+            //doUploadMultipart(v2client, bucketName, key, upFilePath, sha256);
+            //doUpload(v2client, bucketName, key, upFilePath, sha256);
+            doUploadSync(v2client, bucketName, key, upFilePath, sha256);
+            File downFile = new File(downFilePath);
+            if (downFile.exists()) {
+                downFile.delete();
+            }
+            doGetObjectSync(v2client, bucketName, key, downFilePath, sha256);
+            doDelete(v2client,bucketName,key);
         } catch (Exception e) {
             System.out.println("Exception:" + e);
             e.printStackTrace();

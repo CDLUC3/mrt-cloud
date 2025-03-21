@@ -140,7 +140,7 @@ public class V2Client {
             */
             System.out.println("s3Type:" + s3Type.toString());
             S3AsyncClient s3AsyncClient = null;
-            if ((s3Type == S3Type.sdsc) || (s3Type == S3Type.minio)) {
+            if (true) { //(s3Type == S3Type.sdsc) || (s3Type == S3Type.minio)) {
                 // sdsc type S3 interface on Qumulo doesn’t currently support virtual host style bucket addressing
                 System.out.println("SET forcePathStyle(true)");
                 
@@ -164,12 +164,13 @@ public class V2Client {
            */
             } else {
                 System.out.println("NO SET forcePathStyle(true)");
-                s3AsyncClient = S3AsyncClient.builder()
+                s3AsyncClient = S3AsyncClient.crtBuilder()
                         .credentialsProvider(creds)
+                        .forcePathStyle(true)
                         .endpointOverride(URI.create(endPoint))
                         .region(region)
-                        .multipartEnabled(true)
-                        .multipartConfiguration(conf -> conf.apiCallBufferSizeInBytes(32 * MB))
+                        //.multipartEnabled(true)
+                        //.multipartConfiguration(conf -> conf.apiCallBufferSizeInBytes(32 * MB))
                         .build();
             }
             return s3AsyncClient;

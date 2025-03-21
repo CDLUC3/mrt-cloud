@@ -188,7 +188,9 @@ public class AWSS3V2Cloud
             LinkedHashMap<String, String> metadata = new LinkedHashMap();
             metadata.put("sha256", fileSha256);
             log4j.debug("***v2Client:" + v2Client.getS3Type());
-            if (v2Client.getS3Type() == V2Client.S3Type.minio) {
+            // Note that putS3Object for non-minio fails on large uploads
+            // Multipart periodically fails with Read timeout
+            if (v2Client.getS3Type() == V2Client.S3Type.minio) { 
                 PutObjectData.putS3Object(
                     s3Client,
                     bucketName,
@@ -460,7 +462,7 @@ public class AWSS3V2Cloud
             
             // This change uses single stream only
             // Both Minio (SDSC) and Wasabi failed using multipart TransferManager
-            if ((s3Type == S3Type.minio) || (s3Type == S3Type.wasabi)) {
+            if (false) { //(s3Type == S3Type.minio) || (s3Type == S3Type.wasabi)) {
                 GetObject.getObjectSync(s3Client, container, key, outFile.getCanonicalPath());
                 log4j.trace("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
                 

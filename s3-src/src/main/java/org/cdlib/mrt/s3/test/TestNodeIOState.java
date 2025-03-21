@@ -22,7 +22,10 @@ public class TestNodeIOState {
             LoggerInf logger = new TFileLogger("test", 50, 50);
             
             //String yamlName = "jar:nodes-stagedry";
-            String yamlName = "yaml:";
+            //String yamlName = "yaml:";
+            //String yamlName = "yaml:1";
+            //String yamlName = "yaml:2";
+            String yamlName = "yaml:2";
             //String yamlName = "jar:nodes-remote";
             //String yamlName = "jar:nodes-stagedef";
             //String yamlName = "jar:nodes-proddef";

@@ -36,6 +36,14 @@ import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.S3Response;
 import software.amazon.awssdk.services.s3.model.S3ResponseMetadata;
 
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+
+
+
 
     
 import software.amazon.awssdk.regions.Region;
@@ -131,6 +139,25 @@ public class PutObjectData {
 
         FileUpload upload = transferManager.uploadFile(uploadFileRequest);
         upload.completionFuture().join();
+    }
+    
+
+    public static void uploadFileAsync2(
+            S3AsyncClient s3AsyncClient, 
+            String bucketName,
+            String key, 
+            String downloadedFileWithPath,
+            Map<String, String> metadata) 
+    {
+        PutObjectRequest putOb = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .metadata(metadata)
+                .build();
+        PutObjectResponse putObjectResponse = 
+            s3AsyncClient.putObject(putOb,
+                        AsyncRequestBody.fromFile(Paths.get(downloadedFileWithPath)))
+              .join();
     }
 
     // see https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html
