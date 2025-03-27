@@ -1266,15 +1266,14 @@ public class AWSS3V2Cloud
             long expTimeMillis = expiration.getTime();
             expTimeMillis = 1000 * 60 * expirationMinutes;
             expiration.setTime(expTimeMillis);
-            System.out.println("***getPreSigned"
+            String urlS = GetObjectPresign.getObjectPresign(s3Presigner, bucketName, key, expTimeMillis, contentType, contentDisp);
+            
+            log4j.debug("***getPreSigned"
                     + " - bucketName:" + bucketName
                     + " - key:" + key
                     + " - expTimeMillis:" + expTimeMillis
                     + " - contentType:" + contentType
                     + " - contentDisp:" + contentDisp
-            );
-            String urlS = GetObjectPresign.getObjectPresign(s3Presigner, bucketName, key, expTimeMillis, contentType, contentDisp);
-            System.out.println("***getPreSigned"
                     + " - urlS:" + urlS
             );
             

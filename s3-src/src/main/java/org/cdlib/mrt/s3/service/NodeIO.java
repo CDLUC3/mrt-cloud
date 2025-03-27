@@ -262,15 +262,22 @@ public class NodeIO
     public static void main(String[] args) throws Exception {
         //main_ssm(args);
         //main_ssm_default(args);
-        main_default(args);
+        //main_default(args);
+        
         main_yaml(args);
+        main_yaml1(args);
+        main_yaml2(args);
+        main_jarnew(args);
+        main_jarv1(args);
+        main_jarv2(args);
+        if (true) return;
         //main_jar(args);
     }
     
     public static void main_jar(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String jarBase = "jar:nodes-stage";
+        String jarBase = "jar:nodes-stagedef";
         NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
         nodeIO.printNodes("jar dump");
     } 
@@ -280,14 +287,52 @@ public class NodeIO
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
         String yamlName = "yaml:";
         NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
         nodeIO.printNodes("yaml dump");
     }  
+    
+    public static void main_yaml1(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "yaml:1";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
+        nodeIO.printNodes("yaml dump");
+    } 
     
     public static void main_yaml2(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
-        String yamlName = "yaml:/apps/replic/tasks/date/200514-yaml/cloudConfig4.yml|nodes-pairtree-docker-ec2";
+        String yamlName = "yaml:2";
         NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
+        nodeIO.printNodes("yaml dump");
+    } 
+    
+    public static void main_jarnew(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "jar:nodes-stagedef";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
+        nodeIO.printNodes("yaml dump");
+    } 
+    
+    public static void main_jarv1(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "jar:nodes-stagedefv1";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
+        nodeIO.printNodes("yaml dump");
+    }
+    
+    public static void main_jarv2(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "jar:nodes-stagedefv2";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
         nodeIO.printNodes("yaml dump");
     } 
     
@@ -296,6 +341,7 @@ public class NodeIO
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
         String nodeTable = "nodes-stage";
         NodeIO nodeIO = new NodeIO(nodeTable, logger) ;
+        System.out.println("AWS Version default:" + nodeIO.awsVersion);
         nodeIO.printNodes("nodes-stage dump");
     } 
     

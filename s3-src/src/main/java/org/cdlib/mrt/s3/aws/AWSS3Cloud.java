@@ -70,7 +70,8 @@ import com.amazonaws.retry.RetryPolicy;
 import com.amazonaws.retry.PredefinedRetryPolicies;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+//import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectMetadataRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -293,8 +294,10 @@ public class AWSS3Cloud
     public static AmazonS3Client amazonS3ClientDefault(Regions region) 
     {
         ClientConfiguration clientConfig = getClientConfiguration();
-        InstanceProfileCredentialsProvider credentialProvider 
-                = InstanceProfileCredentialsProvider.getInstance();
+        DefaultAWSCredentialsProviderChain credentialProvider 
+                = DefaultAWSCredentialsProviderChain.getInstance();
+        //InstanceProfileCredentialsProvider credentialProvider 
+        //        = InstanceProfileCredentialsProvider.getInstance();
         AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
                 .withRegion(region)
                 .withClientConfiguration(clientConfig)
@@ -308,8 +311,10 @@ public class AWSS3Cloud
             String endPoint) 
     {
         ClientConfiguration clientConfig = getClientConfiguration();
-        InstanceProfileCredentialsProvider credentialProvider 
-                = InstanceProfileCredentialsProvider.getInstance();
+        DefaultAWSCredentialsProviderChain credentialProvider 
+                = DefaultAWSCredentialsProviderChain.getInstance();
+        //InstanceProfileCredentialsProvider credentialProvider 
+        //        = InstanceProfileCredentialsProvider.getInstance();
         AmazonS3Client s3client = (AmazonS3Client) AmazonS3ClientBuilder.standard()
                 .withRegion(endPoint)
                 .withClientConfiguration(clientConfig)

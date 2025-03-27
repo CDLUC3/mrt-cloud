@@ -125,7 +125,7 @@ public class GetObjectPresign {
           presigner.presignGetObject(getObjectPresignRequest);
 
       // Log the presigned URL, for example.
-        System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
+        //System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
 
       // It is recommended to close the S3Presigner when it is done being used, because some credential
       // providers (e.g. if your AWS profile is configured to assume an STS role) require system resources
@@ -186,7 +186,7 @@ public class GetObjectPresign {
                  presigner.presignGetObject(getObjectPresignRequest);
 
              // Log the presigned URL, for example.
-             System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
+             //System.out.println("Presigned URL: " + presignedGetObjectRequest.url());
 
              // It is recommended to close the S3Presigner when it is done being used, because some credential
              // providers (e.g. if your AWS profile is configured to assume an STS role) require system resources
