@@ -17,8 +17,8 @@
     </distributionManagement>
 
     <properties>
-      <awsjavasdk.version>2.29.30</awsjavasdk.version>
-      <merritt-core.version>3.1-SNAPSHOT</merritt-core.version>
+      <!--awsjavasdk.version>2.29.30</awsjavasdk.version-->
+      <merritt-core.version>3.0-SNAPSHOT</merritt-core.version>
       <merritt-bom.version>3.0-SNAPSHOT</merritt-bom.version>
       <itDockerRegistry>it-docker-registry</itDockerRegistry>
       <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
@@ -260,62 +260,52 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>aws-core</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
         
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>aws-crt-client</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
         
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>crt-core</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>http-client-spi</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sdk-core</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>ssm</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
-            <version>${awsjavasdk.version}</version>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3-transfer-manager</artifactId>
-            <version>${awsjavasdk.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>transfer</artifactId>
-            <version>${awsjavasdk.version}</version>
             <scope>compile</scope>
         </dependency>
 
