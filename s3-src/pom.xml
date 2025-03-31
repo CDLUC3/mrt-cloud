@@ -4,7 +4,7 @@
     <groupId>org.cdlib.mrt</groupId>
     <artifactId>mrt-s3srcpub</artifactId>
     <packaging>jar</packaging>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.1-SNAPSHOT</version>
     <name>UC3-mrtS3SrcPub</name>
     <url>http://uc3.cdlib.org</url>
 
@@ -18,7 +18,7 @@
 
     <properties>
       <!--awsjavasdk.version>2.29.30</awsjavasdk.version-->
-      <merritt-core.version>3.0-SNAPSHOT</merritt-core.version>
+      <merritt-core.version>3.1-SNAPSHOT</merritt-core.version>
       <merritt-bom.version>3.0-SNAPSHOT</merritt-bom.version>
       <itDockerRegistry>it-docker-registry</itDockerRegistry>
       <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>

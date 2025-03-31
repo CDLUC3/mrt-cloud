@@ -325,11 +325,6 @@ public class TestAWSNodeIO {
         if (prop == null) {
             System.out.println("prop null");
         } else if (prop.size() == 0) {
-            System.out.println("prop size=0");
-        }
-        
-        
-        if ((prop == null) || prop.isEmpty()) {
             System.out.println("Does not exist:"
                     + " - bucketname:" + bucketName
                     + " - key:" + key
