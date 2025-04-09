@@ -1,5 +1,6 @@
 ---
 node-table: "nodes-pairtree-docker"
+aws-s3-version: "{!SSM: cloud/nodes/aws-s3-version !DEFAULT: 2}"
 services: &services
   aws-near: &aws-near
     type: aws-near
@@ -18,6 +19,7 @@ services: &services
       secretKey: minioadmin
 
 nodes-tables:
+  aws-s3-version: "{!SSM: cloud/nodes/aws-s3-version !DEFAULT: 2}"
 
   nodes-pairtree-docker:
       - # Minio Docker

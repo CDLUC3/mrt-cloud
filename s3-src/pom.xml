@@ -4,7 +4,7 @@
     <groupId>org.cdlib.mrt</groupId>
     <artifactId>mrt-s3srcpub</artifactId>
     <packaging>jar</packaging>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.1-SNAPSHOT</version>
     <name>UC3-mrtS3SrcPub</name>
     <url>http://uc3.cdlib.org</url>
 
@@ -17,7 +17,8 @@
     </distributionManagement>
 
     <properties>
-      <merritt-core.version>3.0-SNAPSHOT</merritt-core.version>
+      <!--awsjavasdk.version>2.29.30</awsjavasdk.version-->
+      <merritt-core.version>3.1-SNAPSHOT</merritt-core.version>
       <merritt-bom.version>3.0-SNAPSHOT</merritt-bom.version>
       <itDockerRegistry>it-docker-registry</itDockerRegistry>
       <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
@@ -191,7 +192,7 @@
             <artifactId>mrt-openstackpub</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>co.elastic.logging</groupId>
             <artifactId>ecs-logging-core</artifactId>
@@ -254,6 +255,58 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>aws-core</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>aws-crt-client</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>crt-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>http-client-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>regions</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sdk-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>ssm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>transfer</artifactId>
+            <scope>compile</scope>
         </dependency>
 
     </dependencies>

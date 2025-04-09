@@ -1,5 +1,6 @@
 ---
 node-table: "{!ENV: NODE_TABLE}"
+aws-s3-version: "{!SSM: cloud/nodes/aws-s3-version !DEFAULT: 1}"
 services: &services
   aws-near: &aws-near
     type: aws-near

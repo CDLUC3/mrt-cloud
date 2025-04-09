@@ -31,9 +31,9 @@ public class TestCloudChecksum {
                 "sha256"
             };
             long node = 5001;
-            String jarBase = "jar:nodes-stage";
+            String jarBase = "jar:nodes-stagedef";
             NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;
-            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(5001);
+            NodeIO.AccessNode accessNode = nodeIO.getAccessNode(9502);
             CloudStoreInf service = accessNode.service;
             String bucket = accessNode.container;
             String keySmall = "ark:/28722/k23j3911v|1|system/mrt-object-map.ttl";
@@ -48,7 +48,29 @@ public class TestCloudChecksum {
                     //4413, 
                     logger);
             
+            testValid(node, types, service, bucket, keySmall, 
+                    "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3a",  // right
+                    //"636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3b", 
+                    4413, //right
+                    //4413, 
+                    logger);
+            
+            testValid(node, types, service, bucket, keySmall, 
+                    "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3b",  // wrong
+                    //"636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3b", 
+                    4412, //right
+                    //4413, 
+                    logger);
+            
 
+            
+            testValid(9502, types, service, bucket, keySmall, 
+                    "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3a",  // right
+                    //"636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3b", 
+                    4412, //right
+                    //4413, 
+                    logger);
+            
         } catch (TException tex) {
             tex.printStackTrace();
             

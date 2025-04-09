@@ -44,6 +44,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.core.MessageDigest;
 
@@ -65,6 +67,8 @@ public abstract class CloudStoreAbs
     protected static final String MESSAGE = NAME + ": ";
     private static final String NL = System.getProperty("line.separator");
     private static final boolean DEBUG = false;
+    
+    protected static final Logger log4j = LogManager.getLogger();
     
     protected LoggerInf logger = null;
     protected String endpointHostname = null;
@@ -179,7 +183,7 @@ public abstract class CloudStoreAbs
         if (DEBUG) {
             System.out.println(buf.toString());
         }
-        logger.logError(buf.toString(), 5);
+        log4j.info(buf.toString());
     }
     
     public static void dumpException(String header, Exception exception) 
