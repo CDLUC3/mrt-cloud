@@ -460,13 +460,16 @@ public class AWSS3V2Cloud
                 );
             } 
             
-            // This change uses single stream only
-            // Both Minio (SDSC) and Wasabi failed using multipart TransferManager
+            // Both Minio (SDSC) and Wasabi failed using multipart TransferManager in v1
             if (false) { //(s3Type == S3Type.minio) || (s3Type == S3Type.wasabi)) {
+            //if (s3Type == S3Type.minio) {
+                // This change uses single stream only
                 GetObject.getObjectSync(s3Client, container, key, outFile.getCanonicalPath());
                 log4j.trace("Minio file built(" + container + "):"  + outFile.getCanonicalPath());
                 
             } else {
+            // An important discovery is that "subscription has been cancelled" exeception in v2
+            // occurs when the download file space is exceeded: minio is working
                 GetObject.downloadObjectTransfer(s3AsyncClient, container, key, outFile.getCanonicalPath());
                 log4j.trace("Non-Minio file built(" + container + "):" + outFile.getCanonicalPath());
             }
@@ -482,6 +485,7 @@ public class AWSS3V2Cloud
                         + " - bucket:" + container
                         + " - key:" + key, ex);
             //ex.printStackTrace();
+            ex.printStackTrace();
             throw new TException(ex) ;
         }
     }    
