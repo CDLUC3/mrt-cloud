@@ -181,7 +181,7 @@ public class GetObjectList {
     }
    
     
-    // seee https://www.baeldung.com/java-aws-s3-list-bucket-objects
+    // see https://www.baeldung.com/java-aws-s3-list-bucket-objects
     public static void awsListAfter(
             S3Client s3Client,
             String bucketName,
@@ -190,36 +190,32 @@ public class GetObjectList {
             CloudResponse response) 
         throws TException 
     {
-    System.out.println("***>awsListAfter:"
+        System.out.println("***>awsListAfter:"
                 + " - bucketName=" + bucketName
                 + " - startAfter=" + startAfter
                 + " - maxEntries=" + maxEntries
         );
-        String nextContinuationToken = null;
         long totalObjects = 0;
-
+        
+        doBreak:
         do {
-
-            ListObjectsV2Request.Builder requestBuilder = ListObjectsV2Request.builder()
-              .bucket(bucketName)
-              .continuationToken(nextContinuationToken);
-
             ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-                    .bucket(bucketName)
-                    .startAfter(startAfter)
-                    .build();
+                .bucket(bucketName)
+                .startAfter(startAfter)
+                .build();
             ListObjectsV2Response listObjectsV2Response = s3Client.listObjectsV2(listObjectsV2Request);
-            nextContinuationToken = listObjectsV2Response.nextContinuationToken();
             List<S3Object> contents = listObjectsV2Response.contents();
             for (S3Object s3Object : contents) {
-                totalObjects++;
-                if (maxEntries <= 0) {}
-                else if (totalObjects >= maxEntries) return;
                 CloudList.CloudEntry entry = s3ObjectToCloudEntry(bucketName, s3Object);
                 response.addObject(entry);
+                totalObjects++;
+                if (totalObjects >= maxEntries) break doBreak;
             }
-        } while (nextContinuationToken != null);
-        System.out.println("Number of objects in the bucket: " + totalObjects);
+            startAfter = listObjectsV2Response.nextContinuationToken();
+            logger.trace("Next Continuation Token: " + startAfter + " - cnt=" + totalObjects);
+            
+        } while (startAfter != null);
+        //System.out.println("Number of objects in the bucket: " + totalObjects);
     }
    
     public static CloudList.CloudEntry s3ObjectToCloudEntry(String bucketName, S3Object s3Object)
