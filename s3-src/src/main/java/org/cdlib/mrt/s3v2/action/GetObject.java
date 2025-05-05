@@ -131,7 +131,7 @@ logger.trace("***downloadObjectTransfer:"
         FileDownload downloadFile = transferManager.downloadFile(downloadFileRequest);
 
         GetObjectResponse downloadResponse = downloadFile.completionFuture().join().response();
-        logger.info("Content length [{}]", downloadResponse.contentLength());
+        logger.debug("Content length [{}]", downloadResponse.contentLength());
         return downloadResponse;
     }
 
@@ -179,7 +179,12 @@ logger.trace("***getObjectSync:"
             return is;
             
         } catch (S3Exception e) {
-          System.err.println(e.awsErrorDetails().errorMessage());
+           //System.err.println(e.awsErrorDetails().errorMessage());
+           if ((e.statusCode() == 404) || e.toString().contains("404")) {
+               throw new TException.REQUESTED_ITEM_NOT_FOUND("Not found:"
+                       + " - bucket:" + bucketName
+                       + " - key:" + keyName);
+           }
            throw new TException(e);
         }
     }  
