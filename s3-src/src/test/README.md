@@ -19,11 +19,11 @@ export ECR_REGISTRY=it-docker-registry
 
 Launch Containers
 ```
-docker-compose -f s3-src/src/test/docker/docker-compose.yml up -d
+docker compose -f s3-src/src/test/docker/docker-compose.yml up -d
 ```
 
 Run the junit tests in VSCode
 
 ```
-docker-compose -f s3-src/src/test/docker/docker-compose.yml down
+docker compose -f s3-src/src/test/docker/docker-compose.yml down
 ```
