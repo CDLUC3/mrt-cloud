@@ -196,6 +196,48 @@ nodes-tables:
         bucket: uc3-mrt-ecs-dev-my-bucket-repl
         desc: "ecs dev 8888"
 
+  nodes-ecs-docker2:
+      - # Minio Docker
+        identifier: 7777
+        <<: *aws-std
+        bucket: uc3-mrt-ecs-dev-my-bucket
+        desc: "ecs dev 7777"
+      - # Minio Docker Replic
+        identifier: 8888
+        <<: *aws-std
+        bucket: uc3-mrt-ecs-dev-my-bucket-repl
+        desc: "ecs dev 8888"
+
+      - # AWS Standard
+        identifier: 5003
+        <<: *aws-std
+        bucket: uc3-s3mrt5001-dev
+        desc: "AWS standard stage"
+
+      - # AWS Glacier
+        identifier: 6003
+        <<: *aws-near
+        bucket: uc3-s3mrt6001-dev
+        desc: "AWS glacier stage"
+
+      - # Merritt Cloudhost - on AWS
+        identifier: 7001
+        <<: *aws-std
+        bucket: uc3-s3mrt1001-dev
+        desc: "###ArchiveNode"
+
+      - # SDSC Minio
+        identifier: 9503
+        <<: *minio-sdsc-new
+        bucket: cdl.sdsc.dev
+        desc: "sdsc minio"
+
+      - # Wasabi
+        identifier: 2003
+        <<: *wasabi-east
+        bucket: uc3-wasabi-useast-2.dev
+        desc: "wasabi s3"
+
   nodes-prod-post-dryad:
       - # AWS Standard
         identifier: 5001
