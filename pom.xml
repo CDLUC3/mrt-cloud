@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.cdlib.mrt</groupId>
     <artifactId>mrt-s3</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>4.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>UC3-mrtS3Pub</name>
