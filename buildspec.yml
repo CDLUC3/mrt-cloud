@@ -5,6 +5,9 @@ version: 0.2
 #   - Provide minimal github credentials to access public repo
 
 phases:
+  install:
+    runtime-versions:
+      java: corretto21
   pre_build:
     on-failure: ABORT
     commands:
