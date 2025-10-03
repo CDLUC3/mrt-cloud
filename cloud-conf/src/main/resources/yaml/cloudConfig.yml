@@ -181,6 +181,11 @@ nodes-tables:
         <<: *minio-docker
         bucket: my-bucket-repl
         desc: "docker minio 8888"
+      - # Minio Docker Replic
+        identifier: 8889
+        <<: *minio-docker
+        bucket: my-bucket-repl2
+        desc: "docker minio 8889"
 
   nodes-ecs-docker:
       - # Minio Docker
