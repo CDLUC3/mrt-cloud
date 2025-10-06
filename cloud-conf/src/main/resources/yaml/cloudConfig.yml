@@ -198,6 +198,11 @@ nodes-tables:
         <<: *aws-std
         bucket: uc3-mrt-ecs-dev-my-bucket-repl
         desc: "ecs dev 8888"
+      - # Minio Docker Replic
+        identifier: 8889
+        <<: *aws-std
+        bucket: uc3-mrt-ecs-dev-my-bucket-repl2
+        desc: "ecs dev 8889"
 
       - # AWS Standard
         identifier: 5003
