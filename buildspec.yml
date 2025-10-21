@@ -54,7 +54,7 @@ phases:
     - mvn -ntp javadoc:javadoc
     - rm -rf api/mrt-cloud
     - mkdir -p api/mrt-cloud/java
-    - cp -r openstack-src/target/site/apidocs/* api/mrt-cloud/java
+    - cp -r openstack-src/target/reports/apidocs/* api/mrt-cloud/java
     - cp -r s3-src/target/reports/apidocs/* api/mrt-cloud/java
     - echo aws s3 cp --recursive api s3://${S3CFBUCKET}/api 
     - aws s3 cp --recursive api s3://${S3CFBUCKET}/api
