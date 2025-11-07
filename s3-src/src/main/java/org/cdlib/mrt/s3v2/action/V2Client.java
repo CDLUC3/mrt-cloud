@@ -40,6 +40,7 @@ import software.amazon.awssdk.services.s3.S3Configuration;
 
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
+import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -194,6 +195,7 @@ public class V2Client {
                           .region(region)
                           .endpointOverride(URI.create(endPoint))
                           .forcePathStyle(true)
+                          .requestChecksumCalculation(RequestChecksumCalculation.WHEN_REQUIRED)
                           .build();
             return s3Client;
 
