@@ -7,6 +7,7 @@ package org.cdlib.mrt.s3.tools;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.util.Properties;
@@ -262,6 +263,7 @@ public class CloudChecksum {
             int addLen;
             long start = 0;
             long stop = buffsize - 1;
+            if (stop < 0) stop = 0;
             complete:
             while (true) {
                 addLen = add(start, stop);
@@ -334,6 +336,14 @@ public class CloudChecksum {
         CloudResponse streamResponse = null;
         Exception exi = null;
         String errMsg = "";
+        
+        // build empty input Stream
+        if (stop <= 0) {
+            byte[] emptyBuffer = new byte[0];
+            InputStream emptyInputStream = new ByteArrayInputStream(emptyBuffer);
+            return emptyInputStream;
+        }
+        
         try {
             for (int i=1; i <= retry; i++) {
                 streamResponse = new CloudResponse(bucket, key);
