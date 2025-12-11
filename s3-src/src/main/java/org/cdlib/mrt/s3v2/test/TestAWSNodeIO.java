@@ -103,7 +103,7 @@ public class TestAWSNodeIO {
         
         System.out.println("\n\n++++FAILCNT:" + failCnt);
         
-        if (true) return;
+        if (false) return;
         test_node(7001, keyBig, sha256Big, fileBig, downloadDir, logger);
         test_node(9502, keyBig, sha256Big, fileBig, downloadDir, logger);
         test_node(7502, keyBig, sha256Big, fileBig, downloadDir, logger);

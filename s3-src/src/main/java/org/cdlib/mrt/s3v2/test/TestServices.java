@@ -715,6 +715,7 @@ public class TestServices {
             String key,
             String filePath,
             String sha256)
+        throws TException
     {
         
         
@@ -748,6 +749,7 @@ public class TestServices {
             String key,
             String filePath,
             String sha256)
+        throws TException
     {
         
         S3Client s3Client = v2client.s3Client();

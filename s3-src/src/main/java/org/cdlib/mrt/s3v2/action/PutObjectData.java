@@ -66,6 +66,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import org.cdlib.mrt.utility.TException;
 
 /**
  * Before running this Java V2 code example, set up your development
@@ -96,7 +97,7 @@ public class PutObjectData {
             String objectKey, 
             String objectPath, 
             Map<String, String> metadata) 
-    
+        throws TException
     {
         try {
 
@@ -110,8 +111,13 @@ public class PutObjectData {
             log4j.debug("Successfully placed " + objectKey + " into bucket " + bucketName);
 
         } catch (S3Exception e) {
-            System.err.println(e.getMessage());
-            System.exit(1);
+            e.printStackTrace();
+            String msg = "PutObjectRequest exception:"
+                    + " - bucketName:" + bucketName
+                    + " - objectKey:" + objectKey
+                    + " - exception:" + e;
+            log4j.error(msg,e);
+            throw new TException(e);
         }
     }
 

@@ -71,6 +71,7 @@ import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
+import org.cdlib.mrt.utility.TException;
 /**
  * Before running this Java V2 code example, set up your development
  * environment, including your credentials.
@@ -92,6 +93,7 @@ public class MultiPartUpload {
             String keyName, 
             String filePath,
             Map<String, String> metadata) 
+        throws TException
     {
 
     // Initiate a multipart upload
@@ -144,6 +146,7 @@ public class MultiPartUpload {
         
     } catch (IOException e) {
         e.printStackTrace();
+        throw new TException(e);
     }
 
     // Complete the multipart upload

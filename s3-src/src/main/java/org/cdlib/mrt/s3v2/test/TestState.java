@@ -262,6 +262,7 @@ public class TestState {
             String key,
             String filePath,
             String sha256)
+        throws TException
     {
         S3Client s3Client = v2client.s3Client();
         S3AsyncClient s3AsyncClient = v2client.s3AsyncClient();
@@ -288,6 +289,7 @@ public class TestState {
             String key,
             String filePath,
             String sha256)
+        throws TException
     {
         
         
@@ -322,6 +324,7 @@ public class TestState {
             String key,
             String filePath,
             String sha256)
+        throws TException
     {
         
         S3Client s3Client = v2client.s3Client();
