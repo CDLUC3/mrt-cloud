@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.openstack.utility.OpenStackCmdAbs;
 import org.cdlib.mrt.s3.pairtree.PairtreeCloud;
