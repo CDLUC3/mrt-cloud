@@ -18,7 +18,7 @@ import com.amazonaws.services.s3.model.StorageClass;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;

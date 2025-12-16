@@ -69,7 +69,7 @@ import org.cdlib.mrt.utility.StringUtil;
  *                   sample.
  * http://aws.amazon.com/security-credentials
  */
-public class CloudManifestCopyVersion {
+public class CloudManifestCopyFixity {
     
     protected static final String NAME = "CloudManifestCopyVersion";
     protected static final String MESSAGE = NAME + ": ";
@@ -86,10 +86,29 @@ public class CloudManifestCopyVersion {
     protected LoggerInf logger = null;
     protected String inSha256 = null;
     protected Properties outManProp = null;
+    protected boolean doFixity = true;
     
-                    
+                     
     
-    public static CloudManifestCopyVersion getCloudManifestCopyVersion(
+    public static CloudManifestCopyFixity CloudManifestCopyFixity(
+            NodeIO nodeIO,
+            long inNode,
+            long outNode,
+            LoggerInf logger
+        ) 
+        throws TException
+    {
+        boolean doFixity = true;
+        return CloudManifestCopyFixity(
+            doFixity,
+            nodeIO,
+            inNode,
+            outNode,
+            logger);
+    }               
+    
+    public static CloudManifestCopyFixity CloudManifestCopyFixity(
+            boolean doFixity,
             NodeIO nodeIO,
             long inNode,
             long outNode,
@@ -109,12 +128,13 @@ public class CloudManifestCopyVersion {
                 + " - inAccessNode.container=" + inAccessNode.container
                 + " - outAccessNode.container=" + outAccessNode.container
         );
-        CloudManifestCopyVersion cmcv = new CloudManifestCopyVersion(inAccessNode.service, inAccessNode.container,
+        CloudManifestCopyFixity cmcv = new CloudManifestCopyFixity(doFixity, inAccessNode.service, inAccessNode.container,
             outAccessNode.service, outAccessNode.container, logger);
         return cmcv;
     }
                     
-    public CloudManifestCopyVersion(
+    public CloudManifestCopyFixity(
+            boolean doFixity,
             CloudStoreInf inService,
             String inContainer,
             CloudStoreInf outService,
@@ -122,6 +142,7 @@ public class CloudManifestCopyVersion {
             LoggerInf logger)
         throws TException
     {
+        this.doFixity = doFixity;
         this.inService = inService;
         this.inContainer = inContainer;
         this.outService = outService;
@@ -285,6 +306,25 @@ public class CloudManifestCopyVersion {
             stat.getTime += endGetTime;
             stat.putTime += endPutTime;
             stat.objSize += entry.size;
+            CloudResponse.S3StorageClass s3Class= outResponse.getStorageClassS3(); 
+            if (doFixity && (s3Class != CloudResponse.S3StorageClass.Glacier)) {
+                long startFixityTime = System.currentTimeMillis();
+                String [] types = new String[1];
+                types[0] = "sha256";
+                CloudChecksum cc = CloudChecksum.getChecksums(types, outService, outContainer, key);
+                CloudChecksum.CloudChecksumResult ccResult = cc.validateSizeChecksum(inSHA256, types[0], tFile.length(), logger);
+                if ( !(ccResult.checksumMatch & ccResult.fileSizeMatch) ) {
+                    throw new TException.INVALID_DATA_FORMAT("Copied content invalid in fixity:"
+                        + " - key=" + key
+                        + " - insize=" + tFile.length()
+                        + " - outSize" + cc.getInputSize()
+                        + " - inSHA256=" + inSHA256
+                        + " - outSHA256=" + cc.getMetaSha256()
+                    );
+                }
+                long entryFixityTime = System.currentTimeMillis() - startFixityTime;
+                stat.fixityTime += entryFixityTime;
+            }
             return outResponse;
             
         } catch (TException tex) {
@@ -330,7 +370,7 @@ public class CloudManifestCopyVersion {
         throw retEx;
     } 
     
-    public void copyObject(String ark, CloudManifestCopyVersion.Stat stat)
+    public void copyObject(String ark, CloudManifestCopyFixity.Stat stat)
         throws TException
     {
         try {
@@ -501,6 +541,7 @@ public class CloudManifestCopyVersion {
         public long putTime = 0;
         public long objSize = 0;
         public long objCnt = 0;
+        public long fixityTime = 0;
         public long fileCopyCnt = 0;
         public long fileCopySize = 0;
         public DateState start = new DateState();
@@ -522,6 +563,7 @@ public class CloudManifestCopyVersion {
             buf.append(" - metaTime:" + metaTime);
             buf.append(" - getTime:" + getTime);
             buf.append(" - putTime:" + putTime);
+            buf.append(" - fixityTime:" + fixityTime);
             return buf.toString();
         }
     }
