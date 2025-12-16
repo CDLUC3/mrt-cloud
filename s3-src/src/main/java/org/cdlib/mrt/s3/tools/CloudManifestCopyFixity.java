@@ -284,6 +284,7 @@ public class CloudManifestCopyFixity {
                 throw outResponse.getException();
             }
             String outSHA256 = outResponse.getSha256();
+            long outSize = outResponse.getStorageSize();
             //System.out.println("CloudManifestCopyTime: after putObject");
             long endPutTime = DateUtil.getEpochUTCDate() - startPutTime;
             String isoDate = DateUtil.getCurrentIsoDate();
@@ -312,6 +313,7 @@ public class CloudManifestCopyFixity {
                 String [] types = new String[1];
                 types[0] = "sha256";
                 CloudChecksum cc = CloudChecksum.getChecksums(types, outService, outContainer, key);
+                cc.process();
                 CloudChecksum.CloudChecksumResult ccResult = cc.validateSizeChecksum(inSHA256, types[0], tFile.length(), logger);
                 if ( !(ccResult.checksumMatch & ccResult.fileSizeMatch) ) {
                     throw new TException.INVALID_DATA_FORMAT("Copied content invalid in fixity:"
@@ -320,6 +322,7 @@ public class CloudManifestCopyFixity {
                         + " - outSize" + cc.getInputSize()
                         + " - inSHA256=" + inSHA256
                         + " - outSHA256=" + cc.getMetaSha256()
+                        + " - cc.getMetaObjectSize=" + cc.getMetaObjectSize()
                     );
                 }
                 long entryFixityTime = System.currentTimeMillis() - startFixityTime;
