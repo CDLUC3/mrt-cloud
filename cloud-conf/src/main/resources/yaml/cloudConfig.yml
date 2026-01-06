@@ -164,6 +164,12 @@ nodes-tables:
         bucket: cdl.sdsc.dev
         desc: "sdsc minio"
 
+      - # SDSC backup
+        identifier: 7503
+        <<: *sdsc-s3
+        bucket: cdl-sdsc-backup-dev
+        desc: "sdsc backup dev"
+
       - # Wasabi
         identifier: 2003
         <<: *wasabi-east
@@ -227,6 +233,12 @@ nodes-tables:
         <<: *minio-sdsc-new
         bucket: cdl.sdsc.dev
         desc: "sdsc minio"
+
+      - # SDSC backup
+        identifier: 7503
+        <<: *sdsc-s3
+        bucket: cdl-sdsc-backup-dev
+        desc: "sdsc backup dev"
 
       - # Wasabi
         identifier: 2003
