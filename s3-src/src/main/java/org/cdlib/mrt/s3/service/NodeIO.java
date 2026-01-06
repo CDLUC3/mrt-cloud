@@ -263,7 +263,7 @@ public class NodeIO
         //main_ssm(args);
         //main_ssm_default(args);
         //main_default(args);
-        
+        main_jardev(args);
         main_yaml(args);
         main_yaml1(args);
         main_yaml2(args);
@@ -316,7 +316,16 @@ public class NodeIO
         NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
         System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
         nodeIO.printNodes("yaml dump");
-    } 
+    }  
+    
+    public static void main_jardev(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "jar:nodes-devdefv2";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
+        nodeIO.printNodes("yaml dump");
+    }
     
     public static void main_jarv1(String[] args) throws Exception {
 
