@@ -46,6 +46,51 @@ public class TestCloudChecksumRange {
                    );
             
             test(nodeIO, 9502, types, 
+                   "ark:/99999/fk4ff5x9n|1|producer/gelimages.imageData/filename", 
+                   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                   0,
+                   logger
+                   );
+
+            test(nodeIO, 9502, types, 
+                   "ark:/13030/m5c54srd|1|system/mrt-delete.txt", 
+                   "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                   0,
+                   logger
+                   );
+
+// 1
+            test(nodeIO, 9502, types, 
+                   "ark:/99999/fk4k37x8k|1|producer/pcr.gelimage/MBIO52066.1.1_61946.jpg", 
+                   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+                   1,
+                   logger
+                   );
+
+            test(nodeIO, 9502, types, 
+                   "ark:/99999/fk4ff5x9n|1|producer/pcr.gelimage/MBIO52066.1.1_61946.jpg", 
+                   "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+                   1,
+                   logger
+                   );
+
+// 2
+            test(nodeIO, 9502, types, 
+                   "ark:/99999/fk4086c199|1|producer/altprom_mirror/format", 
+                   "f0b5c2c2211c8d67ed15e75e656c7862d086e9245420892a7de62cd9ec582a06",
+                   2,
+                   logger
+                   );
+
+            test(nodeIO, 9502, types, 
+                   "ark:/99999/fk4086c199|1|producer/altprom_mirror/db/min-unpacked-rev", 
+                   "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+                   2,
+                   logger
+                   );
+            
+            //if (true) return;
+            test(nodeIO, 9502, types, 
                    "ark:/28722/k23x83k93|1|producer/artiraq.org/static/opencontext/kenantepe/full/Fieldphotos/2005/AreaF/F7L06135T19.JPG", 
                    "e2b4badaa573012330751d846d3326f957d7cd9c89a1998000118223edf60767",
                    2004797,
@@ -84,6 +129,12 @@ public class TestCloudChecksumRange {
         throws TException
     {
         try {
+            System.out.println("\n***************************************");
+            System.out.println("\nTEST"
+                    + " - key=" + key
+                    + " - testLen=" + testLen
+                    + " - testChecksum=" + testChecksum
+            );
             System.out.println("\n***************************************");
             NodeIO.AccessNode accessNode = nodeIO.getAccessNode(node);
             CloudStoreInf service = accessNode.service;
