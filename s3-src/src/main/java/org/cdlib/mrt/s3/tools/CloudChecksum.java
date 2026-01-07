@@ -338,7 +338,7 @@ public class CloudChecksum {
         String errMsg = "";
         
         // build empty input Stream
-        if (stop <= 0) {
+        if (metaObjectSize == 0) {
             byte[] emptyBuffer = new byte[0];
             InputStream emptyInputStream = new ByteArrayInputStream(emptyBuffer);
             return emptyInputStream;
