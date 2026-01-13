@@ -4,19 +4,11 @@
  * and open the template in the editor.
  */
 package org.cdlib.mrt.s3.test.replicFixity;
-import org.cdlib.mrt.s3.test.provider.*;
-import java.util.HashMap;
 import org.cdlib.mrt.s3.stat.*;
 import org.cdlib.mrt.utility.*;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
-import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.NodeIO;
-import org.cdlib.mrt.s3.tools.CloudChecksum;
 import org.cdlib.mrt.s3.tools.CloudManifestCopyFixity;
-import org.cdlib.mrt.s3v2.action.MultiPartUpload;
-import org.cdlib.mrt.s3v2.action.PutObjectData;
-import org.cdlib.mrt.s3v2.aws.AWSS3V2Cloud;
-import software.amazon.awssdk.services.s3.S3Client;
 /**
  *
  * @author replic
