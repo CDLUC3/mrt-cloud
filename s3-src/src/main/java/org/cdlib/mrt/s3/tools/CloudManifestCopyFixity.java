@@ -342,7 +342,8 @@ public class CloudManifestCopyFixity {
         } catch (Exception ex) {
             if (DEBUG) System.out.println("TException:" + ex);
             ex.printStackTrace();
-            throw new TException(ex);
+            String msg = "CloudManifestCopyFixity Exception:" + ex.toString() + " - key=" + entry.getKey() + " - size=" + tFile.length();
+            throw new TException.GENERAL_EXCEPTION(msg);
         }
     } 
     
