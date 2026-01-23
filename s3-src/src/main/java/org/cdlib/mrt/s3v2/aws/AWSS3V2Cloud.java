@@ -190,7 +190,7 @@ public class AWSS3V2Cloud
             log4j.debug("***v2Client:" + v2Client.getS3Type());
             // Note that putS3Object for non-minio fails on large uploads
             // Multipart periodically fails with Read timeout
-            if ((inputFile.length() == 0) || (v2Client.getS3Type() == V2Client.S3Type.minio)) { 
+            if ((inputFile.length() < (64 * 1024 * 1024)) || (v2Client.getS3Type() == V2Client.S3Type.minio)) { 
                 PutObjectData.putS3Object(
                     s3Client,
                     bucketName,
