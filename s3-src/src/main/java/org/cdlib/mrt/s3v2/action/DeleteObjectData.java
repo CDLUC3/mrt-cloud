@@ -75,7 +75,7 @@ public class DeleteObjectData {
      * @param objectKey the name of the object to be uploaded
      * @param objectPath the local file path of the object to be uploaded
      */
-    public static void deleteS3Object(
+    public static DeleteObjectResponse deleteS3Object(
             S3Client s3client, 
             String bucketName, 
             String objectKey) 
@@ -91,6 +91,7 @@ public class DeleteObjectData {
                     .build();
 
             DeleteObjectResponse delResp = s3client.deleteObject(dor);
+            return delResp;
         }
         catch(S3Exception e) {
              throw new TException(e);

@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.s3.S3Client;
  *
  * @author replic
  */
-public class TestCopyFixity {
+public class TestCopyFixityEx {
     
     protected static final String NAME = "TestCopyFixity";
     protected static final String MESSAGE = NAME + ": ";
@@ -30,16 +30,12 @@ public class TestCopyFixity {
     protected static String [] types = {
                 "sha256"
             };
-    protected static String [] jarVersionsSave = {
-                "yaml:1",
-                "yaml:2"
-            };
-   //protected static String yamlName = "nodes-remote_v2";
-    protected static String yamlName = "yaml:2";
+   protected static String yamlName = "nodes-remote_v2";
+    //protected static String yamlName = "yaml:2";
     protected RunStat runStat = null;
     protected NodeIO nodeIO = null;
     
-    public TestCopyFixity(NodeIO nodeIO, LoggerInf logger) 
+    public TestCopyFixityEx(NodeIO nodeIO, LoggerInf logger) 
             throws TException
     {
         this.nodeIO = nodeIO;
@@ -51,21 +47,20 @@ public class TestCopyFixity {
     public static void main(String[] args) {
         LoggerInf logger = new TFileLogger("jtest", 50, 50);
         
-        TestVal bb0546922j = TestVal.get("ark:/20775/bb0546922j", 6, 13936361L);
-        TestVal bb05469232 = TestVal.get("ark:/20775/bb05469232", 6,  3473199L);
-        TestVal bb0547060t = TestVal.get("ark:/20775/bb0547060t", 6,  7767082L);
+        
+        
+        
+        TestVal m5554ng9 = TestVal.get("ark:/13030/m5554ng9", 2,  7767082L);
         
         
         
         try {
             NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
             System.out.println(MESSAGE + " - yamlName=" + yamlName);
-            TestCopyFixity tc = new TestCopyFixity(nodeIO, logger);
-            long inNode = 9502;
+            TestCopyFixityEx tc = new TestCopyFixityEx(nodeIO, logger);
+            long inNode = 9501;
             long outNode = 7502;
-            //tc.test(bb0546922j, inNode, outNode );
-            tc.test(bb05469232, inNode, outNode );
-            tc.test(bb0547060t, inNode, outNode );
+           tc.test(m5554ng9, inNode, outNode );
             
         } catch (TException tex) {
             tex.printStackTrace();

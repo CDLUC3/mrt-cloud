@@ -3,16 +3,26 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.cdlib.mrt.s3.stat;
+package org.cdlib.mrt.s3.test.fixity;
+import org.cdlib.mrt.s3.test.*;
+import org.cdlib.mrt.s3.tools.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.security.MessageDigest;
+import java.util.Properties;
 import org.cdlib.mrt.utility.*;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
+import org.cdlib.mrt.s3.service.CloudResponse;
 import org.cdlib.mrt.s3.service.NodeIO;
+import static org.cdlib.mrt.utility.MessageDigestValue.getAlgorithm;
 import org.cdlib.mrt.s3.tools.CloudChecksum;
 /**
  *
  * @author replic
  */
-public class TestStatChecksum {
+public class TestLoadChecksumYaml {
     
     protected LoggerInf logger = null;
     protected static String [] types = {
@@ -23,17 +33,12 @@ public class TestStatChecksum {
                 "yaml:1",
                 "yaml:2"
             };
-    protected static String [] jarVersionsSave = {
-                "nodes-remote_v1",
-                "nodes-remote_v2"
-            };
-    protected RunStat runStat = null;
+    protected ArrayList<RunStat> statArr = new ArrayList<>();
     
-    public TestStatChecksum(LoggerInf logger) 
+    public TestLoadChecksumYaml(LoggerInf logger) 
             throws TException
     {
         this.logger = logger;
-        runStat = new RunStat(logger);
     }
     
     
@@ -53,19 +58,10 @@ public class TestStatChecksum {
             String digestDbl = "86d53813ea440bf2aabe6a39b389c43de79c71b2cc7a0f7f35118dd85de309f2";
             long lenDbl = 60144943;
             
-            String keyZero = "ark:/13030/m5rv22w2|1|producer/025/Icon";
-            String digestZero = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-            String badDigestZero = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8ff";
-            long lenZero = 0;
-            
-            String key5001 = "ark:/99999/fk4kp9gn3w|1|producer/X58619.pdf";
-            long len5001 = 59407494;
-            String digest5001 = "ce28c9b5ae0343d184943c11c338dcf14ef25a50aff4b3a65ab3b68af192a1dc";
-            
             String keyReallyBig = "ark:/99999/fk48k8jp86|1|producer/Asha_G.tar.gz";
             //testTime(node, types, service, bucket, keySmall, logger);
             
-            TestStatChecksum tc = new TestStatChecksum(logger);
+            TestLoadChecksumYaml tc = new TestLoadChecksumYaml(logger);
             if (false) tc.dumpMulti(10,  7502, keySmall, 
                     "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3a",  // right
                     //"636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3b", 
@@ -75,15 +71,9 @@ public class TestStatChecksum {
             
             if (false) tc.dumpMulti(10,  2002, keyDbl, digestDbl, lenDbl);
             
-            if (false) tc.dumpMulti(2,  9502, keyZero, badDigestZero, lenZero);
+            if (false) tc.dumpMulti(10,  9502, keyDbl, digestDbl, lenDbl);
             
-            if (false) tc.dumpMulti(2,  9502, keyZero, digestZero, lenZero);
-            
-            if (false) tc.dumpMulti(10,  5001, key5001, digest5001, len5001);
-            
-            if (true) tc.dumpMulti(10,  9502, keyDbl, digestDbl, lenDbl);
-            
-            if (false) tc.dumpMulti(10,  5001, keyDbl, digestDbl, lenDbl);
+            if (true) tc.dumpMulti(10,  5001, keyDbl, digestDbl, lenDbl);
             
             if (false) tc.dumpMulti(10,  7502, keyDbl, digestDbl, lenDbl);
             
@@ -99,6 +89,8 @@ public class TestStatChecksum {
                     "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3a",  // right
                     //"636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3b", 
                     4412);
+            
+            tc.dumpStat();
             /*
             testValid(node, types, service, bucket, keySmall, 
                     "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3a",  // right
@@ -140,16 +132,9 @@ public class TestStatChecksum {
         throws TException
     {
         for (int i=0; i<cnt; i++) {
-            System.out.println("####################################");
             testValid(1, node,  key, testChecksum, testLen);
-            System.out.println("--------------------------------------------------------------------------------");
             testValid(2, node,  key, testChecksum, testLen);
         }
-        runStat.dumpEntries("v1");
-        runStat.dumpEntries("v2");
-        runStat.addTallyEntries();
-        runStat.dumpTallyEntry("v1");
-        runStat.dumpTallyEntry("v2");
         
     }
             
@@ -239,16 +224,10 @@ public class TestStatChecksum {
             String testType = "sha256";
             CloudChecksum.Digest test = cloudChecksum.getDigest(testType);
             System.out.println(test.dump("test digest"));
-           
             
             CloudChecksum.CloudChecksumResult result = cloudChecksum.validateSizeChecksum(testChecksum, testType, testLen, logger);
-            boolean match = false;
-            if (result.checksumMatch && result.fileSizeMatch) {
-                match = true;
-            }
             System.out.println(result.dump("TEST"));
-            
-            runStat.addEntry("v" + version, 1, processTime, testLen, match, "node:" + node + " - key:" + key);
+            addStat(version, node, processTime, testLen, key);
             
             
         } catch (TException tex) {
@@ -256,6 +235,62 @@ public class TestStatChecksum {
             
         } catch (Exception ex) {
             ex.printStackTrace();;
+        }
+    }
+    
+    public void addStat(
+            int version,
+            long node,
+            long runTime,
+            long len,
+            String key)
+    {
+        
+            RunStat runStat = new RunStat(version, node, runTime, len, key);
+            statArr.add(runStat);
+            
+    }
+    
+    public void dumpStat()
+    {
+        
+            for (RunStat stat : statArr) {
+                stat.dump();
+            }
+            
+    }
+    
+    private static class RunStat {
+        public long node = 0;
+        public int version = 0;
+        public long runTime = 0;
+        public String key = "";
+        public long len = 0;
+        
+        public RunStat(
+            int version,
+            long node,
+            long runTime,
+            long len,
+            String key)
+        {
+                this.node = node;
+                this.version = version;
+                this.runTime = runTime;
+                this.len = len;
+                this.key = key;
+        }
+        
+        public void dump()
+        {
+            String msg = 
+                    "RunStat:"
+                    + " - version:" + version
+                    + " - node:" + node
+                    + " - runTime:" + runTime
+                    + " - len:" + len
+                    + " - key:" + key;
+            System.out.println(msg);
         }
     }
 }
