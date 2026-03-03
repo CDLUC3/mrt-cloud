@@ -54,6 +54,13 @@ public class RunStat {
         for (StatEntry categoryEntry : categoryList) {
             tallyEntry.addTallyEntry(categoryEntry);
         }
+        
+        tallyEntry.outlier5Ms = tallyEntry.minRunTime * 5;
+        for (StatEntry categoryEntry : categoryList) {
+            if (categoryEntry.runTime > tallyEntry.outlier5Ms) {
+                tallyEntry.outlierCnt++;
+            }
+        }
     }
     
     public void dumpTallyEntry(String category)
@@ -109,6 +116,8 @@ public class RunStat {
         public long maxSize = -1;
         public int matchOKCnt = 0;
         public int matchFailCnt = 0;
+        public int outlierCnt = 0;
+        public long outlier5Ms = 0;
         
         
         
@@ -164,9 +173,11 @@ public class RunStat {
         public String dump() {
             String out =
                     category + " : " +  isoDate + "\n"
-                 + " - matchOKCnt=" + matchOKCnt  + " - matchFailCnt=" + matchFailCnt + "\n" 
+                 + " - avgRunTime=" + avgRunTime() 
+                    + " - matchOKCnt=" + matchOKCnt  + " - matchFailCnt=" + matchFailCnt 
+                    + " - outlierCnt=" + outlierCnt  + " - outlier5Ms=" + outlier5Ms + "\n"
                  + " - count=" + count + " - minCount=" + minCount + " - maxCount=" + maxCount + " - diffCount=" + diffCount() + "\n"
-                 + " - runTime=" + runTime + " - avgRunTime=" + avgRunTime() + " - minRunTime=" + minRunTime + " - maxRunTime=" + maxRunTime + " - diffRunTime=" + diffRunTime() + "\n"
+                 + " - runTime=" + runTime + " - minRunTime=" + minRunTime + " - maxRunTime=" + maxRunTime + " - diffRunTime=" + diffRunTime() + "\n"
                  + " - size=" + size + " - minSize=" + minSize + " - maxSize=" + maxSize + " - diffSize=" + diffSize() + "\n"
                  ;
             return out;

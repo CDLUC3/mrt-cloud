@@ -32,6 +32,7 @@ package org.cdlib.mrt.s3v2.aws;
 
 
 
+import org.cdlib.mrt.s3.staging.action.Url2S3;
 import org.cdlib.mrt.s3.service.*;
 
 import org.cdlib.mrt.core.Identifier;
@@ -57,6 +58,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.StorageClass;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
 
 
 import org.apache.logging.log4j.LogManager;
@@ -199,7 +201,6 @@ public class AWSS3V2Cloud
                     metadata);
                 
             } else {
-                // NOTE: multipart does not work with zero length files
                 MultiPartUpload.uploadFileParts(
                     s3Client,
                     bucketName,
@@ -276,7 +277,38 @@ public class AWSS3V2Cloud
         }
         return response;
     }
+    
+    public Url2S3 getUrl2S3 (
+            String bucket)
+        throws TException
+    {
+        Url2S3 url2S3 = Url2S3.getUrl2S3(s3Client, bucket);
+        return url2S3;
+    }
+    
+    public CloudResponse getTransfer(String bucketName, String key, File downloadFile) 
+            throws TException
+    {
+        System.out.println("***getTransfer");
+        CloudResponse response = CloudResponse.get(bucketName, key);
+        try {
+            if (downloadFile.exists()) {
+                downloadFile.delete();
+            }
+            GetObject.downloadObjectTransfer(s3AsyncClient, bucketName, key, downloadFile.getCanonicalPath());
+            //long size = getResponse.toBuilder()..getContentLength();
+            response.setStorageSize(downloadFile.length());
+            response.setStatus(CloudResponse.ResponseStatus.ok);
             
+        } catch (Exception ex) {
+            response.setException(ex);
+            response.setStatus(CloudResponse.ResponseStatus.fail);
+            
+        } finally {
+            return response;
+        }
+    }
+    
     @Override
     public CloudResponse putObject(
             String bucket,
@@ -357,10 +389,11 @@ public class AWSS3V2Cloud
                         + " - bucket:" + bucket
                         + " - key:" + key
             );
-            DeleteObjectData.deleteS3Object(s3Client, bucket, key);
+            DeleteObjectResponse delResponse = DeleteObjectData.deleteS3Object(s3Client, bucket, key);
             
         } catch (Exception ex) {
             handleException(response, ex);
+            response.setStatus(CloudResponse.ResponseStatus.fail);
         }
         return response;
         
@@ -403,7 +436,7 @@ public class AWSS3V2Cloud
         return response;
         
     }
-
+    
     @Override
     public CloudResponse deleteManifest (
             String bucketName,
@@ -1052,6 +1085,7 @@ public class AWSS3V2Cloud
             
             
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -1347,6 +1381,18 @@ public class AWSS3V2Cloud
 
     public void setS3Type(S3Type s3Type) {
         this.s3Type = s3Type;
+    }
+
+    public S3Client getS3Client() {
+        return s3Client;
+    }
+
+    public S3AsyncClient getS3AsyncClient() {
+        return s3AsyncClient;
+    }
+
+    public S3Presigner getS3Presigner() {
+        return s3Presigner;
     }
     
 }

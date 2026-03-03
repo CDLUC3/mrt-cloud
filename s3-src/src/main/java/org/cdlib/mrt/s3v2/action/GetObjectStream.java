@@ -8,11 +8,13 @@ package org.cdlib.mrt.s3v2.action;
  *
  * @author loy
  */
+
+import org.cdlib.mrt.utility.TException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.transfer.s3.S3TransferManager;
 import software.amazon.awssdk.transfer.s3.model.CompletedFileDownload;
 import software.amazon.awssdk.transfer.s3.model.DownloadFileRequest;
-import software.amazon.awssdk.transfer.s3.model.FileUpload;
+import software.amazon.awssdk.transfer.s3.model.FileDownload;
 import software.amazon.awssdk.transfer.s3.progress.LoggingTransferListener;
 
 import java.io.IOException;
@@ -27,10 +29,7 @@ import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.transfer.s3.model.UploadFileRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -43,14 +42,20 @@ import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cdlib.mrt.utility.TException;
+import org.cdlib.mrt.s3v2.tools.GetSSM;
+import org.cdlib.mrt.utility.Checksums;
+import org.cdlib.mrt.utility.FileUtil;
+import org.cdlib.mrt.utility.PropertiesUtil;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 
@@ -63,39 +68,35 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
  * https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/get-started.html
  */
 
-public class DeleteObjectData {
+public class GetObjectStream {
     protected static final Logger logger = LogManager.getLogger(); 
     
-    
-    /**
-     * Uploads an object to an Amazon S3 bucket with metadata.
-     *
-     * @param s3 the S3Client object used to interact with the Amazon S3 service
-     * @param bucketName the name of the S3 bucket to upload the object to
-     * @param objectKey the name of the object to be uploaded
-     * @param objectPath the local file path of the object to be uploaded
-     */
-    public static DeleteObjectResponse deleteS3Object(
-            S3Client s3client, 
-            String bucketName, 
-            String objectKey) 
+
+  
+
+    public static InputStream getObjectStream (S3Client s3Client, String bucketName, String keyName ) 
         throws TException
     {
-        
-
-
+logger.debug("***getObjectRange:"
+        + " - keyName=" + keyName
+        + " - bucketName=" + bucketName
+);
         try {
-            DeleteObjectRequest dor = DeleteObjectRequest.builder()
+            
+            GetObjectRequest objectRequest = GetObjectRequest
+                    .builder()
+                    .key(keyName)
                     .bucket(bucketName)
-                    .key(objectKey)
                     .build();
 
-            DeleteObjectResponse delResp = s3client.deleteObject(dor);
-            return delResp;
+            InputStream is = s3Client.getObject(objectRequest, ResponseTransformer.toInputStream());
+            
+            return is;
+            
+        } catch (S3Exception e) {
+          System.err.println(e.awsErrorDetails().errorMessage());
+           throw new TException(e);
         }
-        catch(S3Exception e) {
-             throw new TException(e);
-        }
-    }
-
+    }  
 }
+
