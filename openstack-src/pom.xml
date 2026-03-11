@@ -8,7 +8,7 @@
     <name>UC3-mrtOpenstackPub</name>
 
     <properties>
-      <merritt-core.version>4.0-SNAPSHOT</merritt-core.version>
+      <!--merritt-core.version>4.0-SNAPSHOT</merritt-core.version-->
       <!--merritt-bom.version>4.0-SNAPSHOT</merritt-bom.version-->
     </properties>
 

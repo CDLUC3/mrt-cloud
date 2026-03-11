@@ -18,7 +18,8 @@
 
     <properties>
       <!--awsjavasdk.version>2.29.30</awsjavasdk.version-->
-      <merritt-core.version>4.0-SNAPSHOT</merritt-core.version>
+      <!--merritt-core.version>4.0-SNAPSHOT</merritt-core.version-->
+      <!--merritt-cloud.version>4.0-SNAPSHOT</merritt-cloud.version-->
       <!--merritt-bom.version>4.1-SNAPSHOT</merritt-bom.version-->
       <itDockerRegistry>it-docker-registry</itDockerRegistry>
       <docker.skip>${env.SKIP_DOCKER_TEST}</docker.skip>
@@ -184,7 +185,7 @@
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-cloudconf</artifactId>
-            <version>${project.version}</version>
+            <version>${merritt-cloud.version}</version>
             <scope>runtime</scope>
         </dependency>
         
@@ -197,7 +198,7 @@
         <dependency>
             <groupId>org.cdlib.mrt</groupId>
             <artifactId>mrt-openstackpub</artifactId>
-            <version>${project.version}</version>
+            <version>${merritt-cloud.version}</version>
         </dependency>
 
         <dependency>
