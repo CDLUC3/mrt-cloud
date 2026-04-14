@@ -141,17 +141,16 @@ public class V2Client {
             */
             System.out.println("s3Type:" + s3Type.toString());
             S3AsyncClient s3AsyncClient = null;
-            if (true) { //(s3Type == S3Type.sdsc) || (s3Type == S3Type.minio)) {
+            if (true && (s3Type == S3Type.sdsc)) { //(s3Type == S3Type.sdsc) || (s3Type == S3Type.minio)) {
                 // sdsc type S3 interface on Qumulo doesn’t currently support virtual host style bucket addressing
-                System.out.println("SET forcePathStyle(true)");
+                System.out.println("SET(" + s3Type + ") S3AsyncClient.builder().forcePathStyle(true)");
                 
-                s3AsyncClient = S3AsyncClient.crtBuilder()
+                //s3AsyncClient = S3AsyncClient.crtBuilder()
+                s3AsyncClient = S3AsyncClient.builder()
                                                    .credentialsProvider(creds)
                                                    .forcePathStyle(true)
                                                    .endpointOverride(URI.create(endPoint))
                                                    .region(region)
-                                                // .targetThroughputInGbps(20.0)
-                                                 //.minimumPartSizeInBytes(MB)
                                                    .build();
            /*
                 s3AsyncClient = S3AsyncClient.builder()
@@ -163,16 +162,16 @@ public class V2Client {
                         .multipartConfiguration(conf -> conf.apiCallBufferSizeInBytes(32 * MB))
                         .build();
            */
-            } else {
-                System.out.println("NO SET forcePathStyle(true)");
+            } else {  
+                System.out.println("SE(" + s3Type + ") S3AsyncClient.crtBuilder().forcePathStyle(true)");
+                
+                //s3AsyncClient = S3AsyncClient.crtBuilder()
                 s3AsyncClient = S3AsyncClient.crtBuilder()
-                        .credentialsProvider(creds)
-                        .forcePathStyle(true)
-                        .endpointOverride(URI.create(endPoint))
-                        .region(region)
-                        //.multipartEnabled(true)
-                        //.multipartConfiguration(conf -> conf.apiCallBufferSizeInBytes(32 * MB))
-                        .build();
+                                                   .credentialsProvider(creds)
+                                                   .forcePathStyle(true)
+                                                   .endpointOverride(URI.create(endPoint))
+                                                   .region(region)
+                                                   .build();
             }
             return s3AsyncClient;
 
