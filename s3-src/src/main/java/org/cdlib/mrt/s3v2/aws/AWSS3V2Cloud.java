@@ -39,6 +39,7 @@ import org.cdlib.mrt.core.Identifier;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
+import java.net.URI;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import org.cdlib.mrt.utility.StringUtil;
@@ -81,7 +82,6 @@ public class AWSS3V2Cloud
     protected static final String MESSAGE = NAME + ": ";
     
     private static final Logger log4j = LogManager.getLogger();
-    public enum S3Type {aws, minio, wasabi};
     
     private V2Client v2Client = null;
     private S3Client s3Client = null;
@@ -89,7 +89,6 @@ public class AWSS3V2Cloud
     private S3Presigner s3Presigner = null;
     private StorageClass storageClass = null;
     private String endPoint = null;
-    private S3Type s3Type = S3Type.aws;
 
     protected AWSS3V2Cloud(V2Client v2Client, LoggerInf log)
         throws TException
@@ -1320,11 +1319,12 @@ public class AWSS3V2Cloud
             if (false && urlS.startsWith("http:")) {
                 urlS = "https" + urlS.substring(4);
                 log4j.trace("Presign http to https:"
-                            + " - s3Type:" + s3Type
+                            + " - s3Type:" + getS3Type()
                             + " - url:" + urlS
                     );
             }
-            URL url = new URL(urlS);
+            URI urlI = new URI(urlS);
+            URL url = urlI.toURL();
             response.setReturnURL(url);
             response.setStatus(CloudResponse.ResponseStatus.ok);
             
@@ -1375,14 +1375,6 @@ public class AWSS3V2Cloud
         return logger;
     }
 
-    public S3Type getS3Type() {
-        return s3Type;
-    }
-
-    public void setS3Type(S3Type s3Type) {
-        this.s3Type = s3Type;
-    }
-
     public S3Client getS3Client() {
         return s3Client;
     }
@@ -1394,6 +1386,8 @@ public class AWSS3V2Cloud
     public S3Presigner getS3Presigner() {
         return s3Presigner;
     }
-    
-}
 
+    public V2Client.S3Type getS3Type() {
+        return v2Client.getS3Type();
+    }
+}
