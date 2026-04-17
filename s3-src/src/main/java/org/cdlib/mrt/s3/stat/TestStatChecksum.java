@@ -81,7 +81,7 @@ public class TestStatChecksum {
             
             if (false) tc.dumpMulti(10,  5001, key5001, digest5001, len5001);
             
-            if (true) tc.dumpMulti(10,  9502, keyDbl, digestDbl, lenDbl);
+            if (false) tc.dumpMulti(10,  9502, keyDbl, digestDbl, lenDbl);
             
             if (false) tc.dumpMulti(10,  5001, keyDbl, digestDbl, lenDbl);
             
@@ -89,7 +89,7 @@ public class TestStatChecksum {
             
             if (false) tc.dumpMulti(10,  9502, keySmall, digestSmall, lenSmall);
             
-            if (false) tc.dumpMulti(10,  2002, keySmall, digestSmall, lenSmall);
+            if (true) tc.dumpMulti(10,  2002, keySmall, digestSmall, lenSmall);
             
             if (false) tc.testValid(1, 7502, keySmall, 
                     "636c68fdf4ad96eac9e87adc478aeecbf6d867eaa3eeec3f6e98e4faf32d8e3a",  // right

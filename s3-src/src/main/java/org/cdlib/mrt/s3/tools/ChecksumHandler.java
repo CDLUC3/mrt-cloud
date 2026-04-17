@@ -3,14 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.cdlib.mrt.s3.staging.tools;
+package org.cdlib.mrt.s3.tools;
 import org.cdlib.mrt.s3.tools.*;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.security.MessageDigest;
+import java.util.Properties;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.utility.*;
 import org.json.JSONObject;
 
@@ -29,6 +33,8 @@ public class ChecksumHandler {
     protected long addBufTime = 0;
     protected long fillBufTime = 0;
     protected long fillBufBytes = 0;
+        
+    protected static final Logger log4j = LogManager.getLogger();
     
     public static ChecksumHandler getChecksumHandler(String [] types)
         throws TException
@@ -60,7 +66,7 @@ public class ChecksumHandler {
     {
         digestList = getDigests(types);
         for (Digest digest : digestList) {
-            System.out.println("***ChecksumHandler.digestList:" 
+            if (DEBUG) System.out.println("***ChecksumHandler.digestList:" 
                     + " - digest.checksumType=" + digest.checksumType
                     + " - digest.inChecksumType=" + digest.inChecksumType
             );
@@ -122,10 +128,11 @@ public class ChecksumHandler {
     
     public void finishDigests()
         throws TException
-    {
+    {   long finishMs = System.currentTimeMillis();
         for (Digest digest: digestList) {
             finishDigest(digest);
         }
+        addBufTime += (System.currentTimeMillis() - finishMs);
     }
     
     public static void finishDigest(Digest inDigest)
@@ -141,7 +148,7 @@ public class ChecksumHandler {
                 hexString1.append(val);
             }
             inDigest.checksum = hexString1.toString();
-            //System.out.println("inDigest(" + inDigest.checksumType + ")=" + inDigest.checksum);
+            if (DEBUG) System.out.println("inDigest(" + inDigest.checksumType + ")=" + inDigest.checksum);
            
         } catch (Exception ex) {
             throw new TException(ex);
@@ -154,7 +161,7 @@ public class ChecksumHandler {
         HashMap<String,String> digestHash = new HashMap<>();
         for (Digest digest: digestList) {
             digestHash.put(digest.checksumType, digest.checksum);
-            System.out.println("---ChecksumHandler.getDigestHashStandard---"
+            if (DEBUG) System.out.println("---ChecksumHandler.getDigestHashStandard---"
                     + " - checksumType:" + digest.checksumType
                     + " - checksum:" + digest.checksum
             );
@@ -167,7 +174,7 @@ public class ChecksumHandler {
         HashMap<String,String> digestHash = new HashMap<>();
         for (Digest digest: digestList) {
             digestHash.put(digest.inChecksumType, digest.checksum);
-            System.out.println("---ChecksumHandler.getDigestHashIn---"
+            if (DEBUG) System.out.println("---ChecksumHandler.getDigestHashIn---"
                     + " - inChecksumType:" + digest.inChecksumType
                     + " - checksum:" + digest.checksum
             );
@@ -203,11 +210,11 @@ public class ChecksumHandler {
      
         try {
             long startTime = System.currentTimeMillis();
-            System.out.println("buffer:" + buffer.limit() + " - buffSize=" + buffSize);
+            log4j.debug("buffer:" + buffer.limit() + " - buffSize=" + buffSize);
             byte[] bytes = inStream.readNBytes(buffSize);
             long readSize = bytes.length;
             fillBufBytes += readSize;
-            System.out.println("byte.len=" + bytes.length);
+            //System.out.println("byte.len=" + bytes.length);
             addBuff(bytes);
             buffer.put(bytes);
             fillBufTime += System.currentTimeMillis() - startTime;
@@ -218,6 +225,91 @@ public class ChecksumHandler {
             ex.printStackTrace();
             throw new TException(ex);
         }
+    }
+    
+    public Long fillBuff(byte[] bytes)
+       throws TException
+    {
+     
+        try {
+            long startTime = System.currentTimeMillis();
+            long readSize = bytes.length;
+            fillBufBytes += readSize;
+            addBuff(bytes);
+            fillBufTime += System.currentTimeMillis() - startTime;
+            if (false) System.out.println("ChecksumHandler.fillBuff:"
+                    + " - readSize:" + readSize
+                    + " - fillBufBytes:" + fillBufBytes
+            );
+            return readSize;
+            
+        } catch (Exception ex) {
+            System.out.println("Ex:" + ex);
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
+    }
+    
+    public static Digest getDigest(
+            CloudStoreInf service,
+            String bucket,
+            String key,
+            int retry)
+        throws TException
+    {
+        Digest digest = new Digest("sha256");
+        digest.bucket = bucket;
+        digest.key = key;
+        Properties metaProp = null;
+        for (int i=0; i < retry; i++) {
+            try {
+                metaProp = service.getObjectMeta(bucket, key);
+            } catch (Exception mex) {
+                if (i < (retry-1)) {
+                    System.out.println(MESSAGE + "Meta exception retry(" + i + "):"
+                        + " - service=" + service.getType()
+                        + " - bucket=" + bucket
+                        + " - key=" + key
+                        + " - Exception=" + mex
+                    );
+                    try {
+                        Thread.sleep(i * 1000);
+                    } catch (Exception exs) { }
+                    continue;
+                }
+                digest.setting = Digest.DigestSet.call_error;
+                digest.error_message = "Excpetion:" + mex;
+                return digest;
+            }
+        }
+        if (metaProp == null) {
+            digest.setting = Digest.DigestSet.system_error;
+            digest.error_message = "Excpetion: null metaProp";
+            return digest;
+        }
+        if (metaProp.isEmpty()) {
+            digest.setting = Digest.DigestSet.not_found;
+            return digest;
+        }
+        if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("response", metaProp));
+        String lengthS = metaProp.getProperty("size");
+        if (StringUtil.isAllBlank(lengthS)) {
+            throw new TException.INVALID_OR_MISSING_PARM("input file length not found"
+                    + " - bucket:" + bucket
+                    + " - key:" + key
+            );
+        }
+        digest.inputSize = Long.parseLong(lengthS);
+        
+        digest.checksum =  metaProp.getProperty("sha256");
+        if (StringUtil.isAllBlank(digest.checksum)) {
+            throw new TException.INVALID_OR_MISSING_PARM("input file sha256 not found"
+                    + " - bucket:" + bucket
+                    + " - key:" + key
+            );
+        }
+        digest.setting = Digest.DigestSet.found;
+        return digest;
     }
 
     public long getAddBufTime() {
@@ -233,8 +325,13 @@ public class ChecksumHandler {
     }
     
     public static class Digest {
+        public enum DigestSet {found, not_found, call_error, system_error, not_set, match};
+        public String error_message = null;
+        public DigestSet setting = DigestSet.not_set;
         public MessageDigestType type =  null;
         public MessageDigest algorithm = null;
+        public String bucket = null;
+        public String key = null;
         public String checksum = null;
         public String checksumType = null;
         public String inChecksumType = null;
@@ -258,6 +355,8 @@ public class ChecksumHandler {
         }
         public String dump(String header) {
             String out = header + "\n"
+                    + " - setting:" + setting + "\n"
+                    + " - setting:" + error_message + "\n"
                     + " - checksumType:" + checksumType + "\n"
                     + " - checksum:" + checksum + "\n"
                     + " - inputSize:" + inputSize + "\n";

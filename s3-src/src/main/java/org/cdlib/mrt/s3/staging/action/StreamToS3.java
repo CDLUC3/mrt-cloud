@@ -31,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.s3.staging.action.TagObject;
-import org.cdlib.mrt.s3.staging.tools.ChecksumHandler;
+import org.cdlib.mrt.s3.tools.ChecksumHandler;
 import org.cdlib.mrt.utility.HTTPUtil;
 import org.cdlib.mrt.utility.TException;
 /**

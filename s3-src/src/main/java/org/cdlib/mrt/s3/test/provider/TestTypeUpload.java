@@ -19,7 +19,7 @@ import software.amazon.awssdk.services.s3.S3Client;
  *
  * @author replic
  */
-public class TestStatUpload {
+public class TestTypeUpload {
     
     protected LoggerInf logger = null;
     protected static String [] types = {
@@ -36,7 +36,7 @@ public class TestStatUpload {
             };
     protected RunStat runStat = null;
     
-    public TestStatUpload(LoggerInf logger) 
+    public TestTypeUpload(LoggerInf logger) 
             throws TException
     {
         this.logger = logger;
@@ -69,7 +69,7 @@ public class TestStatUpload {
         
         try {
             
-            TestStatUpload tc = new TestStatUpload(logger);
+            TestTypeUpload tc = new TestTypeUpload(logger);
             
             if (false) tc.dumpMulti(2, 9502, t60K);
             if (false) tc.dumpMulti(2, 9502, t60M);
@@ -77,7 +77,10 @@ public class TestStatUpload {
             if (false) tc.dumpMulti(2, 2002, t60M);
             
             if (false) tc.dumpMulti(2, 2002, t600M);
-            if (true) tc.dumpMulti(2, 9502, t600M);
+            if (false) tc.dumpSingle(2, 9502, t600M);
+            if (false) tc.dumpSingle(2, 9502, t6G);
+            if (false) tc.dumpSingle(2, 7502, t6G);
+            if (true) tc.dumpSingle(2, 5001, t6G);
             if (false) tc.dumpMulti(2, 7502, t600M);
             if (false) tc.dumpMulti(2, 5001, t600M);
             
@@ -107,6 +110,23 @@ public class TestStatUpload {
         runStat.addTallyEntries();
         runStat.dumpTallyEntry("tmult");
         runStat.dumpTallyEntry("tseq");
+        
+    }
+    
+    public void dumpSingle(
+            int cnt,
+            long node,
+            TestVal t)
+        throws TException
+    {
+        
+        System.out.println("####################################");
+        testUploadMultiPart(t, node);
+        System.out.println("--------------------------------------------------------------------------------");
+        testUploadSeq(t, node);
+        
+        runStat.dumpEntries("tmult");
+        runStat.dumpEntries("tseq");
         
     }
     
@@ -159,6 +179,10 @@ public class TestStatUpload {
             runStat.addEntry(category, 2, processTime, t.size, match, "node:" + node + " - key:" + t.key);
             
             CloudResponse response = awss3.deleteObject(bucket, t.key);
+            System.out.println("Delete multipart:"
+                    + " - bucket:" + bucket
+                    + " - t.key:" + t.key
+            );
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -217,6 +241,10 @@ public class TestStatUpload {
             runStat.addEntry(category, 2, processTime, t.size, match, "node:" + node + " - key:" + t.key);
             
             CloudResponse response = awss3.deleteObject(bucket, t.key);
+            System.out.println("Delete sequential:"
+                    + " - bucket:" + bucket
+                    + " - t.key:" + t.key
+            );
             
         } catch (TException tex) {
             tex.printStackTrace();
@@ -230,7 +258,6 @@ public class TestStatUpload {
     public NodeIO.AccessNode getAccessNode(int version, long nodeNum)
         throws TException
     {
-        if (nodeNum == 5001) version = 3;
         String jarBase = jarVersions[(version - 1)];
         try {
             NodeIO nodeIO = NodeIO.getNodeIOConfig(jarBase, logger) ;

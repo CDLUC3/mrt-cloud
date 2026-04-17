@@ -12,7 +12,7 @@ import org.cdlib.mrt.s3.service.*;
 import org.cdlib.mrt.s3.staging.action.Url2S3;
 import org.cdlib.mrt.s3.staging.action.TagObject;
 import org.cdlib.mrt.s3.staging.service.RetrieveResponse;
-import org.cdlib.mrt.s3.staging.tools.ChecksumHandler;
+import org.cdlib.mrt.s3.tools.ChecksumHandler;
 
 import org.cdlib.mrt.s3v2.action.*;
 import software.amazon.awssdk.regions.Region;

@@ -12,11 +12,13 @@ package org.cdlib.mrt.s3.staging.service;
 import org.cdlib.mrt.s3.service.CloudResponse;
 import java.util.HashMap;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.MessageDigest;
 import org.json.JSONObject;
 import org.cdlib.mrt.utility.MessageDigestType;
 import org.cdlib.mrt.utility.TException;
-import org.cdlib.mrt.s3.staging.tools.ChecksumHandler;
+import org.cdlib.mrt.s3.tools.ChecksumHandler;
 
 /**
  * Before running this Java V2 code example, set up your development
@@ -29,6 +31,7 @@ import org.cdlib.mrt.s3.staging.tools.ChecksumHandler;
 
     
 public class RetrieveResponse {
+    protected static final Logger log4j = LogManager.getLogger(); 
     public enum ProcessStatus  { unknown, ok, fail, missing; }
     public ProcessStatus processStatus = ProcessStatus.unknown;
     protected Exception ex = null;
@@ -42,6 +45,8 @@ public class RetrieveResponse {
     public long beginIS = 0;
     public long completeMultiPartAdd = 0;
     public long totalFillMs = 0;
+    public long totalReadMs = 0;
+    public long totalWriteMs = 0;
     public Long checksumMs = null;
     protected ChecksumHandler checksumHandler = null;
     public HashMap<String,String> digestHash = null;
@@ -106,9 +111,13 @@ public class RetrieveResponse {
     public void dump(String header) {
         System.out.println("***" + header + "***"
                 + "\n - key=" + key
+                + "\n - totalReadBytes=" + totalReadBytes() 
                 + "\n - totalWriteBytes=" + totalWriteBytes() 
                 + "\n - totalTimeMs=" + totalTimeMs() 
                 + "\n - totalFillMs=" + totalFillMs() 
+                + "\n - totalTimeMsAdj=" + totalTimeMsAdj() 
+                + "\n - totalReadMs=" + totalReadMs
+                + "\n - totalWriteMs=" + totalWriteMs
                 + "\n - totalTimeMsAdj=" + totalTimeMsAdj() 
                 + "\n - toStreamMs=" + toStreamMs() 
                 + "\n - bytesPerMs=" + bytesPerMs()  
@@ -191,17 +200,17 @@ public class RetrieveResponse {
         if (checksumHandler == null) return;
         this.digestHash = checksumHandler.getDigestHashIn();
         if (digestHash == null) {
-            System.out.println("digestHash null");
+            log4j.debug("digestHash null");
         } else {
-            System.out.println("digestHash length=" + this.digestHash.size());
-            System.out.println("+++dh:" + digestHash.get("md5"));
+            log4j.debug("digestHash length=" + this.digestHash.size());
+            log4j.debug("+++dh:" + digestHash.get("md5"));
         }
         this.digestHashStandard = checksumHandler.getDigestHashStandard();
         if (digestHashStandard == null) {
-            System.out.println("digestHashStandard null");
+            log4j.debug("digestHashStandard null");
         } else {
-            System.out.println("digestHashStandard length=" + this.digestHashStandard.size());
-            System.out.println("+++dhs:" + digestHashStandard.get("MD5"));
+            log4j.debug("digestHashStandard length=" + this.digestHashStandard.size());
+            log4j.debug("+++dhs:" + digestHashStandard.get("MD5"));
         }
         totalFillMs = checksumHandler.getFillBufTime();
         totalWriteBytes = checksumHandler.getFillBufBytes();
@@ -259,6 +268,18 @@ public class RetrieveResponse {
 
     public void setKey(String key) {
         this.key = key;
+    }
+
+    public long getTotalWriteBytes() {
+        return totalWriteBytes;
+    }
+
+    public long getTotalReadBytes() {
+        return totalReadBytes;
+    }
+
+    public long getTotalReadMs() {
+        return totalReadMs;
     }
            
     
