@@ -51,7 +51,7 @@ services: &services
     type: sdsc-s3
     service-properties:
       serviceType: sdsc-s3
-      endPoint: https://uss-s3.sdsc.edu:443
+      endPoint: https://uss-s3-1.sdsc.edu:443
       accessKey: "{!SSM: cloud/nodes/sdsc-s3-accessKey !DEFAULT: SSMFAIL}"
       secretKey: "{!SSM: cloud/nodes/sdsc-s3-secretKey !DEFAULT: SSMFAIL}"
 
