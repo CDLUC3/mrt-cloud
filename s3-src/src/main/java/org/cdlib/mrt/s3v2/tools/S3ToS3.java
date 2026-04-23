@@ -74,6 +74,7 @@ public class S3ToS3 {
     protected S3Reader s3Reader = null;
     protected ReadToS3 readToS3 = null;
     protected S3ToS3Status runStatus = null;
+    protected Integer maxBufSize = null;
     
     protected static String [] digestTypesS = {"sha256"};
     //protected String keyName = null;
@@ -81,7 +82,7 @@ public class S3ToS3 {
     // see https://www.baeldung.com/aws-s3-multipart-upload
     
     protected static final Logger log4j = LogManager.getLogger();   
-    public static S3ToS3 getS3ToS3(String jarBase, long fromNode, String fromKey, long toNode, String toKey, Integer maxBufSize) 
+    public static S3ToS3 getS3ToS3(String jarBase, long fromNode, String fromKey, long toNode, String toKey) 
         throws TException
     {
         LoggerInf logger = new TFileLogger("jtest", 50, 50);
@@ -90,7 +91,6 @@ public class S3ToS3 {
                 + " - fromKey=" + fromKey + "\n"
                 + " - toNode=" + toNode + "\n"
                 + " - toKey=" + toKey + "\n"
-                + " - maxBufSize=" + maxBufSize + "\n"
         );
         try {
             //String jarBase = "yaml:2";
@@ -112,7 +112,7 @@ public class S3ToS3 {
             }
             AWSS3V2Cloud toService = (AWSS3V2Cloud)service;
             String toBucket = accessNode.container;
-            return new S3ToS3(fromService, fromBucket, fromKey, toService, toBucket, toKey, maxBufSize);
+            return new S3ToS3(fromService, fromBucket, fromKey, toService, toBucket, toKey);
             
 
          } catch (TException tex) {
@@ -125,20 +125,19 @@ public class S3ToS3 {
         }
     }   
     
-    public static S3ToS3 getS3ToS3(long fromNode, String fromKey, long toNode, String toKey, Integer maxBufSize) 
+    public static S3ToS3 getS3ToS3(long fromNode, String fromKey, long toNode, String toKey) 
         throws TException
     {
-        return getS3ToS3("yaml:2", fromNode, fromKey, toNode, toKey, maxBufSize);
-    }
-        
+        return getS3ToS3("yaml:2", fromNode, fromKey, toNode, toKey);
+    }   
+    
     public static S3ToS3 getS3ToS3(
             AWSS3V2Cloud fromService, 
             String fromBucket, 
             String fromKey, 
             AWSS3V2Cloud toService, 
             String toBucket, 
-            String toKey, 
-            Integer maxBufSize) 
+            String toKey) 
         throws TException
     {
         LoggerInf logger = new TFileLogger("jtest", 50, 50);
@@ -147,11 +146,10 @@ public class S3ToS3 {
                 + " - fromKey=" + fromKey + "\n"
                 + " - toBucket=" + toBucket + "\n"
                 + " - toKey=" + toKey + "\n"
-                + " - maxBufSize=" + maxBufSize + "\n"
         );
         try {
             
-            return new S3ToS3(fromService, fromBucket, fromKey, toService, toBucket, toKey, maxBufSize);
+            return new S3ToS3(fromService, fromBucket, fromKey, toService, toBucket, toKey);
             
 
          } catch (TException tex) {
@@ -171,8 +169,7 @@ public class S3ToS3 {
             String fromKey,
             AWSS3V2Cloud toService,
             String toBucket,
-            String toKey,
-            Integer maxBuffer)
+            String toKey)
         throws TException
     {
         this.fromService = fromService;
@@ -181,7 +178,7 @@ public class S3ToS3 {
         this.toService = toService;
         this.toBucket = toBucket;
         this.toKey = toKey;
-        this.s3Reader = S3Reader.getS3Reader(fromService, fromBucket, fromKey, maxBuffer);
+        this.s3Reader = S3Reader.getS3Reader(fromService, fromBucket, fromKey, maxBufSize);
         this.fromMetaObjectSize = this.s3Reader.getMetaObjectSize();
         this.fromMetaSha256 = this.s3Reader.getMetaSha256();
         this.readToS3 = ReadToS3.getReadToS3(toService.getS3Client(), toBucket, toKey, digestTypesS, this.s3Reader);
@@ -555,6 +552,15 @@ public class S3ToS3 {
     public String getFromMetaSha256() {
         return fromMetaSha256;
     }
+
+    public Integer getMaxBufSize() {
+        return maxBufSize;
+    }
+
+    public S3ToS3 setMaxBufSize(Integer maxBufSize) {
+        this.maxBufSize = maxBufSize;
+        return this;
+    }
     
     public static class S3ToS3Status
     {
@@ -590,18 +596,21 @@ public class S3ToS3 {
         {
             
             String statusOut =  header + ":" + matchSize +  "\n"
+                    + " - audit:" + audit + "\n"
+                    + " - s3ToS3 Time:" + s3ToS3Ms + "\n"
+                    + " - s3ToS3-audit Time:" + (s3ToS3Ms - toAuditMs) + "\n"
+                    + " - Match size:" + matchSize + "\n"
+                    + " - nextCnt:" + nextCnt + "\n"
+                    + " - toAuditMs:" + toAuditMs + "\n"
                     + " - fromBucket:" + fromBucket + "\n"
                     + " - fromKey:" + fromKey + "\n"
                     + " - toBucket:" + toBucket + "\n"
                     + " - toKey:" + toKey + "\n"
-                    + " - audit:" + audit + "\n"
                     + " - s3Reader.getReadTime():" + readMs + "\n"
                     + " - s3Reader.getMetaTimeMs:" + metaMs + "\n"
+                    + " - Match sha256:" + matchSha256 + "\n"
                     + " - readToS3.totalFillMs:" + fillMs + "\n"
-                    + " - readToS3.totalWriteMs:" + writeMs + "\n"
-                    + " - toAuditMs:" + toAuditMs + "\n"
-                    + " - s3ToS3 Time:" + s3ToS3Ms + "\n"
-                    + " - nextCnt:" + nextCnt + "\n";
+                    + " - readToS3.totalWriteMs:" + writeMs + "\n";
             return statusOut;
         }
     }

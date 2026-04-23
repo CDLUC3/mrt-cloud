@@ -25,65 +25,29 @@ import static org.cdlib.mrt.utility.MessageDigestValue.getAlgorithm;
  *
  * @author replic
  */
-public class TestS3ToS3 {
+public class TestS3ToS3Only {
     
     protected static String [] digestTypesS = {"md5", "sha256"};
     public static final String toPrefix = "test.out-";
-    public static final long toNode = 7502;
+    //public static final long toNode = 7502;
     //public static final long toNode = 2002;
-    //public static final long toNode = 6002;
+    public static final long toNode = 6002;
+    public static final boolean doFixity = true;
     // must be divisible by 4096 >>>
     //public static final int maxBufSize = 204800000;
     // <<<
+    public static ArrayList<S3ToS3.S3ToS3Status> statArr = new ArrayList<>();
     public static void main(String[] args) {
         LoggerInf logger = new TFileLogger("jtest", 50, 50);
         try {
             
-            
-            // ark:/13030/m50g3hdx|1|producer/LCD11008_02.aif	9501	85ad096033e03cfeef7ab22f3333601c55fe91a31ab9c242924542d96c21e58b	602722980
-            if (false) s3s3Test(
+            if (true) s3s3Test( // 6k
                 9501,
-                "ark:/13030/m50g3hdx|1|producer/LCD11008_02.aif",
-                602722980,
-                "85ad096033e03cfeef7ab22f3333601c55fe91a31ab9c242924542d96c21e58b"
-            );
-            
-            
-            // ark:/13030/m5dz0c7f|5|producer/AS136-014-M.mp4	9501	8728c4b7f0b0452591a2a4e8fd6af0fb80172f1ed2905bc7b14311d61f60260a	6053716977
-            
-            if (false) s3s3Test(
-                9501,
-                "ark:/13030/m5dz0c7f|5|producer/AS136-014-M.mp4",
-                6053716977L,
-                "8728c4b7f0b0452591a2a4e8fd6af0fb80172f1ed2905bc7b14311d61f60260a"
-            );
-            
-                
-            if (false) s3s3Test(
-                2001,
-                "ark:/13030/m5dz0c7f|5|producer/AS136-014-M.mp4",
-                6053716977L,
-                "8728c4b7f0b0452591a2a4e8fd6af0fb80172f1ed2905bc7b14311d61f60260a"
-            );
-            
-            // ark:/13030/m56h4t8f|1|producer/MS%2027.txt	0	9501            
-            if (false) s3s3Test(
-                9501,
-                "ark:/13030/m56h4t8f|1|producer/MS 27.txt",
-                0L,
+                "ark:/13030/m50g3hfc|1|producer/20111019/lib/errors.txt",
+                0,
                 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
             );
-
-//####################################################################
-//####################################################################
-//####################################################################
-
-            if (false) s3FileS3Test( // 6k
-                9501,
-                "ark:/13030/c8028pn1|1|producer/c8028pn1.mets.xml",
-                6030,
-                "6985f62f1aa5724609d1c88ac457ce77257d717efae698f4c70bfd1c4797b91e"
-            );
+if (true) {
             
             if (true) s3s3Test( // 6k
                 9501,
@@ -93,14 +57,8 @@ public class TestS3ToS3 {
             );
             
             //=====
-            if (false) s3FileS3Test(
-                9501,
-                "ark:/13030/c8930r9g|1|producer/FILEID-1.189.43.jpg",
-                60037,
-                "ece925059442c7cd0952b3c6caa0b5c5300db1533d4bf00d6bcd8f1209fbc083"
-            );
             
-            if (false) s3s3Test( // 60k
+            if (true) s3s3Test( // 60k
                 9501,
                 "ark:/13030/c8930r9g|1|producer/FILEID-1.189.43.jpg",
                 60037,
@@ -110,15 +68,9 @@ public class TestS3ToS3 {
             //=====
             
             
-            if (false) s3FileS3Test(
-                9501,
-                "ark:/13030/m53b60zk|1|producer/Twyford_ucsb_0035D_11046.pdf",
-                608746,
-                "2d43c5c30e877903c88bccaed9f7559db95a0fc3cd25210ae037c4d9f1998255"
-            );
             
                
-            if (false) s3s3Test( // 608k
+            if (true) s3s3Test( // 608k
                 9501,
                 "ark:/13030/m53b60zk|1|producer/Twyford_ucsb_0035D_11046.pdf",
                 608746,
@@ -128,14 +80,7 @@ public class TestS3ToS3 {
             //=====
             
             
-            if (false) s3FileS3Test(
-                9501,
-                "ark:/13030/m50k26vp|1|producer/781292960.pdf",
-                6043096,
-                "1775471a380d5b17c1dd2d5fe32af95eb8c2aeb711ffe6ae19f0739dcddc3c79"
-            );
-            
-            if (false) s3s3Test(
+            if (true) s3s3Test(
                 9501,
                 "ark:/13030/m50k26vp|1|producer/781292960.pdf",
                 6043096,
@@ -145,14 +90,8 @@ public class TestS3ToS3 {
             //=========
                  
 
-            if (false) s3FileS3Test(
-                9501,
-                "ark:/13030/c8416v4h|1|producer/cstr_140_side001.tif",
-                60562250,
-                "cffdcef022f46cba09534341e842353305fe0109760f0c68d3fb4583555b2cc8"
-            );            
             
-            if (false) s3s3Test(
+            if (true) s3s3Test(
                 9501,
                 "ark:/13030/c8416v4h|1|producer/cstr_140_side001.tif",
                 60562250,
@@ -161,14 +100,8 @@ public class TestS3ToS3 {
             
             //==========
             
-            if (false) s3FileS3Test(
-                9501,
-                "ark:/13030/m5sr4jc5|1|producer/b118058782_C113909826_028.tif",
-                200047122,
-                "ebd3226fbf35a0b087850e8efb2a8899d7b0cccd135596f9876a79c67884f6bc"
-            );
             
-            if (false) s3s3Test(
+            if (true) s3s3Test(
                 9501,
                 "ark:/13030/m5sr4jc5|1|producer/b118058782_C113909826_028.tif",
                 200047122,
@@ -177,12 +110,6 @@ public class TestS3ToS3 {
             
             //=========
             
-            if (false) s3FileS3Test(
-                9501,
-                "ark:/13030/m50g3hdx|1|producer/LCD11008_02.aif",
-                602722980,
-                "85ad096033e03cfeef7ab22f3333601c55fe91a31ab9c242924542d96c21e58b"
-            );
             
             if (true) s3s3Test( // 602M
                 9501,
@@ -193,20 +120,18 @@ public class TestS3ToS3 {
             
             //==========
             
-            if (false) s3FileS3Test(
+            
+            if (true) s3s3Test(
                 9501,
                 "ark:/13030/m5dz0c7f|5|producer/AS136-014-M.mp4",
                 6053716977L,
                 "8728c4b7f0b0452591a2a4e8fd6af0fb80172f1ed2905bc7b14311d61f60260a"
             );
-            
-            if (false) s3s3Test(
-                9501,
-                "ark:/13030/m5dz0c7f|5|producer/AS136-014-M.mp4",
-                6053716977L,
-                "8728c4b7f0b0452591a2a4e8fd6af0fb80172f1ed2905bc7b14311d61f60260a"
-            );
-            
+}        
+            if (statArr.isEmpty()) return;
+            for (S3ToS3.S3ToS3Status stat : statArr) {
+                System.out.println(stat.dump("***" + stat.toKey + "***"));
+            }
          } catch (TException tex) {
             tex.printStackTrace();
         } catch (Exception ex) {
@@ -214,15 +139,22 @@ public class TestS3ToS3 {
         }
     }
     
-           
-    
     public static void s3s3Test(long fromNode, String fromKey, long size, String digest) 
+        throws TException
+    {
+        System.out.println("########################################################################################");
+        s3s3TestBool(true, fromNode, fromKey, size, digest);
+        s3s3TestBool(false, fromNode, fromKey, size, digest);
+    }       
+    
+    public static void s3s3TestBool(boolean doFixity, long fromNode, String fromKey, long size, String digest) 
         throws TException
     {
         LoggerInf logger = new TFileLogger("jtest", 50, 50);
         boolean exec = true;
         
         System.out.println("\n***mainTest***\n"
+                + " - doFixity=" + doFixity + "\n"
                 + " - node=" + fromNode + "\n"
                 + " - key=" + fromKey + "\n"
                 + " - size=" + size + "\n"
@@ -244,8 +176,13 @@ public class TestS3ToS3 {
             );
             //s3ToS3.deleteTo();
             //s3ToS3.deleteTo();
-            S3ToS3.S3ToS3Status runStatus = s3ToS3.copyOver(true);
+            S3ToS3.S3ToS3Status runStatus = s3ToS3.copyOver(doFixity);
+            statArr.add(runStatus);
             s3ToS3.deleteTo();
+            
+            //S3ToS3.S3ToS3Status runStatusFalse = s3ToS3.copyOver(false);
+            //statArr.add(runStatusFalse);
+            //s3ToS3.deleteTo();
             
          } catch (TException tex) {
             tex.printStackTrace();

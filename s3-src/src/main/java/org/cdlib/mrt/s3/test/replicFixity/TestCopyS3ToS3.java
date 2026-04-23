@@ -53,6 +53,7 @@ public class TestCopyS3ToS3 {
         TestVal bk00010877t = TestVal.get("ark:/28722/bk00010877t", 11, 5675771L);
         TestVal bb4472128f = TestVal.get("ark:/20775/bb4472128f", 5, 2408754846L);
         TestVal m5dz0c7f = TestVal.get("ark:/13030/m5dz0c7f", 9, 200971500895L);
+        TestVal m5741zj2 = TestVal.get("ark:/13030/m5741zj2", 19, 12603529073L);
 
         //"ark:/13030/m5dz0c7f"
         
@@ -61,7 +62,8 @@ public class TestCopyS3ToS3 {
             NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
             System.out.println(MESSAGE + " - yamlName=" + yamlName);
             TestCopyS3ToS3 tc = new TestCopyS3ToS3(nodeIO, logger);
-            tc.test(bk00010877t, true, 9502, 7502 );
+            //tc.test(bk00010877t, true, 9502, 7502 );
+            tc.test(m5741zj2, true, 9501, 7502 );
             //tc.test(bb4472128f, true, 9502, 7502 );
             //tc.test(m5dz0c7f, true, 9501, 7502 );
             
