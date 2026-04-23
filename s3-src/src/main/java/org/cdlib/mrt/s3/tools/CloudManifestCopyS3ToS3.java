@@ -282,8 +282,8 @@ public class CloudManifestCopyS3ToS3 {
     protected S3ToS3 doS3ToS3(String key) 
         throws TException
     {
-        S3ToS3 s3ToS3 = S3ToS3.getS3ToS3(this.inService, this.inContainer, key, this.outService, this.outContainer, key, maxBufSize);
-        s3ToS3.copyOver(true);
+        S3ToS3 s3ToS3 = S3ToS3.getS3ToS3(this.inService, this.inContainer, key, this.outService, this.outContainer, key);
+        s3ToS3.copyOver(this.doFixity);
         return s3ToS3;
     }
     
