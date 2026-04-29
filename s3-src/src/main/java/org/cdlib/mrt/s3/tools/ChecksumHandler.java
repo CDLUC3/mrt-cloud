@@ -24,7 +24,7 @@ import org.json.JSONObject;
  */
 public class ChecksumHandler {
     
-    protected static final String NAME = "CloudChecksum";
+    protected static final String NAME = "ChecksumHandler";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
     protected static int RETRY=5;
@@ -303,13 +303,44 @@ public class ChecksumHandler {
         
         digest.checksum =  metaProp.getProperty("sha256");
         if (StringUtil.isAllBlank(digest.checksum)) {
-            throw new TException.INVALID_OR_MISSING_PARM("input file sha256 not found"
+            System.out.println("sha256 property missing using s3 content to generate:"
                     + " - bucket:" + bucket
                     + " - key:" + key
             );
+            String sha256 = getSha256(service, bucket, key);
+            if (StringUtil.isAllBlank(sha256)) {
+                throw new TException.INVALID_OR_MISSING_PARM("input file sha256 not found"
+                        + " - bucket:" + bucket
+                        + " - key:" + key
+                );
+            } else {
+                digest.checksum = sha256;
+                System.out.println("Generated sha256:" + sha256);
+            }
         }
         digest.setting = Digest.DigestSet.found;
         return digest;
+    }
+    
+    public static String getSha256(CloudStoreInf service, String bucket, String key)
+        throws TException
+    {
+        try {
+    
+            String [] types = new String[1];
+            types[0] = "sha256";
+            CloudChecksum cc = CloudChecksum.getChecksums(types, service, bucket, key);
+            cc.process();
+            return cc.getChecksum(types[0]);
+            
+        } catch (TException tex) {
+                tex.printStackTrace();
+                throw tex;
+                
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TException(ex);
+        }
     }
 
     public long getAddBufTime() {

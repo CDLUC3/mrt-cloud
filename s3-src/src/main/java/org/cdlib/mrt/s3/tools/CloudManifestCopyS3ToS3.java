@@ -173,7 +173,7 @@ public class CloudManifestCopyS3ToS3 {
             }
             */
             if (DEBUG) System.out.println(inEntry.dump("In-entrydump"));
-            long startTestTime = DateUtil.getEpochUTCDate();
+            long startTestTime = System.currentTimeMillis();
             String key = inEntry.getKey();
             key = StringEscapeUtils.unescapeXml(key);
             
@@ -203,7 +203,7 @@ public class CloudManifestCopyS3ToS3 {
             MessageDigest outCompDigest = outEntry.getDigest();
             String outDigestValue = outCompDigest.getValue();
             long outSize = outEntry.getSize();
-            stat.metaTime += DateUtil.getEpochUTCDate()-startTestTime;
+            stat.metaTime += System.currentTimeMillis()-startTestTime;
             if (inDigestValue.equals(outDigestValue) && (inSize == outSize)) {
                 log(NEEDCOPYLOG, "needCopy(" + key + ")  needCopy=FALSE");
                 return false;
