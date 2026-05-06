@@ -284,6 +284,19 @@ public class MerrittService
                 );
                 service = AWSS3V2Cloud.getWasabi(accessKey, secretKey, endPoint, logger);
                 
+            } else if (serviceType.equals("rustfs")) {
+                String accessKey = cloudProp.getProperty("accessKey");
+                String secretKey = cloudProp.getProperty("secretKey");
+                String endPoint = cloudProp.getProperty("endPoint");
+                String regionName = cloudProp.getProperty("regionName");
+                if (DEBUG_ACCESS) System.out.println("RustFs S3"
+                        + " - accessKey=" + accessKey
+                        + " - secretKey=" + secretKey
+                        + " - endPoint=" + endPoint
+                        + " - regionName=" + regionName
+                );
+                service = AWSS3V2Cloud.getRustFs(accessKey, secretKey, endPoint, logger);
+                
             } else {
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - serviceType not found for :" +  serviceType);
             }
