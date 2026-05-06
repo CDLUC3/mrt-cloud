@@ -68,7 +68,7 @@ public class V2Client {
     
     final static Long MB = 1024L * 1024 * 1024;
     
-    public enum S3Type {aws, minio, sdsc, wasabi};
+    public enum S3Type {aws, minio, sdsc, wasabi, rustfs};
     protected S3Type s3Type = null;
     protected S3AsyncClient s3AsyncClient = null;
     protected S3Client s3Client = null;
@@ -87,6 +87,13 @@ public class V2Client {
     {
         V2Client minioClient = new V2Client(V2Client.S3Type.sdsc, Region.US_WEST_2, accessKey, secretKey, endpoint);
         return minioClient;
+    }
+    
+    public static V2Client getRustFs(String accessKey, String secretKey, String endpoint)
+        throws TException
+    {
+        V2Client rustfsClient = new V2Client(V2Client.S3Type.rustfs, Region.US_WEST_2, accessKey, secretKey, endpoint);
+        return rustfsClient;
     }
     
     public static V2Client getWasabi(String accessKey, String secretKey, String endpoint)

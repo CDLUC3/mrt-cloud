@@ -132,6 +132,14 @@ public class AWSS3V2Cloud
         return cloud;
     }
     
+    public static AWSS3V2Cloud getRustFs(String accessKey, String secretKey, String endpoint, LoggerInf log)
+        throws TException
+    {
+        V2Client minioClient = V2Client.getRustFs(accessKey, secretKey, endpoint).getWasabi(accessKey, secretKey, endpoint);
+        AWSS3V2Cloud cloud = new AWSS3V2Cloud(minioClient, log);
+        return cloud;
+    }
+    
     
     public CloudResponse putObject(
             CloudResponse response,
