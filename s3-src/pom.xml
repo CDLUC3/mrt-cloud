@@ -83,7 +83,7 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>${itDockerRegistry}/mrt-minio-it:dev</name>
+                                    <name>${itDockerRegistry}/mrt-rustfs-it:dev</name>
                                     <alias>it-minio</alias>
                                     <run>
                                         <ports>

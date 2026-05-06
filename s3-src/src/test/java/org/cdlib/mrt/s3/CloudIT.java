@@ -99,7 +99,7 @@ public class CloudIT {
         }
 
 
-        @Test
+        //@Test
         public void connectToMinioDocker() throws HttpResponseException, IOException {
                 String resp = getContentForUrl(String.format("http://localhost:%d", admin_port));
                 assertFalse(resp.isEmpty());

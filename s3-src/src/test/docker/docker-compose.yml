@@ -1,7 +1,7 @@
 services:
   minio:
     container_name: it-minio
-    image: ${ECR_REGISTRY}/mrt-minio-it:dev
+    image: ${ECR_REGISTRY}/mrt-rustfs-it:dev
     ports:
     - published: 9000
       target: 9000
