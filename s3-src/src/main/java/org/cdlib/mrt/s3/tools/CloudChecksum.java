@@ -11,6 +11,8 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.utility.*;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.CloudResponse;
@@ -25,6 +27,8 @@ public class CloudChecksum {
     protected static final String NAME = "CloudChecksum";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
+    protected static final Logger log4j = LogManager.getLogger();
+    
     protected static int RETRY=5;
     protected int buffsize = 0;
     protected int maxsize = 32000000;
@@ -101,11 +105,11 @@ public class CloudChecksum {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
-                throw tex;
+            log4j.debug(tex.toString(), tex);
+            throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -163,11 +167,11 @@ public class CloudChecksum {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -190,9 +194,9 @@ public class CloudChecksum {
             );
 
          } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
         } catch (Exception ex) {
-            ex.printStackTrace();;
+            log4j.debug(ex.toString(), ex);
         }
     }
     
@@ -236,9 +240,10 @@ public class CloudChecksum {
 
 
          } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
+            
         } catch (Exception ex) {
-            ex.printStackTrace();;
+            log4j.debug(ex.toString(), ex);
         }
     }
         
@@ -369,7 +374,7 @@ public class CloudChecksum {
                 } catch (Exception exs) { }
             }
             if (exi != null) {
-                exi.printStackTrace();
+                log4j.debug(exi.toString(), exi);
             }
             throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "unable to extract data for:"
                     + " - service=" + service.getType()
@@ -381,11 +386,11 @@ public class CloudChecksum {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
-                throw tex;
+            log4j.debug(tex.toString(), tex);
+            throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }

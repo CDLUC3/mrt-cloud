@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -78,6 +80,7 @@ public class CloudManifestCopyS3ToS3 {
     protected static boolean DEBUG = false;
     protected static int NEEDCOPYLOG = 7;
     protected Integer maxBufSize = null;
+    protected static final Logger log4j = LogManager.getLogger();
     
     
     protected AWSS3V2Cloud inService = null;
@@ -272,9 +275,8 @@ public class CloudManifestCopyS3ToS3 {
             throw tex;
             
         } catch (Exception ex) {
-            if (DEBUG) System.out.println("TException:" + ex);
-            ex.printStackTrace();
             String msg = "CloudManifestCopyFixity Exception:" + ex.toString() + " - key=" + entry.getKey();
+            log4j.debug(msg, ex);
             throw new TException.GENERAL_EXCEPTION(msg);
         }
     } 
@@ -304,9 +306,7 @@ public class CloudManifestCopyS3ToS3 {
                 String errMsg =  "copyRetry(" + retry + "):"
                         + " - key:" + key
                         + " - Exception:" + retEx;
-                log(3, errMsg);
-                System.out.println(errMsg);
-                tex.printStackTrace();
+                log4j.debug(errMsg,tex);
             } 
             long expSleep = 1000*(5*retry);
             if (retry == retryCnt) break;
