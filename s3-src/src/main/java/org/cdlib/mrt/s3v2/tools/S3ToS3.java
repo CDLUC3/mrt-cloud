@@ -116,11 +116,11 @@ public class S3ToS3 {
             
 
          } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug("getS3ToS3:" + tex, tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug("getS3ToS3:" + ex, ex);
             throw new TException(ex);
         }
     }   
@@ -153,11 +153,11 @@ public class S3ToS3 {
             
 
          } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -205,11 +205,11 @@ public class S3ToS3 {
             return toDigest;
             
         } catch (TException tex) {
-                tex.printStackTrace();
+                log4j.debug(tex.toString(), tex);
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -230,11 +230,11 @@ public class S3ToS3 {
             return digest;
             
         } catch (TException tex) {
-                tex.printStackTrace();
+                log4j.debug(tex.toString(), tex);
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -263,7 +263,7 @@ public class S3ToS3 {
             return runStatus;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
         }
     }
@@ -300,11 +300,11 @@ public class S3ToS3 {
             return cloudChecksum;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw  new TException(ex);
         }
     }
@@ -414,11 +414,11 @@ public class S3ToS3 {
              if (DEBUG) System.out.println("-------------------------------------------------------------------");        
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw  new TException(ex);
         }
         
@@ -483,7 +483,7 @@ public class S3ToS3 {
             return toResponse;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } finally {
@@ -539,11 +539,11 @@ public class S3ToS3 {
             System.out.println("-------------------------------------------------------------------");        
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.debug(ex.toString(), ex);
             throw  new TException(ex);
         }
         
