@@ -1233,15 +1233,7 @@ public class AWSS3V2Cloud
     public void awsHandleException(CloudResponse response, Exception exception)
         throws TException
     {
-        if (exception instanceof com.amazonaws.services.s3.model.AmazonS3Exception) {
-            String exvalue = exception.toString();
-            if (exvalue.contains("Access Denied") || exvalue.contains("403")) {
-                throw new TException.USER_NOT_AUTHENTICATED("AWS fails authentication");
-            } else {
-                log4j.warn("awsHandleException", exception);
-                throw new TException(exception);
-            }
-        }
+        
         if ((exception instanceof TException.USER_NOT_AUTHENTICATED) 
                 || (exception instanceof TException.USER_NOT_AUTHORIZED)) {
             throw (TException) exception;

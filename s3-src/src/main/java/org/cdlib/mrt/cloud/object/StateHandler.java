@@ -32,20 +32,14 @@ package org.cdlib.mrt.cloud.object;
 
 
 
-import org.cdlib.mrt.s3.aws.*;
-import org.cdlib.mrt.s3.service.NodeService;
 
 import java.io.File;
 import java.io.InputStream;
-import java.net.Socket;
-import java.net.URL;
 import java.util.Properties;
-import org.cdlib.mrt.core.FileComponent;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.core.MessageDigest;
 
-import org.cdlib.mrt.utility.FixityTests;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
 

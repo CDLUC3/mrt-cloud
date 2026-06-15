@@ -174,12 +174,7 @@ public class NodeIOConf
         try {
             
             if ((yamlVersionS != null) && (yamlVersionS.length() > 0)) {
-                try {
-                    awsVersion = Integer.parseInt(yamlVersionS);
-                    System.out.println("Yaml version awsVersion set:" + awsVersion);
-                } catch (Exception ex) {
-                    awsVersion = null;
-                }
+                awsVersion = 2;
             }
             NodeIO.AccessNode test = new NodeIO.AccessNode();
             String propName = "yaml/cloudConfig.yml";
@@ -218,18 +213,7 @@ public class NodeIOConf
             }
             
             if (awsVersion == null) {
-                String awsVersionS = null;
-                try {
-                    awsVersionS = jsonBase.getString("aws-s3-version");
-                    log4j.debug("***awsVersionS:" + awsVersionS);
-                    awsVersion = Integer.parseInt(awsVersionS);
-                } catch (Exception ex) {
-                    //awsVersion = null;
-                    awsVersion = 1;
-                }
-                if (awsVersion == null) {
-                    throw new TException.INVALID_OR_MISSING_PARM(jsonBase.toString(2));
-                }
+                awsVersion = 2;
             }
             JSONObject nodestables = jsonBase.getJSONObject("nodes-tables");
             JSONArray envTables = nodestables.getJSONArray(envName);

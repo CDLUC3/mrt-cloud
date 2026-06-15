@@ -31,6 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.cdlib.mrt.s3.service;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;      
@@ -270,6 +271,7 @@ public class NodeIO
         main_jarnew(args);
         main_jarv1(args);
         main_jarv2(args);
+        main_jarv(args);
         if (true) return;
         //main_jar(args);
     }
@@ -336,6 +338,15 @@ public class NodeIO
         nodeIO.printNodes("yaml dump");
     } 
     
+    public static void main_jarv(String[] args) throws Exception {
+
+        LoggerInf logger = new TFileLogger("lockFile", 10, 10);
+        String yamlName = "jar:nodes-stagedefv";
+        NodeIO nodeIO = NodeIO.getNodeIOConfig(yamlName, logger) ;
+        System.out.println("***AWS Version(" + yamlName + "):" + nodeIO.awsVersion);
+        nodeIO.printNodes("yaml dump");
+    } 
+    
     public static void main_default(String[] args) throws Exception {
 
         LoggerInf logger = new TFileLogger("lockFile", 10, 10);
@@ -355,8 +366,9 @@ public class NodeIO
     
     public static void testmain(String[] args) throws Exception {
 
-        URL aURL = new URL("http://example.com:80/docs/books%30%40/tutorial"
+        URI aURI = new URI("http://example.com:80/docs/books%30%40/tutorial"
                            + "/index.html?name=networking#DOWNLOADING");
+        URL aURL = aURI.toURL();
 
         System.out.println("protocol = " + aURL.getProtocol());
         System.out.println("authority = " + aURL.getAuthority());
@@ -426,7 +438,7 @@ public class NodeIO
                 throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "log missing");
             }
             this.logger = logger;
-            this.awsVersion = awsVersion;
+            this.awsVersion = 2;
             for (DefNode defNode : defNodes) {
                 addMapEntry(defNode);
             }
@@ -554,8 +566,8 @@ public class NodeIO
     {
         try {
             System.out.println(PropertiesUtil.dumpProperties("addMap", cloudProp));
-            String awsS3VersionS = cloudProp.getProperty("aws-s3-version");
-            this.awsVersion = getAwsVersion(awsS3VersionS);
+            //String awsS3VersionS = cloudProp.getProperty("aws-s3-version");
+            this.awsVersion = 2;
             System.out.println("addMap awsVersion=" + awsVersion);
             for(int i=1; true; i++) {
                 String line = cloudProp.getProperty("node." + i);
@@ -886,12 +898,7 @@ public class NodeIO
     }
     
     public static Integer getAwsVersion(String awsVersionS) {
-        if (awsVersionS == null) return 0;
-        try {
-            return Integer.parseInt(awsVersionS);
-        } catch (Exception ex) {
-            return 0;
-        }
+        return 2;
     }
     
     public Collection<AccessNode> getCollection() {
