@@ -7,6 +7,10 @@ This library is part of the [Merritt Preservation System](https://github.com/CDL
 ```mermaid
 %%{init: {'theme': 'neutral', 'securityLevel': 'loose', 'themeVariables': {'fontFamily': 'arial'}}}%%
 graph TD
+  accTitle: 'Illustrate usage of the mrt-cloud library'
+  accDescr {
+    mrt-cloud library is used by the Audit, Replic and Store/Access.
+  }
   REPLIC(Replication)
   click REPLIC href "https://github.com/CDLUC3/mrt-replic" "source code"
   AUDIT(AUDIT - Fixity Check)
