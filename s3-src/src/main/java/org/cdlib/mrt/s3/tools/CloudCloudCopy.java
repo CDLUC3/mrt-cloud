@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.openstack.utility.OpenStackCmdAbs;
 import org.cdlib.mrt.s3.pairtree.PairtreeCloud;
@@ -57,6 +59,7 @@ public class CloudCloudCopy {
     
     protected static final String NAME = "CloudCloudCopy";
     protected static final String MESSAGE = NAME + ": ";
+    protected static final Logger log4j = LogManager.getLogger();
     
     
     protected CloudStoreInf inService = null;
@@ -142,13 +145,13 @@ public class CloudCloudCopy {
             return outResponse;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
+            log4j.error("Ex:" + tex, tex);
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
         

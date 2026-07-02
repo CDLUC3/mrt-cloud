@@ -221,8 +221,8 @@ public class ChecksumHandler {
             return readSize;
             
         } catch (Exception ex) {
-            System.out.println("Ex:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -244,8 +244,8 @@ public class ChecksumHandler {
             return readSize;
             
         } catch (Exception ex) {
-            System.out.println("Ex:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -334,11 +334,12 @@ public class ChecksumHandler {
             return cc.getChecksum(types[0]);
             
         } catch (TException tex) {
-                tex.printStackTrace();
+                log4j.info("Ex:" + tex, tex);
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+           // ex.printStackTrace();
             throw new TException(ex);
         }
     }

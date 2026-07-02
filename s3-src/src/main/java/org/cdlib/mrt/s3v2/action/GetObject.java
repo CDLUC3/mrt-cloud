@@ -71,6 +71,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 public class GetObject {
     protected static final Logger logger = LogManager.getLogger(); 
     public static GetSSM getSSM = new GetSSM();
+    protected static final Logger log4j = LogManager.getLogger();
     
 
     /**

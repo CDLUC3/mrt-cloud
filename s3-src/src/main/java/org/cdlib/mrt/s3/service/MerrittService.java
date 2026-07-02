@@ -30,6 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.cdlib.mrt.s3.service;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.s3v2.aws.AWSS3V2Cloud;
 import org.cdlib.mrt.s3.cloudhost.CloudhostAPI;
 import org.cdlib.mrt.s3.openstack.OpenstackCloud;
@@ -52,6 +54,7 @@ public class MerrittService
     protected static final String MESSAGE = NAME + ": ";
     private static boolean DEBUG = true; //false;
     private static boolean DEBUG_ACCESS = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     //public enum ConfigType {jar, file, ssm, yaml};
        
@@ -109,12 +112,12 @@ public class MerrittService
             
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -204,12 +207,11 @@ public class MerrittService
             
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.info(MESSAGE + "Exception:" + ex);
             throw new TException(ex);
         }
         

@@ -85,6 +85,7 @@ public class MultiPartUpload {
     protected static final Logger logger = LogManager.getLogger(); 
     
     final static Long MB = 1024L * 1024 * 1024;
+    protected static final Logger log4j = LogManager.getLogger();
     
     // see https://www.baeldung.com/aws-s3-multipart-upload
     public static void uploadFileParts(
@@ -145,7 +146,8 @@ public class MultiPartUpload {
             }
         
     } catch (IOException e) {
-        e.printStackTrace();
+        log4j.error("Exception:" + e, e);
+        //e.printStackTrace();
         throw new TException(e);
     }
 

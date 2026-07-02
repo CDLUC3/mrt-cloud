@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestStr;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -70,6 +72,7 @@ public class BuildObjectManifest {
     protected static final String NAME = "BuildObjectManifest";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
+    protected static final Logger log4j = LogManager.getLogger();
 
     protected final static String NL = System.getProperty("line.separator");
     
@@ -153,7 +156,8 @@ public class BuildObjectManifest {
             throw tex;
                     
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -197,7 +201,8 @@ public class BuildObjectManifest {
             throw tex;
                     
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -280,11 +285,13 @@ public class BuildObjectManifest {
             if (tex.toString().contains("REQUESTED_ITEM_NOT_FOUN")) {
                 System.out.println("***Failed copy on:" + outName);
             }
-            tex.printStackTrace();
+            log4j.info(tex.toString(), tex);
+            //tex.printStackTrace();
             throw tex;
         
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
             
         }
@@ -442,7 +449,8 @@ public class BuildObjectManifest {
             throw tex;
         
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
             
         }

@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -68,6 +70,7 @@ public class NodeIOList {
     
     protected static final String NAME = "CloudObjectDeleteList";
     protected static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
     
     protected NodeIO nio = null;
     protected File getListFile = null;
@@ -169,8 +172,8 @@ public class NodeIOList {
                     + " - totperbyte:" + totperbyte
             );
         } catch (Exception ex) {
-            System.out.println(">>>processGet: Exception: "+ ex);
-            ex.printStackTrace();
+            log4j.error(">>>processGet: Exception: "+ ex, ex);
+            //ex.printStackTrace();
         }
     }
     
@@ -194,8 +197,8 @@ public class NodeIOList {
                     + " - totperbyte:" + totperbyte
             );
         } catch (Exception ex) {
-            System.out.println(">>>processGet: Exception: "+ ex);
-            ex.printStackTrace();
+            log4j.error(">>>processGet: Exception: "+ ex, ex);
+            //ex.printStackTrace();
         }
     }
     
@@ -246,8 +249,8 @@ public class NodeIOList {
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         

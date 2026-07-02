@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.utility.*;
 import org.cdlib.mrt.s3.service.CloudStoreInf;
 import org.cdlib.mrt.s3.service.CloudResponse;
@@ -29,6 +31,8 @@ public class CloudChecksumV2 {
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
     protected static int RETRY=5;
+    private static final Logger log4j = LogManager.getLogger();
+    
     protected int buffsize = 0;
     protected int maxsize = 32000000;
     protected ArrayList<Digest> digestList = new ArrayList();
@@ -104,11 +108,12 @@ public class CloudChecksumV2 {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
+                //tex.printStackTrace();
+                log4j.debug("TException:" + tex, tex);
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }
@@ -166,11 +171,12 @@ public class CloudChecksumV2 {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
-                throw tex;
+            log4j.error("TException:" + tex, tex);
+            throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }
@@ -193,9 +199,12 @@ public class CloudChecksumV2 {
             );
 
          } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+                
         } catch (Exception ex) {
-            ex.printStackTrace();;
+            //ex.printStackTrace();;
+            log4j.error("Exception:" + ex, ex);
         }
     }
     
@@ -239,9 +248,12 @@ public class CloudChecksumV2 {
 
 
          } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            
         } catch (Exception ex) {
-            ex.printStackTrace();;
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
         }
     }
         
@@ -334,11 +346,13 @@ public class CloudChecksumV2 {
             return inputStream;
             
         } catch (TException tex) {
-                tex.printStackTrace();
-                throw tex;
+            //    tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }

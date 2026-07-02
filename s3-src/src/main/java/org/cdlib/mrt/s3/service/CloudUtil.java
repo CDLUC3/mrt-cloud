@@ -38,6 +38,8 @@ package org.cdlib.mrt.s3.service;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.utility.StringUtil;
 import java.io.File;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import org.cdlib.mrt.utility.FixityTests;
@@ -57,6 +59,7 @@ public class CloudUtil {
     public static final String HEXPREFIX = "-.";
     public static final String HEXSUFFIX = ".-";
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     public static String getKey(
             Identifier objectID,
@@ -162,8 +165,7 @@ public class CloudUtil {
             return buf.toString();
             
         } catch (Exception ex) {
-            System.out.println("Exception=" + ex);
-            ex.printStackTrace();
+            log4j.info(ex.toString(), ex);
             throw new TRuntimeException.GENERAL_EXCEPTION(ex);
         }
     }
@@ -288,7 +290,7 @@ public class CloudUtil {
             throw tex;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.info(ex.toString(), ex);
             throw new TException(ex);
 
         }
@@ -324,11 +326,11 @@ public class CloudUtil {
             return ele;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.info(tex.toString(), tex);
             throw tex;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.info(ex.toString(), ex);
             throw new TException(ex);
 
         }

@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.Map;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 
@@ -36,6 +38,7 @@ import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
  */
 
 public class S3ObjectV2 {
+    protected static final Logger log4j = LogManager.getLogger(); 
     public static void main(String[] args) {
         
         String bucketName = "uc3-s3mrt5001-stg";
@@ -83,7 +86,8 @@ public class S3ObjectV2 {
             os.close();
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
         } catch (S3Exception e) {
             System.err.println(e.awsErrorDetails().errorMessage());
             System.exit(1);

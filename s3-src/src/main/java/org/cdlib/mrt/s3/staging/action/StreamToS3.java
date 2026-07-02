@@ -48,6 +48,7 @@ public class StreamToS3 {
     
     final static Long MB = 1024L * 1024 * 1024;
     final static int BUFSIZE = 75 * 1024 * 1024;
+    private static final Logger log4j = LogManager.getLogger();
     
     protected String urlS = null;
     protected S3Client s3 = null;
@@ -171,7 +172,7 @@ public class StreamToS3 {
             }
             response.totalWriteBytes = position;
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.info(tex.toString(), tex);
             throw tex;
         }
         response.completeMultiPartAdd = System.currentTimeMillis();

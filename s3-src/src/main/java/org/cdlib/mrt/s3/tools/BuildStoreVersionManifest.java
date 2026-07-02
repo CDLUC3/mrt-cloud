@@ -38,6 +38,7 @@ import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TException;
 import org.cdlib.mrt.s3.service.NodeService;
+import static org.cdlib.mrt.s3.tools.BuildObjectManifest.log4j;
 import org.cdlib.mrt.utility.TFileLogger;
 
 /**
@@ -193,12 +194,12 @@ public class BuildStoreVersionManifest {
             return outDir;
             
         } catch (TException tex) {
-            System.out.println("Exception:" + tex);
-            tex.printStackTrace();
+            log4j.info("Exception:" + tex, tex);
             throw tex;
                     
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         

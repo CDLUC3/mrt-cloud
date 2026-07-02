@@ -107,12 +107,12 @@ public class CloudCmdHandler {
             
         } catch (TException tex) {
             System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -128,12 +128,12 @@ public class CloudCmdHandler {
             
         } catch (TException tex) {
             System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -150,12 +150,12 @@ public class CloudCmdHandler {
             
         } catch (TException tex) {
             System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -170,12 +170,12 @@ public class CloudCmdHandler {
             
         } catch (TException tex) {
             System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -191,12 +191,12 @@ public class CloudCmdHandler {
             
         } catch (TException tex) {
             System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -212,12 +212,12 @@ public class CloudCmdHandler {
             
         } catch (TException tex) {
             System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
             System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         

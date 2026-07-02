@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Properties;
 import java.nio.charset.Charset;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.utility.FixityTests;
@@ -52,6 +54,7 @@ public class ExtractUnique {
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
     public static final int UNIQUE_SIZE = 1000;
+    private static final Logger log4j = LogManager.getLogger();
 
     protected final static String NL = System.getProperty("line.separator");
     
@@ -216,8 +219,8 @@ public class ExtractUnique {
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("processContainer Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error("processContainer Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
             
         } finally {

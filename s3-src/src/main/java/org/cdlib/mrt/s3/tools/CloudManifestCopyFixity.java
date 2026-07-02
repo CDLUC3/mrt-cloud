@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -75,6 +77,7 @@ public class CloudManifestCopyFixity {
     protected static final String MESSAGE = NAME + ": ";
     protected static boolean DEBUG = false;
     protected static int NEEDCOPYLOG = 7;
+    protected static final Logger log4j = LogManager.getLogger();
     
     
     protected CloudStoreInf inService = null;
@@ -217,8 +220,8 @@ public class CloudManifestCopyFixity {
             return true;
             
         } catch (Exception ex) {
-            if (DEBUG) System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     } 
@@ -248,7 +251,8 @@ public class CloudManifestCopyFixity {
             
         } catch (Exception ex) {
             if (DEBUG) System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     } 
@@ -335,14 +339,14 @@ public class CloudManifestCopyFixity {
             return outResponse;
             
         } catch (TException tex) {
-            if (DEBUG) System.out.println("TException:" + tex);
-            if (DEBUG) tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
             if (DEBUG) System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             String msg = "CloudManifestCopyFixity Exception:" + ex.toString() + " - key=" + entry.getKey() + " - size=" + tFile.length();
+            log4j.error(msg, ex);
             throw new TException.GENERAL_EXCEPTION(msg);
         }
     } 
@@ -365,8 +369,9 @@ public class CloudManifestCopyFixity {
                         + " - key:" + key
                         + " - Exception:" + retEx;
                 log(3, errMsg);
-                System.out.println(errMsg);
-                tex.printStackTrace();
+                //System.out.println(errMsg);
+                //tex.printStackTrace();
+                log4j.info(errMsg, tex);
             } 
             long expSleep = 1000*(5*retry);
             if (retry == retryCnt) break;
@@ -375,6 +380,7 @@ public class CloudManifestCopyFixity {
                 Thread.sleep (expSleep);
             } catch (Exception slex) { }
         }
+        log4j.error("RETRY FAILS " + retEx.toString(), retEx);
         throw retEx;
     } 
     

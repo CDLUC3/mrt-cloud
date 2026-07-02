@@ -397,8 +397,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -447,8 +447,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -480,8 +480,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -511,8 +511,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -531,8 +531,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -554,8 +554,8 @@ public class NodeIO
             return cloudProp;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -579,8 +579,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -604,8 +604,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -634,8 +634,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -674,8 +674,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -695,8 +695,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -718,8 +718,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -793,8 +793,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.info(MESSAGE + "Exception:" + ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -819,8 +819,8 @@ public class NodeIO
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -883,7 +883,8 @@ public class NodeIO
             if (tempFile != null) {
                 tempFile.delete();
             }
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         

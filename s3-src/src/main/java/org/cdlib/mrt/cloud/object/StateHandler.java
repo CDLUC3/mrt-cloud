@@ -36,6 +36,8 @@ package org.cdlib.mrt.cloud.object;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.core.FileContent;
 import org.cdlib.mrt.utility.DateUtil;
 import org.cdlib.mrt.core.MessageDigest;
@@ -69,6 +71,7 @@ public class StateHandler
     private final String bucket;
     private final String key;
     private final LoggerInf logger;
+    protected static final Logger log4j = LogManager.getLogger();
     
     private RetState retState = null;
     
@@ -149,9 +152,9 @@ public class StateHandler
             return retState;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             error = "process exception:" + ex.toString();
-            setError(MESSAGE + ex.toString());
+            setError(MESSAGE + ex.toString(), ex);
             return retState;
             
         } finally {
@@ -162,8 +165,17 @@ public class StateHandler
 
     protected boolean setError(String retError)
     {
+        return setError(retError, null);
+    }
+
+    protected boolean setError(String retError, Exception e)
+    {
         retState.setError(retError);
-        System.out.println(retError);
+        if (e != null) {
+            log4j.warn(retError, e);
+        } else {
+            log4j.warn(retError);
+        }
         retState.setOk(false);
         return false;
     }
@@ -171,8 +183,9 @@ public class StateHandler
     private boolean isError(CloudResponse response)
     {
         if (response.getException() != null) {
-            System.out.println("******isError1:" + response.getException().toString());
-            response.getException().printStackTrace();
+            log4j.error(response.getException().toString(), response.getException());
+            // System.out.println("******isError1:" + response.getException().toString());
+            // response.getException().printStackTrace();
             return true;
         }
         String errMsg = response.getErrMsg();
@@ -234,8 +247,8 @@ public class StateHandler
                         + " - key:" + key
                         + " - error:" + ex.toString();
             
-            ex.printStackTrace();
-            return setError(error);
+            //ex.printStackTrace();
+            return setError(error, ex);
                 
         }
     }
@@ -268,7 +281,7 @@ public class StateHandler
                         + " - bucket:" + bucket
                         + " - key:" + key
                         + " - error:" + ex.toString();
-            return setError(error);
+            return setError(error, ex);
                 
         }
     }
@@ -289,7 +302,7 @@ public class StateHandler
                         + " - bucket:" + bucket
                         + " - key:" + key
                         + " - error:" + ex.toString();
-            return setError(error);
+            return setError(error, ex);
                 
         }
     }
@@ -312,8 +325,8 @@ public class StateHandler
                         + " - bucket:" + bucket
                         + " - key:" + key
                         + " - error:" + ex.toString();
-            ex.printStackTrace();
-            return setError(error);
+            //ex.printStackTrace();
+            return setError(error, ex);
                 
         } finally {
             try {
@@ -346,12 +359,12 @@ public class StateHandler
             
         } catch (Exception ex) {
             
-            ex.printStackTrace();
+            //ex.printStackTrace();
             error = "Content Catch Error - Unable to add content"
                         + " - bucket:" + bucket
                         + " - key:" + key
                         + " - error:" + ex.toString();
-            return setError(error);
+            return setError(error, ex);
                 
         }
     }
@@ -367,12 +380,12 @@ public class StateHandler
             return true;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             error = "Delete Catch Error - Unable to add content"
                         + " - bucket:" + bucket
                         + " - key:" + key
                         + " - error:" + ex.toString();
-            return setError(error);
+            return setError(error, ex);
                 
         }
     }

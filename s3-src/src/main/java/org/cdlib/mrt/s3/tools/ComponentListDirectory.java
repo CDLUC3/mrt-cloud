@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -70,6 +72,7 @@ abstract class ComponentListDirectory {
     
     protected static final String NAME = "CloudManifestCopy";
     protected static final String MESSAGE = NAME + ": ";
+    protected static final Logger log4j = LogManager.getLogger();
     
     protected int version = 0;
     protected CloudStoreInf inService = null;
@@ -150,11 +153,13 @@ abstract class ComponentListDirectory {
             }
             
         } catch (TException me) {
-            me.printStackTrace();
+            log4j.error("TException" + me, me);
+            //me.printStackTrace();
             throw me;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("TException" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }

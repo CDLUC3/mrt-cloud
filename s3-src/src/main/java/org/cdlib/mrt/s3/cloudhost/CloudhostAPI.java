@@ -206,8 +206,8 @@ public class CloudhostAPI
             response.setFromProp(putObjectMeta);
                         
         } catch (Exception ex) {
-            System.out.println("ex1");
-            ex.printStackTrace();
+            //System.out.println("ex1");
+            //ex.printStackTrace();
             handleException(response, ex);
             
         }

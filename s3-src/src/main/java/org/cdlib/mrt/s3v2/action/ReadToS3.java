@@ -209,7 +209,7 @@ public class ReadToS3 {
             throw tex;
             
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             String msg = "PutObjectRequest exception:"
                     + " - bucketName:" + bucketName
                     + " - objectKey:" + keyName
@@ -301,7 +301,8 @@ public class ReadToS3 {
             //response.totalWriteBytes = position;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
             throw tex;
         }
         response.completeMultiPartAdd = System.currentTimeMillis();

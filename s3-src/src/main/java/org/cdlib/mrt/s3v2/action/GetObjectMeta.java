@@ -168,7 +168,7 @@ public class GetObjectMeta {
             }
             //CloudResponse response = new CloudResponse(bucketName, key);
             //awsHandleException(response, ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             return null;
         }
     }
@@ -230,7 +230,7 @@ public class GetObjectMeta {
             return storageClass;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             
             return null;
         }
