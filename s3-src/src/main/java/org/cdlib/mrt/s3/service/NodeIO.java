@@ -545,7 +545,7 @@ public class NodeIO
             InputStream propStream =  test.getClass().getClassLoader().
                     getResourceAsStream("nodes/" + propName + ".properties");
             if (propStream == null) {
-                System.out.println("Unable to find resource:" + propName);
+                log4j.warn("Unable to find resource:" + propName);
                 return null;
             }
             Properties cloudProp = new Properties();
@@ -621,7 +621,7 @@ public class NodeIO
         throws TException
     {
         try {
-            if (DEBUG) System.out.println("Add:" + line);
+            log4j.debug("Add:" + line);
             String[] parts = line.split("\\s*\\|\\s*");
             if ((parts.length < 2) || (parts.length > 3)) {
                 throw new TException.INVALID_OR_MISSING_PARM("addMapENtry requires 2 or 3 parts:" + line);
@@ -645,7 +645,7 @@ public class NodeIO
         throws TException
     {
         try {
-            if (DEBUG) System.out.println("Add:" + line);
+            log4j.debug("Add:" + line);
             String[] parts = line.split("\\s*\\|\\s*");
             if ((parts.length < 2) || (parts.length > 4)) {
                 throw new TException.INVALID_OR_MISSING_PARM("addMapENtry requires 2 or 3 parts:" + line);
@@ -666,7 +666,7 @@ public class NodeIO
                 throw new TException.INVALID_DATA_FORMAT(MESSAGE + "getService - Unable to locate:" +  propName);
             }
             AccessNode copyNode = getAccessNode(awsVersion, nodeNumber, container, description, cloudProp, logger);
-            if (DEBUG) System.out.println(copyNode.dump("copyNode"));
+            log4j.debug(copyNode.dump("copyNode"));
             accessNodes.put(nodeNumber, copyNode);
             
             
@@ -687,7 +687,7 @@ public class NodeIO
         try {
             AccessNode copyNode = addMapEntry(defNode.nodeNumber, defNode.bucket, defNode.nodeDescription, defNode.propNodeDef);
             
-            if (DEBUG) System.out.println(copyNode.dump("copyNode"));
+            log4j.debug(copyNode.dump("copyNode"));
             accessNodes.put(defNode.nodeNumber, copyNode);
             return copyNode;
             
@@ -709,7 +709,7 @@ public class NodeIO
         try {
             
             AccessNode copyNode = getAccessNode(awsVersion, nodeNumber, container, nodeDescription, cloudProp, logger);
-            if (DEBUG) System.out.println(copyNode.dump("copyNode"));
+            log4j.debug(copyNode.dump("copyNode"));
             accessNodes.put(nodeNumber, copyNode);
             return copyNode;
             
@@ -851,7 +851,7 @@ public class NodeIO
     public InputStream getInputStream(String storageURLS)
         throws TException
     {    
-        if (DEBUG) System.out.println("NodeIO: getInputStream entered:" + storageURLS);
+        log4j.debug("NodeIO: getInputStream entered:" + storageURLS);
         DeleteOnCloseFileInputStream deleteInputStream = null;
         File tempFile = null;
         try {

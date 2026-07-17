@@ -273,7 +273,7 @@ public class StateHandler
                     return setError(error);
             }
             
-            System.out.println(PropertiesUtil.dumpProperties("meta output", prop));
+            log4j.debug(PropertiesUtil.dumpProperties("meta output", prop));
             return true;
             
         } catch (Exception ex) {

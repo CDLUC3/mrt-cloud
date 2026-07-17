@@ -182,9 +182,7 @@ public abstract class CloudStoreAbs
         log4j.error(buf.toString(), exception);
         response.setErrMsg(buf.toString());
         response.setStatus(CloudResponse.ResponseStatus.fail);
-        if (DEBUG) {
-            System.out.println(buf.toString());
-        }
+        log4j.debug(buf.toString());
     }
     
     public static void dumpException(String header, Exception exception) 

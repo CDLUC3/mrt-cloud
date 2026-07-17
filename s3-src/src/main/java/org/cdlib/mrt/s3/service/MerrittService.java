@@ -63,7 +63,7 @@ public class MerrittService
     {
         awsVersion = 2;
         CloudStoreInf service = null;
-        if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
+        log4j.debug("getAccessNode:" 
                 + " - nodeNumber=" + nodeNumber
                 + " - container=" + container
         );
@@ -130,7 +130,7 @@ public class MerrittService
         throws TException
     {
         CloudStoreInf service = null;
-        if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
+        log4j.debug("getAccessNode:" 
                 + " - nodeNumber=" + nodeNumber
                 + " - container=" + container
         );
@@ -145,7 +145,7 @@ public class MerrittService
             }
             if (serviceType.equals("aws")) {
                 String storageClassS = cloudProp.getProperty("storageClass");
-                if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
+                log4j.debug("StorageClassS=" + storageClassS);
                 String regionS = cloudProp.getProperty("region");
                 accessMode = cloudProp.getProperty("accessMode");
                 service = AWSS3V2Cloud.getAWS(logger);
@@ -154,7 +154,7 @@ public class MerrittService
                 String accessKey = cloudProp.getProperty("accessKey");
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                log4j.debug("Minio S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -165,7 +165,7 @@ public class MerrittService
                 String accessKey = cloudProp.getProperty("accessKey");
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                log4j.debug("Minio S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -178,7 +178,7 @@ public class MerrittService
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
                 String regionName = cloudProp.getProperty("regionName");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                log4j.debug("Minio S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -191,7 +191,7 @@ public class MerrittService
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
                 String regionName = cloudProp.getProperty("regionName");
-                if (DEBUG_ACCESS) System.out.println("RustFs S3"
+                log4j.debug("RustFs S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint

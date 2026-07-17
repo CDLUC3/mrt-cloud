@@ -37,6 +37,7 @@ package org.cdlib.mrt.s3.cloudhost;
 import org.cdlib.mrt.core.Identifier;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -150,7 +151,8 @@ public class CloudhostClient
                 urlS += "?" + query;
             }
             System.out.println("URL:" + urlS);
-            URL url = new URL(urlS);
+            URI urlI = new URI(urlS);
+            URL url = urlI.toURL();
             return url;
             
         } catch (TException tex) {
