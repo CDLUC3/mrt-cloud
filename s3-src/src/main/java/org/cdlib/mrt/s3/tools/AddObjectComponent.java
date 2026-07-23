@@ -36,6 +36,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestStr;
@@ -68,6 +70,7 @@ public class AddObjectComponent {
     protected static final String NAME = "AddObjectComponent";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean DEBUG = false;
+    protected static final Logger log4j = LogManager.getLogger();
 
     protected final static String NL = System.getProperty("line.separator");
     
@@ -209,10 +212,12 @@ public class AddObjectComponent {
             displayResponse("Component added", response);
             
         } catch (TException tex) {
+            log4j.info(tex.toString(), tex);
             throw tex;
         
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
             
         }
@@ -283,7 +288,8 @@ public class AddObjectComponent {
             throw tex;
         
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
             
         }

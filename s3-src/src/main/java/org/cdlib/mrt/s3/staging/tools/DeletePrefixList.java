@@ -178,11 +178,12 @@ public class DeletePrefixList {
             return jsonResult(prefix);
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
         
@@ -203,11 +204,12 @@ public class DeletePrefixList {
             
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
         
@@ -235,11 +237,12 @@ public class DeletePrefixList {
             return entryList;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }
@@ -265,7 +268,8 @@ public class DeletePrefixList {
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     } 
@@ -296,7 +300,8 @@ public class DeletePrefixList {
             return stat;
             
         }  catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }

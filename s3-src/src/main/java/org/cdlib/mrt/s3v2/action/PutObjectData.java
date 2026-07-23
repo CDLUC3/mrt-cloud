@@ -111,7 +111,7 @@ public class PutObjectData {
             log4j.debug("Successfully placed " + objectKey + " into bucket " + bucketName);
 
         } catch (S3Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             String msg = "PutObjectRequest exception:"
                     + " - bucketName:" + bucketName
                     + " - objectKey:" + objectKey

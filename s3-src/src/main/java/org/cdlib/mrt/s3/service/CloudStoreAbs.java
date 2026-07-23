@@ -171,20 +171,18 @@ public abstract class CloudStoreAbs
         } else if (exception instanceof TException.REQUEST_ITEM_EXISTS) {
             buf.append("NAME=" + exception.getClass().getName());
             buf.append("Exception:" + exception);
-            log4j.info(buf.toString());
+            //log4j.info(buf.toString());
             
         } else {
             dumpException("Cloudhost", exception);
             buf.append("NAME=" + exception.getClass().getName());
             buf.append("Exception:" + exception);
-            log4j.info(buf.toString());
             
         }
+        log4j.error(buf.toString(), exception);
         response.setErrMsg(buf.toString());
         response.setStatus(CloudResponse.ResponseStatus.fail);
-        if (DEBUG) {
-            System.out.println(buf.toString());
-        }
+        log4j.debug(buf.toString());
     }
     
     public static void dumpException(String header, Exception exception) 

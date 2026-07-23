@@ -38,6 +38,8 @@ package org.cdlib.mrt.s3.service;
 import org.cdlib.mrt.core.Identifier;
 import org.cdlib.mrt.utility.StringUtil;
 import java.io.File;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import org.cdlib.mrt.utility.FixityTests;
@@ -57,6 +59,7 @@ public class CloudUtil {
     public static final String HEXPREFIX = "-.";
     public static final String HEXSUFFIX = ".-";
     private static final boolean DEBUG = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     public static String getKey(
             Identifier objectID,
@@ -84,7 +87,7 @@ public class CloudUtil {
             boolean alphaNumeric)
         throws TException
     {
-        if (DEBUG) System.out.println("getManifestKey");
+        log4j.debug("getManifestKey");
         StringBuffer buf = new StringBuffer();
         if (objectID == null) {
             throw new TException.INVALID_OR_MISSING_PARM(MESSAGE + "getManifestKey - objectID not provided");
@@ -139,7 +142,7 @@ public class CloudUtil {
                     buf.append(element.substring(start));
                     break;
                 }
-                if (DEBUG) System.out.println(""
+                log4j.debug(""
                         + " - start=" + start
                         + " - pos=" + pos
                         );
@@ -157,13 +160,12 @@ public class CloudUtil {
                 buf.append(decode);
                 start += end + 2;
                 if (start > element.length()) break;
-                if (DEBUG) System.out.println("start=" + start + " - length=" + element.length());
+                log4j.debug("start=" + start + " - length=" + element.length());
             }
             return buf.toString();
             
         } catch (Exception ex) {
-            System.out.println("Exception=" + ex);
-            ex.printStackTrace();
+            log4j.info(ex.toString(), ex);
             throw new TRuntimeException.GENERAL_EXCEPTION(ex);
         }
     }
@@ -176,7 +178,7 @@ public class CloudUtil {
             if (parts.length == 1) return element;
             boolean hexFlag = false;
             for (String part : parts) {
-                if (DEBUG) System.out.println("hexFlag=" + hexFlag + " - part=\"" + part + "\"");
+                log4j.debug("hexFlag=" + hexFlag + " - part=\"" + part + "\"");
                 if (!hexFlag) {
                     buf.append(part);
                     hexFlag = true;
@@ -223,7 +225,7 @@ public class CloudUtil {
     {
         try {
             FixityTests fixityTest = new FixityTests(testFile, "md-5", logger);
-            if (DEBUG) System.out.println("md5Hex=" + fixityTest.getChecksum());
+            log4j.debug("md5Hex=" + fixityTest.getChecksum());
             return fixityTest.getChecksum();
 
         } catch (Exception ex) {
@@ -240,7 +242,7 @@ public class CloudUtil {
     {
         try {
             FixityTests fixityTest = new FixityTests(testFile, type, logger);
-            if (DEBUG) System.out.println(type + "=" + fixityTest.getChecksum());
+            log4j.debug(type + "=" + fixityTest.getChecksum());
             return fixityTest.getChecksum();
 
         } catch (Exception ex) {
@@ -259,9 +261,9 @@ public class CloudUtil {
             KeyElements ele = new KeyElements();
             String keySave = new String(key);
             key = decodeElement(key);
-            if (DEBUG) System.out.println("getKeyElements: key=" + key);
+            log4j.debug("getKeyElements: key=" + key);
             String [] parts = key.split(SPLITKEY);
-            if (DEBUG) System.out.println("parts length=" + parts.length);
+            log4j.debug("parts length=" + parts.length);
             if (parts.length > 3) {
                 for (int p=3; p < parts.length; p++) {
                     parts[2] += '|' + parts[p];
@@ -288,7 +290,7 @@ public class CloudUtil {
             throw tex;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.info(ex.toString(), ex);
             throw new TException(ex);
 
         }
@@ -324,11 +326,11 @@ public class CloudUtil {
             return ele;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.info(tex.toString(), tex);
             throw tex;
 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.info(ex.toString(), ex);
             throw new TException(ex);
 
         }

@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.ManifestStr;
@@ -43,6 +45,7 @@ public class CopyValidate
 {
     protected static final String NAME = "CopyValidate";
     protected static final String MESSAGE = NAME + ": ";
+    private static final Logger log4j = LogManager.getLogger();
     
     protected VersionMap versionMap1 = null;
     protected VersionMap versionMap2 = null;
@@ -137,11 +140,11 @@ public class CopyValidate
                return an;
                 
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -192,13 +195,13 @@ public class CopyValidate
             
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -212,13 +215,13 @@ public class CopyValidate
             log(genLog, "CopyValidate files present match:" + (v12 + v21));
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex,tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -265,13 +268,13 @@ public class CopyValidate
             return testCnt;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -298,7 +301,7 @@ public class CopyValidate
             return hash;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }
@@ -322,7 +325,8 @@ public class CopyValidate
             return hash;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -372,13 +376,13 @@ public class CopyValidate
             return true;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -450,13 +454,13 @@ public class CopyValidate
             );
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -475,13 +479,13 @@ public class CopyValidate
             return testedCnt;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -501,13 +505,13 @@ public class CopyValidate
             return testedCnt;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -526,13 +530,13 @@ public class CopyValidate
             return true;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -551,13 +555,13 @@ public class CopyValidate
             return true;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -571,13 +575,13 @@ public class CopyValidate
             return map;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }

@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -62,6 +64,7 @@ public class CloudObjectList {
     
     protected static final String NAME = "CloudObjectList";
     protected static final String MESSAGE = NAME + ": ";
+    protected static final Logger log4j = LogManager.getLogger();
     
     
     protected CloudStoreInf service = null;
@@ -131,13 +134,11 @@ public class CloudObjectList {
             return;
             
         } catch (TException tex) {
-            System.out.println("TException:" + tex);
-            tex.printStackTrace();
+            log4j.debug("TException:" + tex);
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex);
             throw new TException(ex);
         }
         

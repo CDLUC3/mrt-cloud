@@ -278,7 +278,7 @@ public class AWSS3V2Cloud
                         
         } catch (Exception ex) {
             log4j.error("putObject ex:" + ex, ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
             handleException(response, ex);
             
         }
@@ -526,7 +526,6 @@ public class AWSS3V2Cloud
                         + " - bucket:" + container
                         + " - key:" + key, ex);
             //ex.printStackTrace();
-            ex.printStackTrace();
             throw new TException(ex) ;
         }
     }    
@@ -662,11 +661,12 @@ public class AWSS3V2Cloud
             }
             
         } catch (TException tex) {
+            log4j.error(tex.toString(), tex);
             tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error(ex.toString(), ex);
             throw new TException(ex) ;
         }
     }
@@ -809,12 +809,14 @@ public class AWSS3V2Cloud
             return true;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
+            log4j.error(tex.toString(), tex);
             response.setException(tex);
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error(ex.toString(), ex);
             response.setException(ex);
             throw new TException(ex) ;
         }
@@ -1092,7 +1094,8 @@ public class AWSS3V2Cloud
             
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error(ex.toString(), ex);
             throw new TException(ex);
         }
     }
@@ -1329,8 +1332,8 @@ public class AWSS3V2Cloud
             response.setStatus(CloudResponse.ResponseStatus.ok);
             
         } catch (Exception ex) {
-            System.out.println("getPreSigned exception:" +ex);
-            ex.printStackTrace();
+            //System.out.println("getPreSigned exception:" +ex);
+            //ex.printStackTrace();
             String exc = "Exception bucketName:" + bucketName + " - key=" + key;
             if (ex.toString().contains("404")) {
                 Exception returnException = new TException.REQUESTED_ITEM_NOT_FOUND(exc);
@@ -1340,6 +1343,9 @@ public class AWSS3V2Cloud
             }
             response.setReturnURL(null);
             response.setStatus(CloudResponse.ResponseStatus.fail);
+            Exception rex = response.getException();
+            log4j.error(rex.toString());
+            log4j.debug(rex.toString(), rex);
         }
         return response;
     }

@@ -131,7 +131,7 @@ public class CloudhostAPI
                     return response;
                 } else {
                     CloudResponse deleteResponse = deleteObject(bucketName, key);
-                    System.out.println("***Existing file deleted- does not match:"
+                    log4j.info("***Existing file deleted- does not match:"
                             + " - bucket:" + bucketName
                             + " - key:" + key
                             + " - fileSha256: "+ fileSha256
@@ -153,7 +153,7 @@ public class CloudhostAPI
             for (int t=1; t<=5; t++) {
                 putObjectMeta = getObjectMeta(bucketName, key);
                 if (putObjectMeta.size() > 0) break;
-                System.out.println("***getObjectMeta fails - sleep:" + (t*2000)
+                log4j.info("***getObjectMeta fails - sleep:" + (t*2000)
                             + " - bucket:" + bucketName
                             + " - key:" + key
                 );
@@ -206,8 +206,8 @@ public class CloudhostAPI
             response.setFromProp(putObjectMeta);
                         
         } catch (Exception ex) {
-            System.out.println("ex1");
-            ex.printStackTrace();
+            //System.out.println("ex1");
+            //ex.printStackTrace();
             handleException(response, ex);
             
         }

@@ -46,6 +46,7 @@ public class Url2S3 {
     
     final static Long MB = 1024L * 1024 * 1024;
     final static int BUFSIZE = 75 * 1024 * 1024;
+    private static final Logger log4j = LogManager.getLogger();
     
     protected String urlS = null;
     protected S3Client s3Client = null;
@@ -87,7 +88,7 @@ public class Url2S3 {
             return retrieveResponse;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            log4j.debug(tex.toString());
             throw tex;
         }
     }

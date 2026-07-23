@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -67,6 +69,7 @@ public class CopyFile {
     protected static final String NAME = "CopyFile";
     protected static final String MESSAGE = NAME + ": ";
     protected static final boolean doDeleteOutput = false;
+    protected static final Logger log4j = LogManager.getLogger();
     
     protected NodeIO nio = null;
     protected File getListFile = null;
@@ -170,7 +173,8 @@ public class CopyFile {
             return copyEntry;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -194,11 +198,12 @@ public class CopyFile {
             return copyEntry;
             
         } catch (TException tex) {
-            System.out.println("buildCopyEntry exception:" + tex);
-            tex.printStackTrace();
+            log4j.debug("buildCopyEntry exception:" + tex, tex);
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     }

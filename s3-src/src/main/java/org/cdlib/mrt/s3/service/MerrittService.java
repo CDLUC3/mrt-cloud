@@ -30,6 +30,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.cdlib.mrt.s3.service;
 import java.util.Properties;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.s3v2.aws.AWSS3V2Cloud;
 import org.cdlib.mrt.s3.cloudhost.CloudhostAPI;
 import org.cdlib.mrt.s3.openstack.OpenstackCloud;
@@ -52,6 +54,7 @@ public class MerrittService
     protected static final String MESSAGE = NAME + ": ";
     private static boolean DEBUG = true; //false;
     private static boolean DEBUG_ACCESS = false;
+    private static final Logger log4j = LogManager.getLogger();
     
     //public enum ConfigType {jar, file, ssm, yaml};
        
@@ -60,7 +63,7 @@ public class MerrittService
     {
         awsVersion = 2;
         CloudStoreInf service = null;
-        if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
+        log4j.debug("getAccessNode:" 
                 + " - nodeNumber=" + nodeNumber
                 + " - container=" + container
         );
@@ -109,12 +112,12 @@ public class MerrittService
             
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.error(MESSAGE + "Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
         
@@ -127,7 +130,7 @@ public class MerrittService
         throws TException
     {
         CloudStoreInf service = null;
-        if (DEBUG_ACCESS) System.out.println("getAccessNode:" 
+        log4j.debug("getAccessNode:" 
                 + " - nodeNumber=" + nodeNumber
                 + " - container=" + container
         );
@@ -142,7 +145,7 @@ public class MerrittService
             }
             if (serviceType.equals("aws")) {
                 String storageClassS = cloudProp.getProperty("storageClass");
-                if (DEBUG_ACCESS) System.out.println("StorageClassS=" + storageClassS);
+                log4j.debug("StorageClassS=" + storageClassS);
                 String regionS = cloudProp.getProperty("region");
                 accessMode = cloudProp.getProperty("accessMode");
                 service = AWSS3V2Cloud.getAWS(logger);
@@ -151,7 +154,7 @@ public class MerrittService
                 String accessKey = cloudProp.getProperty("accessKey");
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                log4j.debug("Minio S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -162,7 +165,7 @@ public class MerrittService
                 String accessKey = cloudProp.getProperty("accessKey");
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                log4j.debug("Minio S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -175,7 +178,7 @@ public class MerrittService
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
                 String regionName = cloudProp.getProperty("regionName");
-                if (DEBUG_ACCESS) System.out.println("Minio S3"
+                log4j.debug("Minio S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -188,7 +191,7 @@ public class MerrittService
                 String secretKey = cloudProp.getProperty("secretKey");
                 String endPoint = cloudProp.getProperty("endPoint");
                 String regionName = cloudProp.getProperty("regionName");
-                if (DEBUG_ACCESS) System.out.println("RustFs S3"
+                log4j.debug("RustFs S3"
                         + " - accessKey=" + accessKey
                         + " - secretKey=" + secretKey
                         + " - endPoint=" + endPoint
@@ -204,12 +207,11 @@ public class MerrittService
             
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            System.out.println(MESSAGE + "Exception:" + ex);
-            ex.printStackTrace();
+            log4j.info(MESSAGE + "Exception:" + ex);
             throw new TException(ex);
         }
         

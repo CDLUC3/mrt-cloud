@@ -35,6 +35,9 @@ import java.io.FileReader;
 import java.util.List;
 import org.cdlib.mrt.utility.TException;
 import java.io.PrintWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import static org.cdlib.mrt.s3.tools.ChecksumHandler.log4j;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.StringUtil;
 import org.cdlib.mrt.utility.TFileLogger;
@@ -47,6 +50,7 @@ public class CloudNodeList
     private static final String NAME = "CloudNodeList";
     private static final String MESSAGE = NAME + ": ";
     private static final boolean DEBUG = false;
+    protected static final Logger log4j = LogManager.getLogger();
     
  
     private LoggerInf logger = null;
@@ -77,10 +81,12 @@ public class CloudNodeList
             if (true) cloudNodeList.run();
 
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
+            log4j.debug("Exception:" + tex, tex);
             
         } catch (Exception ex) {
-            ex.printStackTrace();;
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();;
         }
     }
     public static CloudNodeList getCloudNodeList(
@@ -151,7 +157,8 @@ public class CloudNodeList
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }
@@ -176,7 +183,8 @@ public class CloudNodeList
                 setResults(readLine, processList);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.info("Exception:" + ex, ex);
             
         } finally {
             try {
@@ -241,7 +249,7 @@ public class CloudNodeList
                 writer.println(outLine);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();;
+            log4j.error("Exception:" + ex, ex);
         }
     }
 

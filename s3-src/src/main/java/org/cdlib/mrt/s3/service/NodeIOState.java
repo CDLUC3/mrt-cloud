@@ -6,6 +6,8 @@
 package org.cdlib.mrt.s3.service;
 
 import java.util.ArrayList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.object.StateHandler;
 import org.cdlib.mrt.utility.LoggerInf;
 import org.cdlib.mrt.utility.TFileLogger;
@@ -17,7 +19,8 @@ import org.json.JSONArray;
 
 public class NodeIOState {
     
-     public static void main(String[] argv) {
+    protected static final Logger log4j = LogManager.getLogger();
+    public static void main(String[] argv) {
 
     	try {
             
@@ -31,8 +34,8 @@ public class NodeIOState {
     
         } catch (Exception ex) {
                 // TODO Auto-generated catch block
-                System.out.println("Exception:" + ex);
-                ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
+                //ex.printStackTrace();
         }
     }
     
@@ -64,8 +67,7 @@ public class NodeIOState {
     
         } catch (Exception ex) {
                 // TODO Auto-generated catch block
-                System.out.println("Exception:" + ex);
-                ex.printStackTrace();
+                log4j.info("Exception:" + ex);
                 return null;
         }
     }

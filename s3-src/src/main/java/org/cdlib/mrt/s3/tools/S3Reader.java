@@ -98,12 +98,12 @@ public class S3Reader {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
+                log4j.error(tex.toString(), tex);
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new TException(ex);
+                log4j.error(ex.toString(), ex);
+                throw new TException(ex);
         }
     }
     
@@ -261,6 +261,14 @@ public class S3Reader {
             if (exi != null) {
                 exi.printStackTrace();
             }
+            String msg = MESSAGE + "unable to extract data for:"
+                    + " - service=" + service.getType()
+                    + " - bucket=" + bucket
+                    + " - key=" + key
+                    + " - start=" + start
+                    + " - stop=" + stop
+                    + " - Exception=" + exi;
+            log4j.error(msg, exi);
             throw new TException.EXTERNAL_SERVICE_UNAVAILABLE(MESSAGE + "unable to extract data for:"
                     + " - service=" + service.getType()
                     + " - bucket=" + bucket
@@ -271,11 +279,11 @@ public class S3Reader {
             );
             
         } catch (TException tex) {
-                tex.printStackTrace();
+                //tex.printStackTrace();
                 throw tex;
                 
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
         }
     }

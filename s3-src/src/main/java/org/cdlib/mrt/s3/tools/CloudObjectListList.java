@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cdlib.mrt.cloud.CloudList;
 import org.cdlib.mrt.cloud.ManifestSAX;
 import org.cdlib.mrt.cloud.VersionMap;
@@ -66,6 +68,7 @@ public class CloudObjectListList {
     
     protected static final String NAME = "CloudObjectListList";
     protected static final String MESSAGE = NAME + ": ";
+    protected static final Logger log4j = LogManager.getLogger();
     
     protected CloudObjectList col = null;
     protected File listFile = null;
@@ -128,7 +131,7 @@ public class CloudObjectListList {
                     
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             System.out.println("NAME=" + ex.getClass().getName());
             System.out.println("Exception:" + ex);
             System.out.println("Caught an AmazonServiceException, which means your request made it "

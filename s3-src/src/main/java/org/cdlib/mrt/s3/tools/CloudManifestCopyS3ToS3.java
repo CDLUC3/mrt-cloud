@@ -171,11 +171,11 @@ public class CloudManifestCopyS3ToS3 {
             Output manifest not required to determine if item already exists
             Equivalent to a Glacier audit
             if (outManProp == null) {
-                log(NEEDCOPYLOG, "needCopy outManProp null: true");
+                debug("needCopy outManProp null: true");
                 return true;
             }
             */
-            if (DEBUG) System.out.println(inEntry.dump("In-entrydump"));
+            trace(inEntry.dump("In-entrydump"));
             long startTestTime = System.currentTimeMillis();
             String key = inEntry.getKey();
             key = StringEscapeUtils.unescapeXml(key);
@@ -185,18 +185,18 @@ public class CloudManifestCopyS3ToS3 {
             try {
                 objectMeta = outService.getObjectMeta(outContainer, key);
             } catch (Exception ex) {
-                log(NEEDCOPYLOG, "needCopy(" + key + ") Error getObjectMeta: true - ex:" + ex);
+                debug("needCopy(" + key + ") Error getObjectMeta: true - ex:" + ex);
                 return true;
             }
             if (DEBUG) System.out.println(PropertiesUtil.dumpProperties("***META***", objectMeta));
             outEntry = CloudResponse.getCloudEntry(objectMeta);
             if (outEntry == null) {
-                log(NEEDCOPYLOG, "needCopy(" + key + ")  no meta: needCopy=TRUE");
+                debug("needCopy(" + key + ")  no meta: needCopy=TRUE");
                 return true;
             }
             if (DEBUG) System.out.println(outEntry.dump("out-entrydump"));
             if (inEntry.getDigest() == null) {
-                log(NEEDCOPYLOG, "needCopy(" + key + ")  no inEntry digest - needCopy=TRUE");
+                debug("needCopy(" + key + ")  no inEntry digest - needCopy=TRUE");
                 return true;
             }
             MessageDigest inCompDigest = inEntry.getDigest();
@@ -208,10 +208,10 @@ public class CloudManifestCopyS3ToS3 {
             long outSize = outEntry.getSize();
             stat.metaTime += System.currentTimeMillis()-startTestTime;
             if (inDigestValue.equals(outDigestValue) && (inSize == outSize)) {
-                log(NEEDCOPYLOG, "needCopy(" + key + ")  needCopy=FALSE");
+                debug("needCopy(" + key + ")  needCopy=FALSE");
                 return false;
             }
-            log(NEEDCOPYLOG, "needCopy(" + key + ")  miss match: true"
+            debug("needCopy(" + key + ")  miss match: true"
                     + " - inSize:" + inSize
                     + " - outSize:" + outSize
                     + " - inDigestValue:" + inDigestValue
@@ -220,8 +220,9 @@ public class CloudManifestCopyS3ToS3 {
             return true;
             
         } catch (Exception ex) {
-            if (DEBUG) System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            if (DEBUG) System.out.println("TException:" + ex); 
+            log4j.error("Exception:" + ex, ex);
+            //ex.printStackTrace();xx
             throw new TException(ex);
         }
     } 
@@ -239,19 +240,19 @@ public class CloudManifestCopyS3ToS3 {
                 outManProp = outService.getObjectMeta(outContainer, key);
                 if ((outManProp == null) || (outManProp.size() == 0)) {
                     outManProp = null;
-                    log(10, "setOutManifestProp manifest ark empty:" + key);
+                    debug("setOutManifestProp manifest ark empty:" + key);
                     return;
                 }
-                log(10, PropertiesUtil.dumpProperties("setOutManifestProp manfest found", outManProp));
+                debug(PropertiesUtil.dumpProperties("setOutManifestProp manfest found", outManProp));
                 
             } catch (Exception ex) {
                 outManProp = null;
-                log(10, "setOutManifestProp manifest ark null");
+                debug("setOutManifestProp manifest ark null");
             }
             
         } catch (Exception ex) {
-            if (DEBUG) System.out.println("TException:" + ex);
-            ex.printStackTrace();
+            //ex.printStackTrace();
+            log4j.error("Exception:" + ex, ex);
             throw new TException(ex);
         }
     } 
@@ -270,13 +271,12 @@ public class CloudManifestCopyS3ToS3 {
             return s3ToS3;
             
         } catch (TException tex) {
-            if (DEBUG) System.out.println("TException:" + tex);
-            if (DEBUG) tex.printStackTrace();
+            log4j.debug(tex.toString(), tex);
             throw tex;
             
         } catch (Exception ex) {
             String msg = "CloudManifestCopyFixity Exception:" + ex.toString() + " - key=" + entry.getKey();
-            log4j.debug(msg, ex);
+            log4j.error(msg, ex);
             throw new TException.GENERAL_EXCEPTION(msg);
         }
     } 
@@ -315,6 +315,7 @@ public class CloudManifestCopyS3ToS3 {
                 Thread.sleep (expSleep);
             } catch (Exception slex) { }
         }
+        log4j.error("RETRY FAILS " + retEx.toString(), retEx);
         throw retEx;
     } 
     
@@ -332,7 +333,7 @@ public class CloudManifestCopyS3ToS3 {
             for (CloudList.CloudEntry entry : list) {
                 long timeVal = DateUtil.getEpochUTCDate();
                 if (showEntry || ((cnt%1000) == 0)) 
-                    log(6, "***(" + cnt + "):" + entry.key + "***" 
+                    debug("***(" + cnt + "):" + entry.key + "***" 
                             + " - time=" + timeVal
                             + " - size=" + entry.size
                     );
@@ -459,9 +460,14 @@ public class CloudManifestCopyS3ToS3 {
         logger.logMessage(msg, lvl, true);
     }
     
-    protected void log(int lvl, String msg)
+    protected void debug(String msg)
     {
-        logger.logMessage(msg, lvl, true);
+        log4j.debug(msg);
+    }
+    
+    protected void trace(String msg)
+    {
+        log4j.trace(msg);
     }
 
     public static class Test {

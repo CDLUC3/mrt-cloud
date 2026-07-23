@@ -69,8 +69,8 @@ public class NodeIOStatus {
     
         } catch (Exception ex) {
                 // TODO Auto-generated catch block
-                System.out.println("Exception:" + ex);
-                ex.printStackTrace();
+                log4j.info("Exception:" + ex);
+                //ex.printStackTrace();
         }
     }
     
@@ -133,8 +133,8 @@ public class NodeIOStatus {
     
         } catch (Exception ex) {
                 // TODO Auto-generated catch block
-                System.out.println("Exception:" + ex);
-                ex.printStackTrace();
+                log4j.error("Exception:" + ex, ex);
+                //ex.printStackTrace();
                 return null;
         }
     }

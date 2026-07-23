@@ -37,6 +37,7 @@ package org.cdlib.mrt.s3.cloudhost;
 import org.cdlib.mrt.core.Identifier;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -150,7 +151,8 @@ public class CloudhostClient
                 urlS += "?" + query;
             }
             System.out.println("URL:" + urlS);
-            URL url = new URL(urlS);
+            URI urlI = new URI(urlS);
+            URL url = urlI.toURL();
             return url;
             
         } catch (TException tex) {
@@ -216,11 +218,11 @@ public class CloudhostClient
             return state;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
             
         } finally {
@@ -246,11 +248,11 @@ public class CloudhostClient
             return state;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
             
         } finally {
@@ -272,11 +274,11 @@ public class CloudhostClient
             FileUtil.url2File(logger, urlS, cloudFile, 4);
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
             
         }
@@ -296,11 +298,11 @@ public class CloudhostClient
             return state;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
             
         } finally {
@@ -336,11 +338,11 @@ public class CloudhostClient
             return state;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
             
         } finally {
@@ -373,11 +375,11 @@ public class CloudhostClient
             return state;
             
         } catch (TException tex) {
-            tex.printStackTrace();
+            //tex.printStackTrace();
             throw tex;
             
         } catch (Exception ex) {
-            ex.printStackTrace();
+            //ex.printStackTrace();
             throw new TException(ex);
             
         } finally {
