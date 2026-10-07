@@ -31,6 +31,7 @@ phases:
   build:
     on-failure: ABORT
     commands:
+    - mvn -version
     # - mvn -ntp clean install -Ddocker.skip -DskipITs -Dmaven.test.skip=true
     - mvn -ntp clean install
     - mvn deploy:deploy-file -Durl=${CODEARTIFACT_URL} -DrepositoryId=cdlib-uc3-mrt-uc3-mrt-java -Dfile=$(ls cloud-conf/target/mrt-cloudconf-*.jar)
