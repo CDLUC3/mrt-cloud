@@ -165,6 +165,7 @@ public class CloudManifestCopyS3ToS3 {
         throws TException
     {
         CloudList.CloudEntry outEntry = null;
+        String key = "";
         try {
             // outManProp set to null if no output manifest exists at startup
             /*
@@ -177,7 +178,7 @@ public class CloudManifestCopyS3ToS3 {
             */
             trace(inEntry.dump("In-entrydump"));
             long startTestTime = System.currentTimeMillis();
-            String key = inEntry.getKey();
+            key = inEntry.getKey();
             key = StringEscapeUtils.unescapeXml(key);
             
             inEntry.setKey(key);
@@ -204,6 +205,10 @@ public class CloudManifestCopyS3ToS3 {
             long inSize = inEntry.getSize();
             
             MessageDigest outCompDigest = outEntry.getDigest();
+            if (outCompDigest == null) {
+                log4j.info("needCopy(" + key + ")  no outCompDigest digest - needCopy=TRUE");
+                return true;
+            }
             String outDigestValue = outCompDigest.getValue();
             long outSize = outEntry.getSize();
             stat.metaTime += System.currentTimeMillis()-startTestTime;
@@ -220,7 +225,7 @@ public class CloudManifestCopyS3ToS3 {
             return true;
             
         } catch (Exception ex) {
-            if (DEBUG) System.out.println("TException:" + ex); 
+            if (DEBUG) System.out.println("TException(" + key + "):" + ex); 
             log4j.error("Exception:" + ex, ex);
             //ex.printStackTrace();xx
             throw new TException(ex);
